@@ -11,6 +11,16 @@ use PDO;
  */
 class Database
 {
+    const INT = 'int';
+    const TINY_INT = 'tinyint';
+    const VARCHAR = 'varchar';
+    const ENUM = 'enum';
+    const DATETIME = 'datetime';
+    const TEXT = 'text';
+    const MEDIUM_TEXT = 'mediumtext';
+    const LONG_TEXT = 'longtext';
+    const FLOAT = 'float';
+
     /**
      * @var string
      */
@@ -35,6 +45,11 @@ class Database
      * @var string
      */
     protected $_schema;
+
+    /**
+     * @var string
+     */
+    protected $_name;
 
     /**
      * @var array
@@ -77,6 +92,7 @@ class Database
         }
 
         $server = $this->getRandomServer($type);
+        $this->_name = $server['dbname'];
         $pdo = new PDO($server['dsn'], $server['user'], $server['password']);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
@@ -157,5 +173,19 @@ class Database
         $sql = isset($bits[1]) ? $bits[1] : $bits[0];
         $sql = trim($sql);
         return strpos($sql, 'SELECT') === 0 || strpos($sql, 'select') === 0;
+    }
+
+    /**
+     * gets the database name
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        if ($this->_name === null) {
+            $server = $this->getRandomServer(self::SLAVE);
+            $this->_name = $server['dbname'];
+        }
+        return $this->_name;
     }
 }
