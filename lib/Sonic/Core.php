@@ -6,12 +6,15 @@
  *
  * @author Craig Campbell
  *
- * last generated: 2010-08-08 16:37:49 EST
+ * last commit: 70d6c7c2227cdb0da33d171f5a53315af34782e4
+ * generated: 2010-08-09 01:16:38 EST
  */
 namespace Sonic;
 
 class App
 {
+    const WEB='www';
+    const COMMAND_LINE='cli';
     protected static $_instance;
     protected $_request;
     protected $_paths=array();
@@ -19,7 +22,8 @@ class App
     protected $_layout_processed=false;
     protected $_base_path;
     protected $_environment;
-    protected $_settings=array('autoload'=> true,
+    protected $_settings=array('mode'=> self::WEB,
+                               'autoload'=> true,
                                'config_file'=> 'php',
                                'devs'=> array('dev'));
     private function __construct() {}
@@ -114,17 +118,28 @@ class App
         }
         return $this->_request;
     }
+    public function getBasePath()
+    {
+        if ($this->_base_path!==null) {
+            return $this->_base_path;
+        }
+        switch ($this->getSetting('mode')) {
+            case self::COMMAND_LINE:
+                $this->_base_path=str_replace('/lib','',get_include_path());
+                break;
+            default:
+                $document_root=$this->getRequest()->getServer('DOCUMENT_ROOT');
+                $this->_base_path=str_replace('/public_html','',$document_root);
+        }
+        return $this->_base_path;
+    }
     public function getPath($dir=null)
     {
         $cache_key=__METHOD__.'_'.$dir;
         if (isset($this->_paths[$cache_key])) {
             return $this->_paths[$cache_key];
         }
-        if ($this->_base_path===null) {
-            $path_to_index=$this->getRequest()->getServer('SCRIPT_FILENAME');
-            $this->_base_path=realpath(str_replace('public_html/index.php','',$path_to_index));
-        }
-        $base_path=$this->_base_path;
+        $base_path=$this->getBasePath();
         if ($dir!==null) {
             $base_path .='/'.$dir;
         }
@@ -177,10 +192,14 @@ class App
             $this->_runController('main','error',array('exception'=> $e,'from_controller'=> $controller_name,'from_action'=> $action));
         }
     }
-    public function start()
+    public function start($mode=self::WEB)
     {
+        $this->addSetting('mode',$mode);
         if ($this->getSetting('autoload')) {
             $this->autoload();
+        }
+        if ($mode!=self::WEB) {
+            return;
         }
         $controller=$this->getRequest()->getControllerName();
         $action=$this->getRequest()->getAction();
