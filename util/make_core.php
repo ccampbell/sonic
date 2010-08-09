@@ -32,8 +32,13 @@ if (file_exists($lib_path . '/Core.php')) {
     unlink($lib_path . '/Core.php');
 }
 
+// figure out the last revision
+shell_exec('cd ' . $lib_path);
+$revision = shell_exec('git log | head -1');
+$revision_text = 'last commit: ' . str_replace(array("\n", 'commit '), '', $revision);
+
 // start output
-$output = "<?php\n/**\n * combined core files to speed up your application (with comments stripped)\n *\n * includes " . implode(', ', $combine) . "\n *\n * @author Craig Campbell\n *\n * last generated: " . date('Y-m-d H:i:s') . " EST\n */\nnamespace Sonic;\n";
+$output = "<?php\n/**\n * combined core files to speed up your application (with comments stripped)\n *\n * includes " . implode(', ', $combine) . "\n *\n * @author Craig Campbell\n *\n * " . $revision_text . "\n * generated: " . date('Y-m-d H:i:s') . " EST\n */\nnamespace Sonic;\n";
 
 foreach ($combine as $file) {
     echo 'adding file ' . $file . "\n";
