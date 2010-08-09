@@ -11,6 +11,16 @@ namespace Sonic;
 class App
 {
     /**
+     * @var string
+     */
+    const WEB = 'www';
+
+    /**
+     * @var string
+     */
+    const COMMAND_LINE = 'cli';
+
+    /**
      * @var App
      */
     protected static $_instance;
@@ -48,7 +58,8 @@ class App
     /**
      * @var array
      */
-    protected $_settings = array('autoload' => true,
+    protected $_settings = array('mode' => self::WEB,
+                               'autoload' => true,
                                'config_file' => 'php',
                                'devs' => array('dev'));
 
@@ -253,6 +264,29 @@ class App
     }
 
     /**
+     * gets base path of the app
+     *
+     * @return string
+     */
+    public function getBasePath()
+    {
+        if ($this->_base_path !== null) {
+            return $this->_base_path;
+        }
+
+        switch ($this->getSetting('mode')) {
+            case self::COMMAND_LINE:
+                $this->_base_path = str_replace('/lib','', get_include_path());
+                break;
+            default:
+                $document_root = $this->getRequest()->getServer('DOCUMENT_ROOT');
+                $this->_base_path = str_replace('/public_html', '', $document_root);
+        }
+
+        return $this->_base_path;
+    }
+
+    /**
      * gets the absolute path to a directory
      *
      * @param string $dir (views || controllers || lib) etc
@@ -266,12 +300,7 @@ class App
             return $this->_paths[$cache_key];
         }
 
-        if ($this->_base_path === null) {
-            $path_to_index = $this->getRequest()->getServer('SCRIPT_FILENAME');
-            $this->_base_path = realpath(str_replace('public_html/index.php', '', $path_to_index));
-        }
-
-        $base_path = $this->_base_path;
+        $base_path = $this->getBasePath();
 
         if ($dir !== null) {
             $base_path .= '/' . $dir;
@@ -372,8 +401,10 @@ class App
      *
      * @return void
      */
-    public function start()
+    public function start($mode = self::WEB)
     {
+        $this->addSetting('mode', $mode);
+
         include 'Sonic/Exception.php';
         include 'Sonic/Request.php';
         include 'Sonic/Router.php';
@@ -383,6 +414,10 @@ class App
 
         if ($this->getSetting('autoload')) {
             $this->autoload();
+        }
+
+        if ($mode != self::WEB) {
+            return;
         }
 
         $controller = $this->getRequest()->getControllerName();
