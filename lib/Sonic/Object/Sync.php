@@ -18,9 +18,6 @@ class Sync
      */
     public static function run()
     {
-        $database = DefinitionFactory::getDatabase();
-
-        // use schema of first object
         $definitions = DefinitionFactory::getDefinitions();
 
         if (empty($definitions)) {
@@ -28,6 +25,7 @@ class Sync
             exit;
         }
 
+        // use schema of first object to get existing indexes
         foreach ($definitions as $definition) {
             $schema = $definition['schema'];
             break;
@@ -36,18 +34,23 @@ class Sync
         $dao = new Dao($schema);
         $indexes = $dao->getIndexes();
         foreach ($indexes as $table => $existing_indexes) {
+
+            // if this table exists in the database but is not associated
+            // with an object then we should skip it
             if (!$definition = self::getDefinitionForTable($table)) {
                 continue;
             }
 
+            // figure out what indexes have been removed or changed
             $to_drop = self::_getIndexesToDrop($definition, $existing_indexes);
 
+            // drop them
             $dao->dropIndexes($table, $to_drop);
         }
 
+        // sync each object from the definition
         foreach ($definitions as $definition) {
-            self::syncObject($definition, $database);
-            // var_dump(self::getCreateTable($definition));
+            self::syncObject($definition);
         }
 
         self::output('database sync complete');
@@ -75,7 +78,7 @@ class Sync
      * figures out what indexes to drop based on existing indexes and definition
      *
      * @param array $definition
-     * @param array $existing_indexes
+     * @param array $existing_indexes in format column_name:index_name:is_unique
      * @return array
      */
     protected static function _getIndexesToDrop($definition, array $existing_indexes)
@@ -111,11 +114,11 @@ class Sync
      * @param array $definition
      * @return void
      */
-    public static function syncObject($definition, $database)
+    public static function syncObject($definition)
     {
         $dao = new Dao($definition['schema']);
         try {
-            $dao->updateTableByDefinition($definition, $database);
+            $dao->updateTableByDefinition($definition);
         } catch (Yoshi_Exception $e) {
             throw new \Sonic\Database\Exception('error syncing ' .
                 $definition['table'] . ': ' . $e->getMessage());
@@ -156,6 +159,8 @@ class Sync
             $column['null'] = false;
         }
 
+        // if no default is present set it to null
+        // @todo not sure if this is necessary
         if (!isset($column['default'])) {
             $column['default'] = null;
         }
@@ -175,6 +180,7 @@ class Sync
             $column['unsigned'] = true;
         }
 
+        // if this field requires a length but doesn't have one
         if ($column['type'] == Database::VARCHAR && !isset($column['length'])) {
             throw new Database\Exception('need to set a length for a varchar field!');
         }

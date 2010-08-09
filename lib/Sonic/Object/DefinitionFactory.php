@@ -17,16 +17,6 @@ class DefinitionFactory
     protected static $_definitions;
 
     /**
-     * @var string
-     */
-    protected static $_database_name;
-
-    /**
-     * @var array
-     */
-    protected static $_tables;
-
-    /**
      * gets all object definitions
      *
      * @return array
@@ -44,20 +34,6 @@ class DefinitionFactory
     }
 
     /**
-     * gets database name for definitions
-     *
-     * @return string
-     */
-    public static function getDatabase()
-    {
-        if (self::$_database_name !== null) {
-            return self::$_database_name;
-        }
-        self::getDefinitions();
-        return self::$_database_name;
-    }
-
-    /**
      * gets a single object definition
      *
      * @var string $class
@@ -71,25 +47,5 @@ class DefinitionFactory
         }
 
         return $definitions[$class];
-    }
-
-    /**
-     * gets all ORM tables
-     *
-     * @return array
-     */
-    public static function getTables()
-    {
-        if (self::$_tables !== null) {
-            return self::$_tables;
-        }
-
-        $definitions = self::getDefinitions();
-        self::$_tables = array();
-        foreach ($definitions as $key => $definition) {
-            self::$_tables[$key] = $definition['table'];
-        }
-
-        return self::$_tables;
     }
 }
