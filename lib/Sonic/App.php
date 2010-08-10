@@ -366,7 +366,7 @@ class App
             $controller->actionComplete($action);
         }
 
-        // if this is the first controller and no layout has been procesed and it has a layout start with that
+        // if this is the first controller and no layout has been processed and it has a layout start with that
         if (!$this->_layout_processed && $controller->hasLayout() && count($this->_controllers) === 1) {
             $this->_layout_processed = true;
             $layout = $controller->getLayout();
