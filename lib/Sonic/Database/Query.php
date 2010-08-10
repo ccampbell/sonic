@@ -62,6 +62,16 @@ class Query
     }
 
     /**
+     * gets the sql for this query
+     *
+     * @return string
+     */
+    public function getSql()
+    {
+        return $this->_sql;
+    }
+
+    /**
      * gets the PDOStatement for this query
      *
      * @return PDOStatement
