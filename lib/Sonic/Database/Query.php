@@ -1,6 +1,7 @@
 <?php
 namespace Sonic\Database;
 use PDO;
+use Sonic\Database;
 use Sonic\Database\Query\Filter;
 use Sonic\Database\Query\Sort;
 
@@ -85,6 +86,16 @@ class Query
         $database = Factory::getDatabase($this->_schema);
         $this->_statement = $database->prepare($this->_sql);
         return $this->_statement;
+    }
+
+    /**
+     * gets last insert id
+     *
+     * @return int
+     */
+    public function lastInsertId()
+    {
+        return (int) Factory::getDatabase($this->_schema)->getPdo(Database::MASTER)->lastInsertId();
     }
 
     /**
