@@ -6,8 +6,8 @@
  *
  * @author Craig Campbell
  *
- * last commit: 70d6c7c2227cdb0da33d171f5a53315af34782e4
- * generated: 2010-08-09 01:16:38 EST
+ * last commit: f4624c613dfc424e1ac79051a8ace57efc8823b2
+ * generated: 2010-08-09 22:53:35 EST
  */
 namespace Sonic;
 
@@ -428,6 +428,10 @@ class Controller
         $this->_layout_name=null;
         return $this;
     }
+    public function disableView()
+    {
+        $this->getView()->disable();
+    }
     public function hasLayout()
     {
         return $this->_layout_name!==null;
@@ -463,6 +467,7 @@ class View
     protected $_path;
     protected $_title;
     protected $_html;
+    protected $_disabled=false;
     public function __construct($path)
     {
         $this->path($path);
@@ -498,6 +503,10 @@ class View
     {
         $this->_active_controller=$name;
     }
+    public function disable()
+    {
+        $this->_disabled=true;
+    }
     public function render($controller,$action=null,$args=array())
     {
         if ($action===null||is_array($action)) {
@@ -509,6 +518,9 @@ class View
     }
     public function buffer()
     {
+        if ($this->_disabled) {
+            return;
+        }
         ob_start();
         $this->output();
         $this->_html=ob_get_contents();
@@ -520,6 +532,9 @@ class View
     }
     public function output()
     {
+        if ($this->_disabled) {
+            return;
+        }
         if ($this->getHtml()!==null) {
             echo $this->getHtml();
             return;
