@@ -118,14 +118,14 @@ class Dao
      */
     public function createTable($definition)
     {
-        $sql = '/* ' . __METHOD__ . ' */' .
+        $sql = '/* ' . __METHOD__ . ' */' . "\n" .
             Sync::getCreateTable($definition);
 
         $query = new Query($sql);
 
         Sync::output('creating table "' . $definition['table'] . '"');
 
-        return $query->execute();
+        return Sync::execute($query);
     }
 
     /**
@@ -196,16 +196,15 @@ class Dao
             return;
         }
 
-        $sql = '/* ' . __METHOD__ . ' */' .
-               "ALTER TABLE `$table`
-              CHANGE COLUMN `$column_name` " .
+        $sql = '/* ' . __METHOD__ . ' */' . "\n" .
+               "ALTER TABLE `$table` CHANGE COLUMN `$column_name` " .
               Sync::getCreateField($column_name, $definition);
 
         $query = new Query($sql);
 
         Sync::output('altering column "' . $column_name . '" in table "' . $table . '"', true);
 
-        return $query->execute();
+        return Sync::execute($query);
     }
 
     /**
@@ -258,7 +257,7 @@ class Dao
         $bits = explode('(', $db_definition['column_type']);
         $length = (int) rtrim($bits[1], ')');
 
-        if ($definition['length'] && $length != $definition['length']) {
+        if (isset($definition['length']) && $length != $definition['length']) {
             return true;
         }
 
@@ -300,7 +299,7 @@ class Dao
             return;
         }
 
-        $sql = '/* ' . __METHOD__ . ' */';
+        $sql = '/* ' . __METHOD__ . ' */' . "\n";
         $index_creation = "ALTER TABLE `$table` ADD INDEX $index_name (`$column_name`)";
 
         if ($definition['unique']) {
@@ -317,7 +316,7 @@ class Dao
 
         Sync::output('adding ' . $word . 'index "' . $index_name . '" for table "' . $table . '"', true);
 
-        return $query->execute();
+        return Sync::execute($query);
     }
 
     /**
@@ -335,28 +334,29 @@ class Dao
             return;
         }
 
-        // $model = $definition->getForeignKeyModel();
-        // $foreign_key = $table . '_' . $column_name . '_' . $model->getDefinitions()->getTable() . '_fk';
-        //
-        // $indexes = self::getIndexes();
-        //
-        // // if a foreign key already exists for this column don't try to add another
-        // if (in_array($column_name . ':' . $foreign_key . ':' . (int) $definition->isUnique(), $indexes[$table])) {
-        //     return;
-        // }
-        //
-        // $query = '/* ' . __METHOD__ . ' */' .
-        //     "ALTER TABLE {$table}
-        //   ADD CONSTRAINT {$foreign_key}
-        //      FOREIGN KEY ({$column_name})
-        //       REFERENCES {$model->getDefinitions()->getTable()} (id)
-        //        ON DELETE CASCADE";
-        //
-        // $sth = $this->getDb()->prepare($query);
-        //
-        // Yoshi_Orm_Util::output('creating foreign key "' . $foreign_key . '" for table "' . $table . '"', true);
-        //
-        // return $sth->execute();
+        $foreign_key = Sync::getForeignKeyInfo($table, $column_name, $definition);
+
+        $name = $foreign_key['name'];
+
+        $indexes = self::getIndexes();
+
+        // if a foreign key already exists for this column don't try to add another
+
+        // foreign keys default to not being unique?!?!?
+        $unique = 0;
+
+        if (in_array($column_name . ':' . $name . ':' . $unique, $indexes[$table])) {
+            return;
+        }
+
+        $sql = '/* ' . __METHOD__ . ' */' . "\n" .
+            "ALTER TABLE `{$table}` ADD CONSTRAINT {$name} FOREIGN KEY ({$column_name}) REFERENCES {$foreign_key['table']} ({$foreign_key['column']}) ON DELETE CASCADE";
+
+        $query = new Query($sql);
+
+        Sync::output('creating foreign key "' . $name . '" for table "' . $table . '"', true);
+
+        Sync::execute($query);
     }
 
     /**
@@ -372,14 +372,14 @@ class Dao
             return;
         }
 
-        $sql = '/* ' . __METHOD__ . ' */' .
+        $sql = '/* ' . __METHOD__ . ' */' . "\n" .
             "ALTER TABLE `$table` DROP COLUMN `$column_name`";
 
         $query = new Query($sql);
 
         Sync::output('deleting column "' . $column_name . '" from table "' . $table . '"');
 
-        return $query->execute();
+        return Sync::execute($query);
     }
 
     /**
@@ -395,9 +395,8 @@ class Dao
         $column_name,
         array $definition)
     {
-        $sql = '/* ' . __METHOD__ . ' */' .
-            "ALTER TABLE `$table`
-              ADD COLUMN " .
+        $sql = '/* ' . __METHOD__ . ' */' . "\n" .
+            "ALTER TABLE `$table` ADD COLUMN " .
               Sync::getCreateField($column_name, $definition);
 
         $query = new Query($sql);
@@ -408,7 +407,7 @@ class Dao
 
         Sync::output('adding column "' . $column_name . '" to table "' . $table . '"');
 
-        return $query->execute();
+        return Sync::execute($query);
     }
 
     /**
@@ -511,7 +510,7 @@ class Dao
     {
         $this->disableForeignKeys();
 
-        $sql = '/* ' . __METHOD__ . ' */' .
+        $sql = '/* ' . __METHOD__ . ' */' . "\n" .
             "ALTER TABLE `$table` DROP INDEX `$index_name`";
 
         if (strpos($index_name, '_fk')) {
@@ -521,11 +520,11 @@ class Dao
         $query = new Query($sql);
 
         try {
-            $query->execute();
+            Sync::execute($query);
         } catch (\Exception $e) {
             $sql = str_replace('DROP FOREIGN KEY', 'DROP KEY', $sql);
             $query = new Query($sql);
-            $query->execute();
+            Sync::execute($query);
         }
 
         Sync::output('dropping index "' . $index_name . '" from table "' . $table . '"', true);
@@ -540,11 +539,11 @@ class Dao
      */
     public function disableForeignKeys()
     {
-        $sql = '/* ' . __METHOD__ . ' */' .
+        $sql = '/* ' . __METHOD__ . ' */' . "\n" .
             "SET FOREIGN_KEY_CHECKS = 0";
 
         $query = new Query($sql);
-        return $query->execute();
+        return Sync::execute($query);
     }
 
     /**
@@ -554,10 +553,10 @@ class Dao
      */
     public function enableForeignKeys()
     {
-        $sql = '/* ' . __METHOD__ . ' */' .
+        $sql = '/* ' . __METHOD__ . ' */' . "\n" .
             "SET FOREIGN_KEY_CHECKS = 1";
 
         $query = new Query($sql);
-        return $query->execute();
+        return Sync::execute($query);
     }
 }

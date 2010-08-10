@@ -2,6 +2,7 @@
 namespace Sonic\Object;
 use Sonic\Database;
 use Sonic\Object\Sync\Dao;
+use Sonic\App;
 
 /**
  * Sync class for syncing object definitions to the database
@@ -13,6 +14,61 @@ use Sonic\Object\Sync\Dao;
  */
 class Sync
 {
+    /**
+     * @var bool
+     */
+    protected static $_verbose = false;
+
+    /**
+     * @var bool
+     */
+    protected static $_dry_run = false;
+
+    /**
+     * @var int
+     */
+    protected static $_query_count = 0;
+
+    /**
+     * enables verbose mode
+     *
+     * @return void
+     */
+    public static function verbose()
+    {
+        self::$_verbose = true;
+    }
+
+    /**
+     * enables verbose mode
+     *
+     * @return void
+     */
+    public static function isVerbose()
+    {
+        return self::$_verbose;
+    }
+
+    /**
+     * enables dry run
+     *
+     * @return void
+     */
+    public static function dryRun()
+    {
+        self::$_dry_run = true;
+    }
+
+    /**
+     * enables dry run
+     *
+     * @return void
+     */
+    public static function isDryRun()
+    {
+        return self::$_dry_run;
+    }
+
     /**
      * runs the database sync magics
      */
@@ -49,11 +105,90 @@ class Sync
         }
 
         // sync each object from the definition
+        $definitions = self::resolveDependencies($definitions);
+
         foreach ($definitions as $definition) {
             self::syncObject($definition);
         }
 
+        if (self::isDryRun()) {
+            self::output("\n");
+        }
         self::output('database sync complete');
+    }
+
+    /**
+     * takes a list of definitions, resolves foreign key dependencies, and returns the new list
+     *
+     * @param array
+     * @return array
+     */
+    public static function resolveDependencies($definitions)
+    {
+        // new list of definitions
+        $definitions_in_order = array();
+
+        // keep doing this until the new list is the same length as the old list
+        while (count($definitions_in_order) < count($definitions)) {
+
+            // loop through the existing definitions
+            foreach ($definitions as $key => $definition) {
+
+                // if this definition has already been added to the new list then skip it
+                if (in_array($definition, $definitions_in_order)) {
+                    continue;
+                }
+
+                // get whatever dependencies this definition has
+                $dependencies = self::_getDependencies($definition, $definitions_in_order);
+
+                // if there are no dependencies left to process then add it to the new list
+                if (count($dependencies) == 0) {
+                    $definitions_in_order[] = $definition;
+                }
+            }
+        }
+        return $definitions_in_order;
+    }
+
+    /**
+     * gets table dependencies for an existing definition
+     *
+     * @param array $definition
+     * @param array $ignore array of definitions that have already been processed so they are no longer dependencies
+     * @return array list of tables that this definition depends on
+     */
+    protected static function _getDependencies($definition, $ignore = array())
+    {
+        // list of table dependencies
+        $dependencies = array();
+
+        // loop through each column in this definition
+        foreach ($definition['columns'] as $column) {
+
+            // if it is not a foreign key then it doesn't have any dependencies
+            if (!isset($column['foreign_key'])) {
+                continue;
+            }
+
+            // figure out the table name
+            $bits = explode(':', $column['foreign_key']);
+            $table = $bits[0];
+
+            // go through all the definitions that have already been processed
+            foreach ($ignore as $definition) {
+
+                // if the table has already been processed then there are no dependencies for this column
+                if ($table == $definition['table']) {
+                    continue 2;
+                }
+            }
+
+            // this table has to be processed before this one can be
+            $dependencies[] = $table;
+        }
+
+        return $dependencies;
     }
 
     /**
@@ -94,8 +229,13 @@ class Sync
 
             // if this field no longer has an index associated with it then we
             // should drop the index
-            if (!$column_definition['indexed']) {
+            if (!$column_definition['indexed'] && !isset($column_definition['foreign_key'])) {
                 $drop[] = $bits[1];
+                continue;
+            }
+
+            // foreign keys don't check unique status for the current column
+            if (isset($column_definition['foreign_key'])) {
                 continue;
             }
 
@@ -236,13 +376,13 @@ class Sync
         }
 
         // foreign key stuff later (code from yoshi)
-        // if ($definition->hasForeignKey() && !is_null($table_name)) {
-        //     $model = $definition->getForeignKeyModel();
-        //     $foreign_key = $table_name . '_' . $field_name . '_' . $model->getDefinitions()->getTable() . '_fk';
-        //     $sql .= ', CONSTRAINT ' . $foreign_key . ' FOREIGN KEY (`' . $field_name .
-        //         '`) REFERENCES ' . $model->getDefinitions()->getTable() .
-        //         ' (id) ON DELETE CASCADE';
-        // }
+        if (isset($definition['foreign_key'])) {
+            $foreign_key = self::getForeignKeyInfo($table, $column, $definition);
+
+            $sql .= ', CONSTRAINT ' . $foreign_key['name'] . ' FOREIGN KEY (`' . $column .
+                '`) REFERENCES `' . $foreign_key['table'] . '`' .
+                ' (' . $foreign_key['column'] . ') ON DELETE CASCADE';
+        }
 
         // only add this stuff if no table is passed in (updating a column but not indexes)
         $index_name = $table . '_' . $column . '_idx';
@@ -259,15 +399,89 @@ class Sync
     }
 
     /**
+     * gets foreign key information
+     *
+     * @param string $table
+     * @param string $column
+     * @param array $definition
+     */
+    public static function getForeignKeyInfo($table, $column, $definition)
+    {
+        $foreign_key = array();
+
+        $bits = explode(':', $definition['foreign_key']);
+        $foreign_key['table'] = $bits[0];
+        $foreign_key['column'] = isset($bits[1]) ? $bits[1] : 'id';
+        $foreign_key['name'] = $table . '_' . $column . '_' . $foreign_key['table'] . '_' . $foreign_key['column'] . '_fk';
+
+        return $foreign_key;
+    }
+
+    /**
+     * called from the dao to handle executing or displaying SQL based on argument
+     *
+     * @param Query $query
+     * @return void
+     */
+    public static function execute(Database\Query $query)
+    {
+        ++self::$_query_count;
+        if (self::isDryRun()) {
+            self::outputQuery($query);
+            return;
+        }
+        self::executeQuery($query);
+    }
+
+    /**
+     * outputs the sql to command line
+     *
+     * @param Query $query
+     * @return void
+     */
+    public static function outputQuery(Database\Query $query)
+    {
+        $sql = $query->getSql();
+
+        self::output("\n" . $sql, false, true);
+    }
+
+    /**
+     * helper function to execute a query
+     *
+     * @param Query $query
+     * @return bool
+     */
+    public static function executeQuery(Database\Query $query)
+    {
+        return $query->execute();
+    }
+
+    /**
      * outputs stuff to command line
      *
-     * @todo only output from command line
-     * @todo support verbose mode only
      * @param string $string
      * @return void
      */
-    public static function output($string, $verbose_only = false)
+    public static function output($string, $verbose_only = false, $query = false)
     {
+        if (App::getInstance()->getSetting('mode') != App::COMMAND_LINE) {
+            return;
+        }
+
+        if ($verbose_only && !self::isVerbose()) {
+            return;
+        }
+
+        if ($string == "\n") {
+            echo "\n";
+            return;
+        }
+
+        if (self::isDryRun() && !$query) {
+            $string = '# ' . $string;
+        }
+
         echo $string . "\n";
     }
 }
