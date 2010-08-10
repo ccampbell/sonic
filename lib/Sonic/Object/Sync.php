@@ -224,6 +224,12 @@ class Sync
             $unique = (bool) $bits[2];
             $column = $bits[0];
 
+            // field has been removed
+            if (!isset($definition['columns'][$column])) {
+                $drop[] = $bits[1];
+                continue;
+            }
+
             $column_definition = $definition['columns'][$column];
             $column_definition = self::normalizeColumn($column_definition);
 

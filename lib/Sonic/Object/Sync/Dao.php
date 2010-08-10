@@ -513,15 +513,15 @@ class Dao
         $sql = '/* ' . __METHOD__ . ' */' . "\n" .
             "ALTER TABLE `$table` DROP INDEX `$index_name`";
 
-        if (strpos($index_name, '_fk')) {
+        if (substr($index_name, -3) == '_fk') {
             $sql = str_replace('DROP INDEX', 'DROP FOREIGN KEY', $sql);
         }
 
         $query = new Query($sql);
 
-        try {
-            Sync::execute($query);
-        } catch (\Exception $e) {
+        Sync::execute($query);
+
+        if (substr($index_name, -3) == '_fk') {
             $sql = str_replace('DROP FOREIGN KEY', 'DROP KEY', $sql);
             $query = new Query($sql);
             Sync::execute($query);
