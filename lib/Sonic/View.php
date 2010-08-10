@@ -33,6 +33,11 @@ class View
     protected $_html;
 
     /**
+     * @var bool
+     */
+    protected $_disabled = false;
+
+    /**
      * constructor
      *
      * @param string $path
@@ -109,6 +114,16 @@ class View
     }
 
     /**
+     * disables this view
+     *
+     * @return void
+     */
+    public function disable()
+    {
+        $this->_disabled = true;
+    }
+
+    /**
      * renders this view using the controller and action specified
      *
      * @see App::runController()
@@ -135,6 +150,10 @@ class View
      */
     public function buffer()
     {
+        if ($this->_disabled) {
+            return;
+        }
+
         ob_start();
         $this->output();
         $this->_html = ob_get_contents();
@@ -158,6 +177,10 @@ class View
      */
     public function output()
     {
+        if ($this->_disabled) {
+            return;
+        }
+
         if ($this->getHtml() !== null) {
             echo $this->getHtml();
             return;

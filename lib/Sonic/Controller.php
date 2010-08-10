@@ -160,6 +160,16 @@ class Controller
     }
 
     /**
+     * disables the view for this action
+     *
+     * @return void
+     */
+    public function disableView()
+    {
+        $this->getView()->disable();
+    }
+
+    /**
      * determines if this controller has a layout
      *
      * @return bool
