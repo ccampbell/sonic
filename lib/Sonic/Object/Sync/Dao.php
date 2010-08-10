@@ -350,7 +350,7 @@ class Dao
         }
 
         $sql = '/* ' . __METHOD__ . ' */' . "\n" .
-            "ALTER TABLE `{$table}` ADD CONSTRAINT {$name} FOREIGN KEY ({$column_name}) REFERENCES {$foreign_key['table']} ({$foreign_key['column']}) ON DELETE CASCADE";
+            "ALTER TABLE `{$table}` ADD CONSTRAINT {$name} FOREIGN KEY ({$column_name}) REFERENCES `{$foreign_key['table']}` ({$foreign_key['column']}) ON DELETE CASCADE";
 
         $query = new Query($sql);
 

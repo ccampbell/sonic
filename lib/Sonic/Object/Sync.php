@@ -239,6 +239,12 @@ class Sync
                 continue;
             }
 
+            // if there is no foreign key set in the definition but there is a foreign key in the database then delete it!
+            if (substr($bits[1], -3) == '_fk') {
+                $drop[] = $bits[1];
+                continue;
+            }
+
             // if the index has changed from unique to non-unique or vice versa
             // then we should drop the index to allow it to be recreated
             if ($column_definition['unique'] != $unique) {
@@ -480,6 +486,9 @@ class Sync
 
         if (self::isDryRun() && !$query) {
             $string = '# ' . $string;
+
+            // just to be safe any multiline outputs should also receive comments
+            $string = str_replace("\n", "\n# ", $string);
         }
 
         echo $string . "\n";
