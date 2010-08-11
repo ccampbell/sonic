@@ -50,6 +50,13 @@ class Query
     protected $_sort;
 
     /**
+     * experimental no join mode
+     *
+     * @var bool
+     */
+    protected $_use_joins = true;
+
+    /**
      * constructor
      *
      * @param string $sql
@@ -70,6 +77,16 @@ class Query
     public function getSql()
     {
         return $this->_sql;
+    }
+
+    /**
+     * gets the binds for this query
+     *
+     * @return array
+     */
+    public function getBinds()
+    {
+        return $this->_binds;
     }
 
     /**
@@ -123,8 +140,9 @@ class Query
      */
     public function fetchValue()
     {
-        if (!$this->_executed)
+        if (!$this->_executed) {
             $this->execute();
+        }
 
         $row = $this->getStatement()->fetch(PDO::FETCH_NUM);
         return $row[0];
@@ -137,6 +155,11 @@ class Query
      */
     public function fetchRow()
     {
+        if (!$this->_use_joins) {
+            $killer = new Query\JoinKiller($this);
+            return $killer->fetchRow();
+        }
+
         if (!$this->_executed)
             $this->execute();
 
@@ -151,6 +174,11 @@ class Query
      */
     protected function _fetchAll()
     {
+        if (!$this->_use_joins) {
+            $killer = new Query\JoinKiller($this);
+            return $killer->fetchAll();
+        }
+
         if (!$this->_executed) {
             $this->execute();
         }
@@ -285,5 +313,16 @@ class Query
             return $data;
         }
         return $this->_sort->process($data);
+    }
+
+    /**
+     * turns on no join mode
+     *
+     * @return Query
+     */
+    public function noJoins()
+    {
+        $this->_use_joins = false;
+        return $this;
     }
 }

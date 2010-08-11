@@ -295,7 +295,7 @@ class Dao
         $index_name = $table . '_' . $column_name . '_idx';
 
         // if an index already exists for this column don't try to add another
-        if (in_array($column_name . ':' . $index_name . ':' . (int) $definition['unique'], $indexes[$table])) {
+        if (isset($indexes[$table]) && in_array($column_name . ':' . $index_name . ':' . (int) $definition['unique'], $indexes[$table])) {
             return;
         }
 

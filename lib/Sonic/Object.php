@@ -117,14 +117,14 @@ abstract class Object
 
         if (!$this->id || in_array('id', $this->_updates)) {
             $this->_addToDatabase($now_fields);
-            $this->_resetVars();
+            $this->_reset();
             // $this->_cache();
         }
 
         var_dump($this);
     }
 
-    protected function _resetVars()
+    protected function _reset()
     {
         $definition = $this->getDefinition();
         $columns = array_keys($definition['columns']);
