@@ -110,13 +110,20 @@ class JoinKiller
             foreach ($this->_results as $result) {
                 ++$i;
                 if ($i == 1) {
-                    $start = $result;
+                    $rows = $result;
                     continue;
                 }
-                $start = my_array_merge($start, $result);
+                $rows = my_array_merge($rows, $result);
             }
 
-        return $start;
+            // filter out stuff that is not part of inner join
+            foreach ($rows as $key => $row) {
+                if (count($row) < $this->_column_count) {
+                    unset($rows[$key]);
+                }
+            }
+
+        return $rows;
     }
 
     protected function _query($sql, $table_alias, $fetch_all = false)
@@ -217,7 +224,7 @@ class JoinKiller
             // what fields to select per table
             $select_list[$tables[$more_bits[0]]][] = $bits[0] . (isset($bits[1]) ? ' ' . $bits[1] : '');
         }
-
+        $this->_column_count = count($selects);
         $where_bits = explode(' AND ', $where_bit);
 
         foreach ($where_bits as $bit) {
@@ -252,7 +259,7 @@ class JoinKiller
                 }
             }
         }
-
+        $this->_select_list = $select_list;
         $this->_depends_on = $depends_on;
 
         // calculate dependencies to determine what order to run these queries
