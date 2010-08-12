@@ -6,7 +6,7 @@
  * @author Craig Campbell
  */
 use \Sonic\App;
-use \Sonic\Object\Sync;
+use \Sonic\Database\Sync;
 $lib_path = str_replace('/util/sync_db.php', '/lib', realpath(__FILE__));
 
 set_include_path($lib_path);

@@ -1,8 +1,9 @@
 <?php
-namespace Sonic\Object;
+namespace Sonic\Database;
 use Sonic\Database;
-use Sonic\Object\Sync\Dao;
+use Sonic\Database\Sync\Dao;
 use Sonic\App;
+use Sonic\Object\DefinitionFactory;
 
 /**
  * Sync class for syncing object definitions to the database

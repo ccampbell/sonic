@@ -1,6 +1,6 @@
 <?php
-namespace Sonic\Object\Sync;
-use Sonic\Database\Factory, Sonic\Object\DefinitionFactory, Sonic\Object\Sync, Sonic\Database\Query;
+namespace Sonic\Database\Sync;
+use Sonic\Database\Factory, Sonic\Object\DefinitionFactory, Sonic\Database\Sync, Sonic\Database\Query;
 
 /**
  * Sync Dao
@@ -401,8 +401,8 @@ class Dao
 
         $query = new Query($sql);
 
-        if (isset(self::$_queries['Sonic\Object\Sync\Dao::getColumnsByTable_' . $table])) {
-            self::$_queries['Sonic\Object\Sync\Dao::getColumnsByTable_' . $table][] = $column_name;
+        if (isset(self::$_queries['Sonic\Database\Sync\Dao::getColumnsByTable_' . $table])) {
+            self::$_queries['Sonic\Database\Sync\Dao::getColumnsByTable_' . $table][] = $column_name;
         }
 
         Sync::output('adding column "' . $column_name . '" to table "' . $table . '"');
