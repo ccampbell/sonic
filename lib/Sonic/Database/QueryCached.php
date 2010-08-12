@@ -94,6 +94,19 @@ class QueryCached extends Query
     }
 
     /**
+     * fetch object
+     *
+     * @return Object
+     */
+    public function fetchObject($class)
+    {
+        if (!$this->wasInCache()) {
+            $this->_cache(parent::fetchObject($class));
+        }
+        return $this->_cached_value;
+    }
+
+    /**
      * fetch all
      *
      * @return array

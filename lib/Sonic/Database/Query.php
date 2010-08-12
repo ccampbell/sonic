@@ -221,6 +221,20 @@ class Query
     }
 
     /**
+     * fetches into an object
+     *
+     * @return Object
+     */
+    public function fetchObject($class)
+    {
+        if (!$this->_executed) {
+            $this->execute();
+        }
+
+        return $this->getStatement()->fetchObject($class);
+    }
+
+    /**
      * binds a parameter to this query
      *
      * @param string $key
