@@ -164,7 +164,7 @@ abstract class Object
             throw new Object\Exception('you can only multiget an object by id');
         }
 
-        return self::$_loadMultiple($id);
+        return self::_loadMultiple($id);
     }
 
     /**
