@@ -125,70 +125,27 @@ class Sync
      */
     public static function resolveDependencies($definitions)
     {
-        // new list of definitions
-        $definitions_in_order = array();
-
-        // keep doing this until the new list is the same length as the old list
-        while (count($definitions_in_order) < count($definitions)) {
-
-            // loop through the existing definitions
-            foreach ($definitions as $key => $definition) {
-
-                // if this definition has already been added to the new list then skip it
-                if (in_array($definition, $definitions_in_order)) {
+        // create a dependency array of what tables depend on other tables
+        $dependencies = array();
+        foreach ($definitions as $definition) {
+            $dependencies[$definition['table']] = array();
+            foreach ($definition['columns'] as $column) {
+                if (!isset($column['foreign_key'])) {
                     continue;
                 }
-
-                // get whatever dependencies this definition has
-                $dependencies = self::_getDependencies($definition, $definitions_in_order);
-
-                // if there are no dependencies left to process then add it to the new list
-                if (count($dependencies) == 0) {
-                    $definitions_in_order[] = $definition;
-                }
+                $bits = explode(':', $column['foreign_key']);
+                $dependencies[$definition['table']][] = $bits[0];
             }
         }
-        return $definitions_in_order;
-    }
 
-    /**
-     * gets table dependencies for an existing definition
-     *
-     * @param array $definition
-     * @param array $ignore array of definitions that have already been processed so they are no longer dependencies
-     * @return array list of tables that this definition depends on
-     */
-    protected static function _getDependencies($definition, $ignore = array())
-    {
-        // list of table dependencies
-        $dependencies = array();
+        $table_order = \Sonic\Util::resolveDependencies($dependencies);
 
-        // loop through each column in this definition
-        foreach ($definition['columns'] as $column) {
-
-            // if it is not a foreign key then it doesn't have any dependencies
-            if (!isset($column['foreign_key'])) {
-                continue;
-            }
-
-            // figure out the table name
-            $bits = explode(':', $column['foreign_key']);
-            $table = $bits[0];
-
-            // go through all the definitions that have already been processed
-            foreach ($ignore as $definition) {
-
-                // if the table has already been processed then there are no dependencies for this column
-                if ($table == $definition['table']) {
-                    continue 2;
-                }
-            }
-
-            // this table has to be processed before this one can be
-            $dependencies[] = $table;
+        $new_order = array();
+        foreach ($table_order as $table) {
+            $new_order[] = self::getDefinitionForTable($table);
         }
 
-        return $dependencies;
+        return $new_order;
     }
 
     /**
