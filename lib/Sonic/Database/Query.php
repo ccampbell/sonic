@@ -50,13 +50,6 @@ class Query
     protected $_sort;
 
     /**
-     * experimental no join mode
-     *
-     * @var bool
-     */
-    protected $_use_joins = true;
-
-    /**
      * constructor
      *
      * @param string $sql
@@ -155,11 +148,6 @@ class Query
      */
     public function fetchRow()
     {
-        if (!$this->_use_joins) {
-            $killer = new Query\JoinKiller($this);
-            return $killer->fetchRow();
-        }
-
         if (!$this->_executed)
             $this->execute();
 
@@ -174,11 +162,6 @@ class Query
      */
     protected function _fetchAll()
     {
-        if (!$this->_use_joins) {
-            $killer = new Query\JoinKiller($this);
-            return $killer->fetchAll();
-        }
-
         if (!$this->_executed) {
             $this->execute();
         }
