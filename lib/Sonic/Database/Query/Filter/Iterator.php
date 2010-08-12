@@ -1,16 +1,15 @@
 <?php
 namespace Sonic\Database\Query\Filter;
-use Sonic\Database\Query\Filter;
-use FilterIterator;
 
 /**
- * Query Filter Class
+ * Query Filter Iterator Class
  *
+ * @todo optimize explode(',') calls so they don't have to happen on every iteration
  * @package Query
  * @subpackage Filter
  * @author Craig Campbell
  */
-class Iterator extends FilterIterator
+class Iterator
 {
     /**
      * @var array
@@ -22,16 +21,20 @@ class Iterator extends FilterIterator
      *
      * @return bool
      */
-    public function accept()
+    public function process($rows)
     {
-        $record = $this->getInnerIterator()->current();
-        foreach ($this->_patterns as $pattern) {
-            $value = $record[$pattern[0]];
-            if ($this->doesNotMatch($value, $pattern[1], $pattern[2])) {
-                return false;
+        $filtered_data = array();
+        foreach ($rows as $row) {
+            foreach ($this->_patterns as $pattern) {
+                $value = $row[$pattern[0]];
+                if (!$this->matches($value, $pattern[1], $pattern[2])) {
+                    continue 2;
+                }
             }
+            $filtered_data[] = $row;
         }
-        return true;
+
+        return $filtered_data;
     }
 
     /**
@@ -92,19 +95,5 @@ class Iterator extends FilterIterator
                 return in_array($value, explode(',', $other_value));
                 break;
         }
-    }
-
-    /**
-     * inverse of Iterator::matches()
-     *
-     * @uses Iterator::matches()
-     * @param string $value
-     * @param string $comparison
-     * @param string $other_value
-     * @return bool
-     */
-    public function doesNotMatch($value, $comparison, $other_value)
-    {
-        return !$this->matches($value, $comparison, $other_value);
     }
 }

@@ -68,13 +68,10 @@ class Filter
      */
     public function process(array $rows)
     {
-        $unfiltered = new Filter\Iterator(new ArrayIterator($rows));
+        $unfiltered = new Filter\Iterator();
         $unfiltered->setPatterns($this->_patterns);
 
-        $filtered = array();
-        foreach ($unfiltered as $row) {
-            $filtered[] = $row;
-        }
+        $filtered = $unfiltered->process($rows);
 
         return $filtered;
     }
