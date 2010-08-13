@@ -11,27 +11,28 @@ namespace Sonic;
 class Util
 {
     /**
-	 * gets a weighted random key from an array of weights
-	 *
-	 * for example if you pass in
-	 * array(0 => 10, 1 => 10, 2 => 20)
-	 *
-	 * half the time this would return 3
-	 * a quarter of the time it would return 1
-	 * a quarter of the time it would return 2
-	 *
-	 * @param array $weights
-	 * @return mixed
-	 */
-	public static function getWeightedRandomKey(array $weights)
-	{
+     * gets a weighted random key from an array of weights
+     *
+     * for example if you pass in
+     * array(0 => 10, 1 => 10, 2 => 20)
+     *
+     * half the time this would return 3
+     * a quarter of the time it would return 1
+     * a quarter of the time it would return 2
+     *
+     * @todo support any array keys and not numbers starting at 0
+     * @param array $weights
+     * @return mixed
+     */
+    public static function getWeightedRandomKey(array $weights)
+    {
         // get the total
         $total_weight = array_sum($weights);
 
         // choose a random value between 0 and one less than the total
         $random_value = mt_rand(0, $total_weight - 1);
 
-	    // order the weights in order
+        // order the weights in order
         asort($weights);
 
         // subtract the weights in descending order until the number is now negative
@@ -41,7 +42,7 @@ class Util
         }
 
         return $i;
-	}
+    }
 
     /**
      * resolves complicated dependencies to determine what order something can run in
