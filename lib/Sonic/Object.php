@@ -171,8 +171,11 @@ abstract class Object
             throw new Object\Exception('you can only multiget an object by id');
         }
 
+        // if this is an array of one return it as an array of one
         if (count($id) == 1) {
-            return self::_loadSingle($id, 'id');
+            $id = array_pop($id);
+            $object = self::_loadSingle($id, 'id');
+            return array($object);
         }
 
         return self::_loadMultiple($id);
