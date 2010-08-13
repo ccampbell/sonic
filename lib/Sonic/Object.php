@@ -16,6 +16,11 @@ abstract class Object
     /**
      * @var int
      */
+    const MURDERED = 345181800;
+
+    /**
+     * @var int
+     */
     protected $id;
 
     /**
@@ -63,9 +68,7 @@ abstract class Object
 
         $this->$property = $value;
 
-        if (!in_array($property, $this->_updates)) {
-            $this->_updates[] = $property;
-        }
+        $this->_updates[$property] = $property;
     }
 
     /**
@@ -160,8 +163,16 @@ abstract class Object
             return self::_loadSingle($id, $column);
         }
 
+        if (count($id) == 0) {
+            return array();
+        }
+
         if ($column != 'id') {
             throw new Object\Exception('you can only multiget an object by id');
+        }
+
+        if (count($id) == 1) {
+            return self::_loadSingle($id, 'id');
         }
 
         return self::_loadMultiple($id);
@@ -174,7 +185,81 @@ abstract class Object
      */
     protected final static function _loadMultiple(array $ids)
     {
-        return array();
+        // first build an array of cache keys
+        $cache_keys = $cache_key_to_id = array();
+        foreach ($ids as $id) {
+            if (!is_numeric($id)) {
+                throw new Object\Exception('all ids must be numeric');
+            }
+            $cache_key = self::_getCacheKey('id', $id);
+            $cache_keys[] = $cache_key;
+            $cache_key_to_id[$cache_key] = $id;
+        }
+
+        $cache = App::getMemcache();
+
+        // do a multiget request for these cache keys
+        $objects = $cache->getMulti($cache_keys);
+
+        // figure out what is missing
+        $missing = array();
+        foreach ($objects as $cache_key => $object) {
+            if ($object instanceof Object) {
+                continue;
+            }
+
+            // if we have stored in cache that this object doesn't exist at all
+            // let's not make a trip to the database for it, just return it as null
+            if ($object == self::MURDERED) {
+                $objects[$cache_key] = null;
+                continue;
+            }
+
+            $missing[] = $cache_key_to_id[$cache_key];
+        }
+
+        // everything was found in cache
+        if (count($missing) == 0) {
+            return array_values($objects);
+        }
+
+        // we have to go to the database
+        $definition = self::getDefinition();
+        $sql = "SELECT `id`, `" . implode('`, `', array_keys($definition['columns'])) . '` FROM `' . $definition['table'] . '` WHERE id IN (' . implode(',', $missing) . ')';
+        $query = new Query($sql, $definition['schema']);
+        $objects_db = $query->fetchObjects(get_called_class());
+
+        // use this array to map ids to cache keys instead of calling Object::_getCacheKey() over and over
+        $id_to_cache_key = array_flip($cache_key_to_id);
+
+        // loop through the objects that were found in the database and index them by cache key
+        // this is so we can merge them with the original cache keys and keep the order intact
+        // also set them to cache so future lookups won't have to hit the database
+        $found = array();
+        foreach ($objects_db as $object) {
+            $cache_key = $id_to_cache_key[$object->id];
+            $found[$cache_key] = $object;
+            $object->_cache();
+            $cache->set($cache_key, $object, '1 week');
+        }
+
+        // merge what we found in the database into what we found in cache
+        $objects = array_merge($objects, $found);
+
+        // should we check for soft deletes
+        $soft_deletes = isset($definition['columns']['is_deleted']);
+
+        // anything not found in cache and not found in the database should be set in cache
+        // this is so we don't keep trying to find it everytime it was requested
+        // could be a deleted object that is still cached as part of a collection
+        foreach ($objects as $cache_key => $object) {
+            if (!$object instanceof Object || ($soft_deletes && $object->is_deleted)) {
+                $cache->set($cache_key, self::MURDERED, '1 week');
+                $objects[$cache_key] = null;
+            }
+        }
+
+        return array_values($objects);
     }
 
     /**
@@ -221,6 +306,11 @@ abstract class Object
             return null;
         }
 
+        // if this is a soft deleted object then don't return it
+        if (isset($definition['columns']['is_deleted']) && $object->is_deleted == 1) {
+            return null;
+        }
+
         return $object;
     }
 
@@ -261,15 +351,109 @@ abstract class Object
             }
         }
 
+        // this is a new object
         if (!$this->id || in_array('id', $this->_updates)) {
             $this->_add();
             $this->_reset();
             $this->_cache();
             return;
         }
+
+        // this is an object being updated
         $this->_update();
         $this->_reset();
         $this->_cache();
+    }
+
+    /**
+     * adds an object to the database
+     *
+     * @return bool
+     */
+    protected final function _add()
+    {
+        $definition = $this->getDefinition();
+        $sql = 'INSERT INTO `' . $definition['table'] . '` (`' . implode('`, `', $this->_updates) . '`) VALUES (:' . implode(', :', $this->_updates) . ')';
+        $query = new Database\Query($sql, $definition['schema']);
+        foreach ($this->_updates as $column) {
+            $query->bindValue(':' . $column, $this->$column);
+        }
+        $result = $query->execute();
+
+        if (!$result) {
+            return false;
+        }
+
+        $this->id = $query->lastInsertId();
+
+        // go through all the unique properties and link them in cache to this id
+        foreach ($this->getUniqueProperties() as $property) {
+            App::getMemcache()->set(self::_getCacheKey($property, $this->$property), $this->id, '1 week');
+        }
+
+        return true;
+    }
+
+    /**
+     * updates an object in the database
+     *
+     * @return bool
+     */
+    protected final function _update()
+    {
+        if (in_array('id', $this->_updates)) {
+            throw new Object\Exception('you cannot update an id after you create an object');
+        }
+
+        $definition = $this->getDefinition();
+        $sql = "UPDATE `" . $definition['table'] . '` SET ';
+        $i = 0;
+        foreach ($this->_updates as $column) {
+            if ($i > 0) {
+                $sql .= ', ';
+            }
+            $sql .= '`' . $column . '` = :' . $column;
+            ++$i;
+        }
+        $sql .= ' WHERE id = :current_id';
+        $query = new Query($sql, $definition['schema']);
+        foreach ($this->_updates as $column) {
+            $query->bindValue(':' . $column, $this->$column);
+        }
+        $query->bindValue(':current_id', $this->id);
+
+        foreach ($this->_updates as $update) {
+            if (in_array($update, $this->getUniqueProperties())) {
+                App::getMemcache()->set(self::_getCacheKey($update, $this->$update), $this->id, '1 week');
+            }
+        }
+
+        return $query->execute();
+    }
+
+    /**
+     * permanently delete an object from the database
+     *
+     * WARNING!!! BE CAREFUL WITH THIS!!!
+     *
+     * you can easily use soft deletes by adding an "is_deleted" column in your definitions
+     *
+     * @return bool
+     */
+    public function delete()
+    {
+        $definition = $this->getDefinition();
+        $sql = "DELETE FROM `" . $definition['table'] . "` WHERE id = :id";
+        $query = new Query($sql, $definition['schema']);
+        $query->bindValue(':id', $this->id);
+        $result = $query->execute();
+
+        if ($result) {
+            $cache_key = $this->_getCacheKey('id', $this->id);
+            App::getMemcache()->set($cache_key, self::MURDERED, '1 week');
+        }
+
+        return $result;
     }
 
     /**
@@ -288,64 +472,6 @@ abstract class Object
             }
         }
         $this->_updates = array();
-    }
-
-    /**
-     * adds an object to the database
-     *
-     * @return void
-     */
-    protected final function _add()
-    {
-        $definition = $this->getDefinition();
-        $sql = 'INSERT INTO `' . $definition['table'] . '` (`' . implode('`, `', $this->_updates) . '`) VALUES (:' . implode(', :', $this->_updates) . ')';
-        $query = new Database\Query($sql, $definition['schema']);
-        foreach ($this->_updates as $column) {
-            $query->bindValue(':' . $column, $this->$column);
-        }
-        $query->execute();
-
-        $this->id = $query->lastInsertId();
-
-        // go through all the unique properties and link them in cache to this id
-        foreach ($this->getUniqueProperties() as $property) {
-            App::getMemcache()->set(self::_getCacheKey($property, $this->$property), $this->id, '1 week');
-        }
-    }
-
-    /**
-     * updates an object in the database
-     *
-     * @return bool
-     */
-    protected final function _update()
-    {
-        if (in_array('id', $this->_updates)) {
-            throw new Object\Exception('you cannot update an id after you create an object');
-        }
-
-        $definition = $this->getDefinition();
-        $sql = "UPDATE `" . $definition['table'] . '` SET ';
-        foreach ($this->_updates as $key => $column) {
-            if ($key > 0) {
-                $sql .= ', ';
-            }
-            $sql .= '`' . $column . '` = :' . $column;
-        }
-        $sql .= ' WHERE id = :current_id';
-        $query = new Query($sql, $definition['schema']);
-        foreach ($this->_updates as $column) {
-            $query->bindValue(':' . $column, $this->$column);
-        }
-        $query->bindValue(':current_id', $this->id);
-
-        foreach ($this->_updates as $update) {
-            if (in_array($update, $this->getUniqueProperties())) {
-                App::getMemcache()->set(self::_getCacheKey($update, $this->$update), $this->id, '1 week');
-            }
-        }
-
-        return $query->execute();
     }
 
     /**
