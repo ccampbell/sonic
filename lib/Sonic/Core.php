@@ -6,8 +6,8 @@
  *
  * @author Craig Campbell
  *
- * last commit: f4624c613dfc424e1ac79051a8ace57efc8823b2
- * generated: 2010-08-09 22:53:35 EST
+ * last commit: c0177c6e0aeb422e594e49998e76916f361e28fd
+ * generated: 2010-08-13 04:03:37 EST
  */
 namespace Sonic;
 
@@ -36,7 +36,7 @@ class App
     }
     public function autoloader($class_name)
     {
-        require_once str_replace('\\',DIRECTORY_SEPARATOR,$class_name).'.php';
+        include str_replace('\\',DIRECTORY_SEPARATOR,$class_name).'.php';
     }
     public function autoload()
     {
