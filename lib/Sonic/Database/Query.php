@@ -235,6 +235,22 @@ class Query
     }
 
     /**
+     * fetches multiple objects
+     *
+     * @return Object
+     */
+    public function fetchObjects($class)
+    {
+        if (!$this->_executed) {
+            $this->execute();
+        }
+
+        $statement = $this->getStatement();
+        $statement->setFetchMode(PDO::FETCH_CLASS, $class);
+        return $statement->fetchAll();
+    }
+
+    /**
      * binds a parameter to this query
      *
      * @param string $key
