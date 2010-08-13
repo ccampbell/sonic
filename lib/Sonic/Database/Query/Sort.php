@@ -64,6 +64,11 @@ class Sort
     {
         $map = $all_data = array();
         foreach ($rows as $row) {
+            if (!is_array($row)) {
+                $map[$row] = $row;
+                continue;
+            }
+
             if ($preserve_data) {
                 $all_data['id:' . $row['id']] = $row;
                 $map['id:' . $row['id']] = $row[$column];
@@ -94,6 +99,10 @@ class Sort
      */
     public function process($rows)
     {
+        if (count($rows) == 0) {
+            return array();
+        }
+
         // optimization if a single sort is present
         if (count($this->_columns) == 1) {
             return $this->_process($rows, $this->_columns[0], $this->_directions[0], $this->_preserve_data[0]);
