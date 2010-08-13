@@ -79,6 +79,31 @@ class Memcache
     }
 
     /**
+     * multigets an array of keys from cache
+     *
+     * @param array $keys
+     * @return array
+     */
+    public function getMulti(array $keys, $preserve_order = true)
+    {
+        // grab whatever items we can from cache
+        $items = $this->get($keys);
+
+        // if we don't care what order the keys are returned in
+        if (!$preserve_order) {
+            return $items;
+        }
+
+        // set all keys to null so if something is not found in cache it won't
+        // be set to a value
+        $results = array_fill_keys($keys, null);
+
+        // merge the two arrays so the returned values from cache overwrite
+        // the starting values
+        return array_merge($results, $items);
+    }
+
+    /**
      * deletes a key from cache
      *
      * @param string $key
