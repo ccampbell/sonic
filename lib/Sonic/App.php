@@ -91,7 +91,7 @@ class App
      */
     public function autoloader($class_name)
     {
-        require_once str_replace('\\', DIRECTORY_SEPARATOR, $class_name) . '.php';
+        include str_replace('\\', DIRECTORY_SEPARATOR, $class_name) . '.php';
     }
 
     /**
