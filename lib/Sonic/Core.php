@@ -6,8 +6,8 @@
  *
  * @author Craig Campbell
  *
- * last commit: b4a0d9b9a1a16a4cd409cc2f35e9d2bd57aabd39
- * generated: 2010-08-14 10:31:14 EST
+ * last commit: 442527b6ef899898d6a2812114362ca33095b0a4
+ * generated: 2010-08-14 11:23:11 EST
  */
 namespace Sonic;
 
@@ -25,7 +25,7 @@ class App
     protected $_settings=array('mode'=> self::WEB,
                                'autoload'=> false,
                                'config_file'=> 'php',
-                               'devs'=> array('dev'));
+                               'devs'=> array('dev','development'));
     private function __construct() {}
     public static function getInstance()
     {
@@ -188,9 +188,13 @@ class App
         try {
             $this->_runController($controller_name,$action,$args);
         } catch (\Exception $e) {
-            var_dump($e);
-            $this->_runController('main','error',array('exception'=> $e,'from_controller'=> $controller_name,'from_action'=> $action));
+            $this->_handleException($e,$controller_name,$action);
         }
+    }
+    protected function _handleException(\Exception $e,$controller=null,$action=null)
+    {
+        $this->_runController('main','error',array('exception'=> $e,'from_controller'=> $controller,'from_action'=> $action));
+        var_dump($e);
     }
     public function start($mode=self::WEB)
     {
@@ -201,12 +205,16 @@ class App
         if ($mode!=self::WEB) {
             return;
         }
-        $controller=$this->getRequest()->getControllerName();
-        $action=$this->getRequest()->getAction();
+        try {
+            $controller=$this->getRequest()->getControllerName();
+            $action=$this->getRequest()->getAction();
+        } catch (\Exception $e) {
+            return $this->_handleException($e);
+        }
         $this->runController($controller,$action);
     }
 }
-
+use \Sonic\Exception;
 class Request
 {
     protected $_caches=array();
@@ -244,15 +252,23 @@ class Request
     }
     public function getControllerName()
     {
-        if ($this->_controller_name===null) {
-            $this->_controller_name=$this->getRouter()->getController() ?: 'main';
+        if ($this->_controller_name!==null) {
+            return $this->_controller_name;
+        }
+        $this->_controller_name=$this->getRouter()->getController();
+        if (!$this->_controller_name) {
+            throw new Exception('page not found at '.$this->getBaseUri(),EXCEPTION::NOT_FOUND);
         }
         return $this->_controller_name;
     }
     public function getAction()
     {
-        if ($this->_action===null) {
-            $this->_action=$this->getRouter()->getAction() ?: 'error';
+        if ($this->_action!==null) {
+            return $this->_action;
+        }
+        $this->_action=$this->getRouter()->getAction();
+        if (!$this->_action) {
+            throw new Exception('page not found at '.$this->getBaseUri(),EXCEPTION::NOT_FOUND);
         }
         return $this->_action;
     }
