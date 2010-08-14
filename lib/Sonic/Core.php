@@ -6,8 +6,8 @@
  *
  * @author Craig Campbell
  *
- * last commit: 795f581366469e6c37c539134c8c288920776e30
- * generated: 2010-08-14 11:29:21 EST
+ * last commit: a2be420d391178a8e265dc0edca4380184a7281a
+ * generated: 2010-08-14 14:51:31 EST
  */
 namespace Sonic;
 
@@ -493,6 +493,10 @@ class View
             return null;
         }
         return $this->$var;
+    }
+    public function escape($string)
+    {
+        return htmlentities($string,ENT_QUOTES,'UTF-8',false);
     }
     public function path($path=null)
     {
