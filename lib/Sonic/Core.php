@@ -6,8 +6,8 @@
  *
  * @author Craig Campbell
  *
- * last commit: c0177c6e0aeb422e594e49998e76916f361e28fd
- * generated: 2010-08-13 04:03:37 EST
+ * last commit: 5ce7a16469129425e30aeac9d77916375f14c24c
+ * generated: 2010-08-14 10:27:43 EST
  */
 namespace Sonic;
 
@@ -23,7 +23,7 @@ class App
     protected $_base_path;
     protected $_environment;
     protected $_settings=array('mode'=> self::WEB,
-                               'autoload'=> true,
+                               'autoload'=> false,
                                'config_file'=> 'php',
                                'devs'=> array('dev'));
     private function __construct() {}
@@ -42,9 +42,9 @@ class App
     {
         spl_autoload_register(array($this,'autoloader'));
     }
-    public function disableAutoload()
+    public function enableAutoload()
     {
-        $this->addSetting('autoload',false);
+        $this->addSetting('autoload',true);
     }
     public function addSetting($key,$value)
     {
