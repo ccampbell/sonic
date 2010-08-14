@@ -6,8 +6,8 @@
  *
  * @author Craig Campbell
  *
- * last commit: 5ce7a16469129425e30aeac9d77916375f14c24c
- * generated: 2010-08-14 10:27:43 EST
+ * last commit: b4a0d9b9a1a16a4cd409cc2f35e9d2bd57aabd39
+ * generated: 2010-08-14 10:31:14 EST
  */
 namespace Sonic;
 
@@ -573,16 +573,16 @@ class Exception extends \Exception
     {
         switch ($this->code) {
             case self::NOT_FOUND:
-                return 'page not found';
+                return 'The page you were looking for could not be found.';
                 break;
             case self::FORBIDDEN:
-                return 'you do not have permission to view this page';
+                return 'You do not have permission to view this page.';
                 break;
             case self::UNAUTHORIZED:
-                return 'this page requires login';
+                return 'This page requires login.';
                 break;
             default:
-                return 'some kind of error occured';
+                return 'Some kind of error occured.';
                 break;
         }
     }
