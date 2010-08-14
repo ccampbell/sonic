@@ -59,7 +59,7 @@ class App
      * @var array
      */
     protected $_settings = array('mode' => self::WEB,
-                               'autoload' => true,
+                               'autoload' => false,
                                'config_file' => 'php',
                                'devs' => array('dev'));
 
@@ -109,9 +109,9 @@ class App
      *
      * @return void
      */
-    public function disableAutoload()
+    public function enableAutoload()
     {
-        $this->addSetting('autoload', false);
+        $this->addSetting('autoload', true);
     }
 
     /**
