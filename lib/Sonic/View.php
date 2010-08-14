@@ -62,6 +62,17 @@ class View
     }
 
     /**
+     * escapes a view variable
+     *
+     * @param string
+     * @return string
+     */
+    public function escape($string)
+    {
+        return htmlentities($string, ENT_QUOTES, 'UTF-8', true);
+    }
+
+    /**
      * sets or gets path
      *
      * @param mixed $path
