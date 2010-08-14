@@ -6,8 +6,8 @@
  *
  * @author Craig Campbell
  *
- * last commit: 442527b6ef899898d6a2812114362ca33095b0a4
- * generated: 2010-08-14 11:23:11 EST
+ * last commit: 795f581366469e6c37c539134c8c288920776e30
+ * generated: 2010-08-14 11:29:21 EST
  */
 namespace Sonic;
 
@@ -194,7 +194,6 @@ class App
     protected function _handleException(\Exception $e,$controller=null,$action=null)
     {
         $this->_runController('main','error',array('exception'=> $e,'from_controller'=> $controller,'from_action'=> $action));
-        var_dump($e);
     }
     public function start($mode=self::WEB)
     {
