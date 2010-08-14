@@ -61,7 +61,7 @@ class App
     protected $_settings = array('mode' => self::WEB,
                                'autoload' => false,
                                'config_file' => 'php',
-                               'devs' => array('dev'));
+                               'devs' => array('dev', 'development'));
 
     /**
      * constructor
@@ -391,9 +391,22 @@ class App
         try {
             $this->_runController($controller_name, $action, $args);
         } catch (\Exception $e) {
-            var_dump($e);
-            $this->_runController('main', 'error', array('exception' => $e, 'from_controller' => $controller_name, 'from_action' => $action));
+            $this->_handleException($e, $controller_name, $action);
         }
+    }
+
+    /**
+     * handles an exception when loading a page
+     *
+     * @param Exception $e
+     * @param string $controller name of controller
+     * @param string $action name of action
+     * @return void
+     */
+    protected function _handleException(\Exception $e, $controller = null, $action = null)
+    {
+        $this->_runController('main', 'error', array('exception' => $e, 'from_controller' => $controller, 'from_action' => $action));
+        var_dump($e);
     }
 
     /**
@@ -420,8 +433,15 @@ class App
             return;
         }
 
-        $controller = $this->getRequest()->getControllerName();
-        $action = $this->getRequest()->getAction();
+        // try to get the controller and action
+        // if an exception is thrown that means the page requested does not exist
+        try {
+            $controller = $this->getRequest()->getControllerName();
+            $action = $this->getRequest()->getAction();
+        } catch (\Exception $e) {
+            return $this->_handleException($e);
+        }
+
         $this->runController($controller, $action);
     }
 }

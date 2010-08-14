@@ -1,5 +1,6 @@
 <?php
 namespace Sonic;
+use \Sonic\Exception;
 
 /**
  * Request object - you know, for handling $_GET, $_POST, and other params
@@ -100,8 +101,13 @@ class Request
      */
     public function getControllerName()
     {
-        if ($this->_controller_name === null) {
-            $this->_controller_name = $this->getRouter()->getController() ?: 'main';
+        if ($this->_controller_name !== null) {
+            return $this->_controller_name;
+        }
+
+        $this->_controller_name = $this->getRouter()->getController();
+        if (!$this->_controller_name) {
+            throw new Exception('page not found at ' . $this->getBaseUri(), EXCEPTION::NOT_FOUND);
         }
 
         return $this->_controller_name;
@@ -114,8 +120,13 @@ class Request
      */
     public function getAction()
     {
-        if ($this->_action === null) {
-            $this->_action = $this->getRouter()->getAction() ?: 'error';
+        if ($this->_action !== null) {
+            return $this->_action;
+        }
+
+        $this->_action = $this->getRouter()->getAction();
+        if (!$this->_action) {
+            throw new Exception('page not found at ' . $this->getBaseUri(), EXCEPTION::NOT_FOUND);
         }
 
         return $this->_action;
