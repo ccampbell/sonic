@@ -151,16 +151,16 @@ abstract class Object
     }
 
     /**
-     * loads an object or a bunch of objects
+     * gets an object or a bunch of objects
      *
-     * @param mixed $id value to load
-     * @param string $column column to load that value from
+     * @param mixed $id value to get
+     * @param string $column column to get that value from
      * @return Object
      */
-    public final static function load($id, $column = 'id')
+    public final static function get($id, $column = 'id')
     {
         if (!is_array($id)) {
-            return self::_loadSingle($id, $column);
+            return self::_getSingle($id, $column);
         }
 
         if (count($id) == 0) {
@@ -174,19 +174,19 @@ abstract class Object
         // if this is an array of one return it as an array of one
         if (count($id) == 1) {
             $id = array_pop($id);
-            $object = self::_loadSingle($id, 'id');
+            $object = self::_getSingle($id, 'id');
             return array($object);
         }
 
-        return self::_loadMultiple($id);
+        return self::_getMultiple($id);
     }
 
     /**
-     * loads multiple objects by ids
+     * gets multiple objects by ids
      *
      * @todo implement
      */
-    protected final static function _loadMultiple(array $ids)
+    protected final static function _getMultiple(array $ids)
     {
         // first build an array of cache keys
         $cache_keys = $cache_key_to_id = array();
@@ -266,13 +266,13 @@ abstract class Object
     }
 
     /**
-     * loads a single object
+     * gets a single object
      *
      * @param mixed $value
      * @param string $column
      * @return Object
      */
-    protected final static function _loadSingle($value, $column)
+    protected final static function _getSingle($value, $column)
     {
         $class = get_called_class();
         $definition = self::getDefinition($class);
