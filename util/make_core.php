@@ -23,7 +23,8 @@ $combine = array('App.php',
  * @param string $file file name
  * @return string
  */
-function getPath($lib_path, $file) {
+function getPath($lib_path, $file)
+{
     return $lib_path . '/' . $file;
 }
 
