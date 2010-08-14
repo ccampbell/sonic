@@ -1,6 +1,7 @@
 <?php
 namespace Sonic;
 use PDO;
+use Sonic\App;
 
 /**
  * Database
@@ -47,11 +48,6 @@ class Database
     protected $_schema;
 
     /**
-     * @var string
-     */
-    protected $_name;
-
-    /**
      * @var array
      */
     protected $_connections = array();
@@ -63,7 +59,22 @@ class Database
      */
     public function __construct($schema)
     {
+        if (!$schema) {
+            $schema = $this->getDefaultSchema();
+        }
         $this->_schema = $schema;
+    }
+
+    /**
+     * get default schema
+     *
+     * @return string
+     */
+    public function getDefaultSchema()
+    {
+        $app = App::getInstance();
+        $schema = $app->getSetting('default_schema') ?: $app->getConfig()->get('db.default_schema');
+        return $schema;
     }
 
     /**
@@ -92,7 +103,6 @@ class Database
         }
 
         $server = $this->getRandomServer($type);
-        $this->_name = $server['dbname'];
         $pdo = new PDO($server['dsn'], $server['user'], $server['password']);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $pdo->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
@@ -180,12 +190,11 @@ class Database
      *
      * @return string
      */
-    public function getName()
+    public function getSchema()
     {
-        if ($this->_name === null) {
-            $server = $this->getRandomServer(self::SLAVE);
-            $this->_name = $server['dbname'];
+        if ($this->_schema === null) {
+            $this->_schema = $this->getDefaultSchema();
         }
-        return $this->_name;
+        return $this->_schema;
     }
 }

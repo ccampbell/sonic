@@ -24,7 +24,7 @@ class QueryCached extends Query
      * @param string $schema
      * @return void
      */
-    public function __construct($sql, $cache_key, $time = 7200, $schema = 'main')
+    public function __construct($sql, $cache_key, $time = 7200, $schema = null)
     {
         parent::__construct($sql, $schema);
         $this->_cache_key = $cache_key;

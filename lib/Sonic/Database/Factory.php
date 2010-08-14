@@ -1,5 +1,6 @@
 <?php
 namespace Sonic\Database;
+use Sonic\App;
 
 /**
  * Factory
@@ -26,7 +27,7 @@ class Factory
      * @param string $schema
      * @return Database
      */
-    public static function getDatabase($schema = 'main')
+    public static function getDatabase($schema = null)
     {
         if (!isset(self::$_databases[$schema])) {
             self::$_databases[$schema] = new \Sonic\Database($schema);
@@ -57,7 +58,7 @@ class Factory
         self::$_servers[$schema] = array();
 
         foreach ($servers as $server) {
-            $data = self::_parseDsn($server);
+            $data = self::_parseDsn($server, $schema);
             $data['user'] = $user;
             $data['password'] = $password;
             self::$_servers[$schema][] = $data;
@@ -71,9 +72,10 @@ class Factory
      * and returns array('dbname' => 'database, 'host' => '127.0.0.1', 'type' => '_r')
      *
      * @param string
+     * @param string
      * @return array
      */
-    protected static function _parseDsn($dsn)
+    protected static function _parseDsn($dsn, $schema)
     {
         $bits = explode(':', $dsn);
         $vars = isset($bits[1]) ? $bits[1] : $bits[0];
@@ -88,7 +90,7 @@ class Factory
         if (!isset($server['weight']))
             $server['weight'] = null;
 
-        $server['dsn'] = 'mysql:dbname=' . $server['dbname'] . ';host=' . $server['host'];
+        $server['dsn'] = 'mysql:dbname=' . $schema . ';host=' . $server['host'];
 
         return $server;
     }

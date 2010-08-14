@@ -19,11 +19,6 @@ class Dao
     /**
      * @var string
      */
-    protected $_name;
-
-    /**
-     * @var string
-     */
     protected $_schema;
 
     /**
@@ -42,13 +37,13 @@ class Dao
      *
      * @return string
      */
-    public function getDatabaseName()
+    public function getSchema()
     {
-        if ($this->_name === null) {
-            $database = Factory::getDatabase($this->_schema);
-            $this->_name = $database->getName();
+        if ($this->_schema === null) {
+            $database = Factory::getDatabase();
+            $this->_schema = $database->getSchema();
         }
-        return $this->_name;
+        return $this->_schema;
     }
 
     /**
@@ -100,7 +95,7 @@ class Dao
                 AND table_name = :table_name";
 
         $query = new Query($sql);
-        $query->bindValue(':table_schema', $this->getDatabaseName());
+        $query->bindValue(':table_schema', $this->getSchema());
         $query->bindValue(':table_name', $table);
 
         $row = $query->fetchRow();
@@ -173,7 +168,7 @@ class Dao
                 AND table_name = :table_name";
 
         $query = new Query($sql);
-        $query->bindValue(':table_schema', $this->getDatabaseName());
+        $query->bindValue(':table_schema', $this->getSchema());
         $query->bindValue(':table_name', $table);
         $columns = $query->fetchAll();
 
@@ -436,7 +431,7 @@ class Dao
                    AND table_name = :table_name";
 
         $query = new Query($sql);
-        $query->bindValue(':table_schema', $this->getDatabaseName());
+        $query->bindValue(':table_schema', $this->getSchema());
         $query->bindValue(':table_name', $table);
         $rows = $query->fetchAll();
 
@@ -473,7 +468,7 @@ class Dao
                 AND index_name <> :index_name";
 
         $query = new Query($sql);
-        $query->bindValue(':table_schema', $this->getDatabaseName());
+        $query->bindValue(':table_schema', $this->getSchema());
         $query->bindValue(':index_name', 'PRIMARY');
         $records = $query->fetchAll();
 

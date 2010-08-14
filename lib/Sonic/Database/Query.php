@@ -56,7 +56,7 @@ class Query
      * @param string $schema
      * @return void
      */
-    public function __construct($sql, $schema = 'main')
+    public function __construct($sql, $schema = null)
     {
         $this->_sql = $sql;
         $this->_schema = $schema;
