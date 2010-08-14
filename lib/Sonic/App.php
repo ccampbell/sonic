@@ -406,7 +406,6 @@ class App
     protected function _handleException(\Exception $e, $controller = null, $action = null)
     {
         $this->_runController('main', 'error', array('exception' => $e, 'from_controller' => $controller, 'from_action' => $action));
-        var_dump($e);
     }
 
     /**
