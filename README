@@ -1,0 +1,76 @@
+Copyright 2010 Craig Campbell
+
+Sonic Framework is a blazing fast PHP 5 MVC framework.
+
+SYSTEM REQUIREMENTS:
+PHP 5.3+
+
+RECOMMENDED SERVER REQUIREMENTS:
+MySQL 5, Memcached
+
+RECOMMENDED PHP EXTENSIONS:
+Memcache, APC, PDO
+
+All of these are highly recommended.  Without them you will not be able to use
+Sonic to its full potential.
+
+INSTALLATION
+To setup a Sonic Application for the first time use the following steps:
+
+1.  Download latest version of library from: [url_goes_here]
+2.  Create a directory somewhere where you want the application to live
+3.  Within that directory add the sonic library from step 1 and some other
+    directories and files that the app will need.
+
+    You want your application structure to look like this:
+
+    [] = directory
+     • = file
+
+    [] totally_awesome_application
+           [] configs
+                  • app.php
+                  • routes.php
+           [] controllers
+                  • main.php
+           [] lib
+                  [] Sonic (downloaded in step 1)
+           [] public_html
+                  • .htaccess
+                  [] assets
+                         [] css
+                         [] img
+                         [] js
+                  • index.php
+           [] views
+                  [] main
+                         • index.phtml
+                         • error.phtml
+
+4.  In your /public_html/.htaccess file add the following:
+
+    SetEnv ENVIRONMENT (development OR production OR first_name)
+    RewriteEngine On
+    RewriteRule ^.htaccess$ - [F,L]
+    RewriteCond %{REQUEST_FILENAME} -s [OR]
+    RewriteCond %{REQUEST_FILENAME} -l [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^.*$ - [NC,L]
+    RewriteRule ^.*$ /index.php [NC,L]
+
+5.  In your /public_html/index.php file add the following:
+    <?php
+    set_include_path(str_replace('/public_html', '/lib', $_SERVER['DOCUMENT_ROOT']));
+    include 'Sonic/Core.php';
+    $app = \Sonic\App::getInstance();
+
+    // if you would like autoloading uncomment this line
+    // $app->enableAutoload();
+
+    $app->start();
+
+6.  Setup an apache vhost to point to your /public_html directory with
+    DirectoryIndex set to index.php and add the server name to your /etc/hosts.
+7.  That's all there is to it, but your app won't work until you add some
+    controllers and views.  For a more complete tutorial visit:
+    [url_goes_here]
