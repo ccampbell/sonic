@@ -24,16 +24,16 @@ class Exception extends \Exception
     {
         switch ($this->code) {
             case self::NOT_FOUND:
-                return 'page not found';
+                return 'The page you were looking for could not be found.';
                 break;
             case self::FORBIDDEN:
-                return 'you do not have permission to view this page';
+                return 'You do not have permission to view this page.';
                 break;
             case self::UNAUTHORIZED:
-                return 'this page requires login';
+                return 'This page requires login.';
                 break;
             default:
-                return 'some kind of error occured';
+                return 'Some kind of error occured.';
                 break;
         }
     }
