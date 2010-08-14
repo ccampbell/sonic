@@ -100,7 +100,7 @@ class Collection extends ArrayObject
         }
 
         $object_name = $this->_object_name;
-        $objects = $object_name::load($ids);
+        $objects = $object_name::get($ids);
 
         $this->exchangeArray($objects);
 
