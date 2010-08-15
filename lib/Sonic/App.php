@@ -91,7 +91,7 @@ class App
      */
     public function autoloader($class_name)
     {
-        include str_replace('\\', DIRECTORY_SEPARATOR, $class_name) . '.php';
+        include str_replace('\\', '/', $class_name) . '.php';
     }
 
     /**
@@ -166,7 +166,7 @@ class App
         // get the config path
         if ($path === null) {
             $type = self::getInstance()->getSetting('config_file');
-            $path = self::getInstance()->getPath('configs') . DIRECTORY_SEPARATOR . 'app.' . $type;
+            $path = self::getInstance()->getPath('configs') . '/app.' . $type;
         }
 
         // if we are not dev let's try to grab it from APC
