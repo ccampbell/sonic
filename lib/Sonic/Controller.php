@@ -46,6 +46,11 @@ class Controller
     protected $_actions_completed = array();
 
     /**
+     * @var InputFilter
+     */
+    protected $_input_filter;
+
+    /**
      * magic getter for accessing view or layout
      *
      * @param string
@@ -220,5 +225,35 @@ class Controller
         $this->_view = new View($this->getViewPath());
         $this->_view->setActiveController($this->_name);
         return $this->_view;
+    }
+
+    /**
+     * sends back json response
+     *
+     * @param array
+     * @return json
+     */
+    protected function _json(array $data)
+    {
+        header('Content-Type: application/json');
+        echo json_encode($data);
+        exit();
+    }
+
+    /**
+     * returns a filter object to use for this
+     *
+     * @param string $name
+     * @return InputFilter
+     */
+    public function filter($name)
+    {
+        if ($this->_input_filter !== null) {
+            return $this->_input_filter->filter($name);
+        }
+
+        include 'Sonic/InputFilter.php';
+        $this->_input_filter = new InputFilter($this->request());
+        return $this->_input_filter->filter($name);
     }
 }
