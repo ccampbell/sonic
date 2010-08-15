@@ -1,0 +1,169 @@
+#!/usr/bin/env sh
+#
+# installer for sonic
+#
+
+# outputs an error message and usage instructions
+#
+# @param string
+# @return void
+#
+usage_and_exit()
+{
+    echo $1
+    echo "./install /path/to/install/to AppName"
+    exit 1
+}
+
+# converts string to lowercase
+#
+# @param string
+# @return string
+#
+to_lower()
+{
+    echo $1 | tr "[:upper:]" "[:lower:]"
+}
+
+# outputs message to command line
+#
+# @param string what should we output
+# @param string $verbose
+#
+output()
+{
+    if [ ! $2 ] ; then
+        echo $1
+        return
+    fi
+
+    if [ $verbose = "true" ] ; then
+        echo $1
+    fi
+}
+
+# if no path was specified bail
+if [ ! $1 ] ; then
+    usage_and_exit "missing path"
+fi
+
+# if no app name was specified bail
+if [ ! $2 ] ; then
+    usage_and_exit "missing app name"
+fi
+
+# set up global variables
+install_path=$1
+app_name=$2
+lc_app_name=`to_lower $app_name`
+verbose=false
+
+# turn on verbose mode
+if [ "$3" == "--verbose" ] ; then
+    verbose=true
+fi
+
+# if the directory and name already exists then find out if we should overwrite it
+if [ -d $install_path ] ; then
+    echo "there is already a directory at: $install_path"
+    while [ ! $override ]
+        do
+            echo "are you sure you want to overwrite this directory? (yes or no)"
+            read override
+        done
+
+    if [ $override = "yes" ] ; then
+        output "removing old directory at $install_path"
+        rm -r $install_path
+    else
+        exit 1
+    fi
+fi
+
+# create all the directories and files we need
+output "creating new directory at $install_path"
+mkdir $install_path
+
+output "creating config directory" verbose_only
+mkdir $install_path/configs
+
+output "creating controllers directory" verbose_only
+mkdir $install_path/controllers
+
+output "creating lib directory" verbose_only
+mkdir $install_path/lib
+
+output "creating public_html directory" verbose_only
+mkdir $install_path/public_html
+
+output "creating util directory" verbose_only
+mkdir $install_path/util
+
+output "creating views directory" verbose_only
+mkdir $install_path/views
+
+output "creating layouts directory" verbose_only
+mkdir $install_path/views/layouts
+
+output "creating main views directory" verbose_only
+mkdir $install_path/views/main
+
+output "creating config/app.php" verbose_only
+contents="<?php\n\$config = array();\n\n\$config['global'] = array(\n    'urls' => array(\n        'www' => 'http://www.$lc_app_name.com',\n        'static' => 'http://www.$lc_app_name.com/assets'\n    )\n);\n\n\$config['production : global'] = array();\n\n\$config['dev : global'] = array(\n    'urls' => array(\n        'www' => 'http://www.$lc_app_name.local',\n        'static' => 'http://www.$lc_app_name.local/assets'\n    ),\n    'db.default_schema' => 'database_name',\n    'db.database_name.user' => 'username',\n    'db.database_name.password' => 'password',\n    'db.database_name' => array(\n        'host=localhost;type=master',\n        'host=localhost;type=slave;weight=10'\n    ),\n    'cache.default' => array(\n        '127.0.0.1:11211',\n        '127.0.0.1:11211'\n    )\n);"
+printf "%b\n" "$contents" > $install_path/configs/app.php
+
+output "creating config/routes.php" verbose_only
+contents="<?php\n\$routes = array(\n    '/welcome' => array('main', 'welcome')\n);"
+printf "%b\n" "$contents" > $install_path/configs/routes.php
+
+output "creating config/definitions.php" verbose_only
+contents="<?php\nuse \\Sonic\\Database;\n\n\$definitions = array();"
+printf "%b\n" "$contents" > $install_path/configs/definitions.php
+
+output "creating controllers/main.php"
+contents="<?php\nnamespace Controllers;\nuse \Sonic\App;\n\nclass main extends \Sonic\Controller\n{\n    public function init()\n    {\n    }\n\n    public function index()\n    {\n        \$this->disableLayout();\n    }\n\n    public function welcome()\n    {\n    }\n\n    public function error()\n    {\n        \$actions = App::getInstance()->getAllActions();\n\n        // show error for exception at the highest level\n        // if the exception is within a subview we should not show it\n        \$this->view->show_error = count(\$actions) <= 1;\n        \$this->view->is_dev = App::isDev();\n\n        \$this->view->exception = \$this->request()->getParam('exception');\n        header(\$this->view->exception->getHttpCode());\n    }\n}"
+printf "%b\n" "$contents" > $install_path/controllers/main.php
+
+output "copying sonic library to lib/Sonic"
+cp -r lib/Sonic $install_path/lib/Sonic
+
+output "creating public_html/.htaccess"
+contents="# it is recommended to set the environment in your vhost instead of .htaccess\nSetEnv ENVIRONMENT dev\nRewriteEngine On\nRewriteRule ^.htaccess\$ - [F,L]\nRewriteCond %{REQUEST_FILENAME} -f [OR]\nRewriteCond %{REQUEST_FILENAME} -d\nRewriteRule ^.*$ - [NC,L]\nRewriteRule ^.*\$ /index.php [NC,L]"
+printf "%b\n" "$contents" > $install_path/public_html/.htaccess
+
+output "creating public_html/index.php"
+contents="<?php\nset_include_path(str_replace('/public_html', '/lib', \$_SERVER['DOCUMENT_ROOT']));\ninclude 'Sonic/Core.php';\n\$app = \Sonic\App::getInstance();\n\n// if you would like autoloading uncomment this line\n// \$app->enableAutoload();\n\n\$app->start();"
+printf "%b\n" "$contents" > $install_path/public_html/index.php
+
+output "copying skeleton_class utility to util/skeleton_class.php" verbose_only
+cp util/skeleton_class.php $install_path/util/
+
+output "copying sync_db utility to util/sync_db.php" verbose_only
+cp util/sync_db.php $install_path/util/
+
+output "creating main layout"
+contents="<!DOCTYPE html>\n<html>\n<head>\n    <title>$app_name - <?php echo \$this->topView()->title(); ?></title>\n</head>\n<body>\n    <?php echo \$this->topView()->getHtml(); ?>\n</body>\n</html>"
+printf "%b\n" "$contents" > $install_path/views/layouts/main.phtml
+
+output "creating index view"
+contents="<h1>Hello World</h1>\n<a href=\"/welcome\">click here to checkout the welcome page!</a>"
+printf "%b\n" "$contents" > $install_path/views/main/index.phtml
+
+output "creating welcome view"
+contents="<?php \$this->title('Welcome!'); ?>\n<h1>Welcome to $app_name</h1>"
+printf "%b\n" "$contents" > $install_path/views/main/welcome.phtml
+
+output "creating error view"
+contents="<h1>This is the error view</h1>\n\n<?php if (\$this->is_dev && \$this->show_error): ?>\n    <h3>debug information</h3>\n    <p><?php echo \$this->exception->getMessage(); ?></p>\n    <pre><?php echo \$this->exception->getTraceAsString(); ?></pre>\n<?php endif; ?>"
+printf "%b\n" "$contents" > $install_path/views/main/error.phtml
+
+cd $install_path
+absolute_path=`pwd`
+
+output "creating SETUP"
+contents="your application has been successfully installed.\n\nnow all you have to do is add this to your vhosts:\n\n<VirtualHost *:80>\n    # SetEnv ENVIRONMENT dev\n    ServerName $lc_app_name.local\n    ServerAlias www.$lc_app_name.local\n    DocumentRoot \"$absolute_path/public_html\"\n    DirectoryIndex index.php\n</VirtualHost>\n\nthen add this to your /etc/hosts\n\n127.0.0.1 $lc_app_name.local\n127.0.0.1 www.$lc_app_name.local"
+printf "%b\n" "$contents" > $install_path/SETUP
+
+output "done"
+
+exit 0
