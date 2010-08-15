@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
 /**
- * syncs the database with your object definitions
+ * creates a skeleton class from your object definition
  *
  * @author Craig Campbell
  */
