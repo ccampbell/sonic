@@ -33,6 +33,8 @@ if (file_exists($lib_path . '/Core.php')) {
     unlink($lib_path . '/Core.php');
 }
 
+$minimize = in_array('--minimize', $_SERVER['argv']);
+
 // figure out the last revision
 shell_exec('cd ' . $lib_path);
 $revision = shell_exec('git log | head -1');
@@ -62,7 +64,20 @@ foreach ($combine as $file) {
     $contents = preg_replace('!/\*.*?\*/!s', '', $contents);
     $contents = preg_replace('/\/\/(.*)/', '', $contents);
     $contents = preg_replace('/\n\s*\n/', "\n", $contents);
+
+    if ($minimize) {
+        $contents = preg_replace('/\s+/', ' ', $contents);
+        $contents = str_replace(' } ', '}', $contents);
+        $contents = str_replace(' { ', '{', $contents);
+        $contents = str_replace('; ', ';', $contents);
+        $contents = str_replace(' class', 'class', $contents);
+    }
+
     $output .= $contents;
+}
+
+if ($minimize) {
+    $output .= "\n";
 }
 
 file_put_contents($lib_path . '/Core.php', $output);
