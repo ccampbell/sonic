@@ -14,10 +14,15 @@ Memcache, APC, PDO
 All of these are highly recommended.  Without them you will not be able to use
 Sonic to its full potential.
 
-INSTALLATION
-To setup a Sonic Application for the first time use the following steps:
+SIMPLE INSTALLATION
+1.  Download latest source from: [url_goes_here]
+2.  tar xzvf sonic.tar.gz && cd sonic
+3.  ./install /path/to/install/to AppName
+4.  follow instructions in /path/to/install/to/SETUP file
 
-1.  Download latest version of library from: [url_goes_here]
+ADVANCED INSTALLATION
+
+1.  Download latest source from: [url_goes_here]
 2.  Create a directory somewhere where you want the application to live
 3.  Within that directory add the sonic library from step 1 and some other
     directories and files that the app will need.
@@ -49,11 +54,11 @@ To setup a Sonic Application for the first time use the following steps:
 
 4.  In your /public_html/.htaccess file add the following:
 
-    SetEnv ENVIRONMENT (development OR production OR first_name)
+    SetEnv ENVIRONMENT development
+    Options Indexes
     RewriteEngine On
     RewriteRule ^.htaccess$ - [F,L]
-    RewriteCond %{REQUEST_FILENAME} -s [OR]
-    RewriteCond %{REQUEST_FILENAME} -l [OR]
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^.*$ - [NC,L]
     RewriteRule ^.*$ /index.php [NC,L]
