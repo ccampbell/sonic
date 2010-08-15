@@ -55,7 +55,6 @@ ADVANCED INSTALLATION
 4.  In your /public_html/.htaccess file add the following:
 
     SetEnv ENVIRONMENT development
-    Options Indexes
     RewriteEngine On
     RewriteRule ^.htaccess$ - [F,L]
     RewriteCond %{REQUEST_FILENAME} -f [OR]
