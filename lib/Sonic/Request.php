@@ -12,6 +12,21 @@ use \Sonic\Exception;
 class Request
 {
     /**
+     * @var string
+     */
+    const POST = 'POST';
+
+    /**
+     * @var string
+     */
+    const GET = 'GET';
+
+    /**
+     * @var string
+     */
+    const PARAM = 'PARAM';
+
+    /**
      * @var array
      */
     protected $_caches = array();
@@ -161,13 +176,82 @@ class Request
      * gets a param from the request
      *
      * @param string $name parameter name
+     * @param string $type (GET || POST || PARAM)
      * @return mixed
      */
-    public function getParam($name)
+    public function getParam($name, $type = self::PARAM)
     {
-        if (!isset($this->_params[$name])) {
-            return null;
+        switch ($type) {
+            case self::POST:
+                if (isset($_POST[$name])) {
+                    return $_POST[$name];
+                }
+                break;
+            case self::GET:
+                if (isset($_GET[$name])) {
+                    return $_GET[$name];
+                }
+                break;
+            default:
+                if (isset($this->_params[$name])) {
+                    return $this->_params[$name];
+                }
+                break;
         }
-        return $this->_params[$name];
+
+        return null;
+    }
+
+    /**
+     * gets all params of a certain type
+     *
+     * @param string $type
+     * @return array
+     */
+    public function getParams($type = self::PARAM)
+    {
+        if ($type === self::POST) {
+            return $_POST;
+        }
+
+        if ($type === self::GET) {
+            return $_GET;
+        }
+
+        return $this->_params;
+    }
+
+    /**
+     * gets posted value or all of post
+     *
+     * @param string
+     * @return mixed
+     */
+    public function getPost($name = null)
+    {
+        if ($name === null) {
+            return $this->getParams(self::POST);
+        }
+        return $this->getParam($name, self::POST);
+    }
+
+    /**
+     * was this a post request
+     *
+     * @return bool
+     */
+     public function isPost()
+     {
+         return $this->getServer('REQUEST_METHOD') == 'POST';
+     }
+
+    /**
+     * was this an ajax request
+     *
+     * @return bool
+     */
+    public function isAjax()
+    {
+        return $this->getServer('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest';
     }
 }
