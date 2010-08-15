@@ -38,6 +38,16 @@ class View
     protected $_disabled = false;
 
     /**
+     * @var array
+     */
+    protected $_js = array();
+
+    /**
+     * @var array
+     */
+    protected $_css = array();
+
+    /**
      * constructor
      *
      * @param string $path
@@ -122,6 +132,48 @@ class View
     public function setActiveController($name)
     {
         $this->_active_controller = $name;
+    }
+
+    /**
+     * adds javascript file for inclusion
+     *
+     * @param string
+     * @return void
+     */
+    public function addJs($path)
+    {
+        $this->_js[] = $path;
+    }
+
+    /**
+     * adds css file for inclusion
+     *
+     * @param string
+     * @return void
+     */
+    public function addCss($path)
+    {
+        $this->_css[] = $path;
+    }
+
+    /**
+     * gets js files included
+     *
+     * @return array
+     */
+    public function getJs()
+    {
+        return $this->_js;
+    }
+
+    /**
+     * gets css files included
+     *
+     * @return array
+     */
+    public function getCss()
+    {
+        return $this->_css;
     }
 
     /**
