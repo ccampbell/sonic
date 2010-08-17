@@ -36,6 +36,11 @@ abstract class Object
     /**
      * @var array
      */
+    protected $_cache_times = array();
+
+    /**
+     * @var array
+     */
     protected static $_unique_properties;
 
     /**
@@ -148,6 +153,33 @@ abstract class Object
         self::$_unique_properties = $unique;
 
         return self::$_unique_properties;
+    }
+
+    /**
+     * gets a cache time based on an identifier like "last_update"
+     *
+     * @param string
+     * @return int
+     */
+    public function getCacheTime($key)
+    {
+        if (!isset($this->_cache_times[$key])) {
+            return $this->setCacheTime($key);
+        }
+        return $this->_cache_times[$key];
+    }
+
+    /**
+     * sets a cache time based on an identifier
+     *
+     * @param string
+     * @return int
+     */
+    public function setCacheTime($key)
+    {
+        $this->_cache_times[$key] = time();
+        $this->_cache();
+        return $this->_cache_times[$key];
     }
 
     /**
@@ -469,8 +501,7 @@ abstract class Object
         $definition = $this->getDefinition();
         $columns = array_keys($definition['columns']);
         foreach ($this->_getObjectVars() as $var => $value) {
-            var_dump($var);
-            if ($var != 'id' && !in_array($var, $columns)) {
+            if ($var != 'id' && $var != '_cache_times' && !in_array($var, $columns)) {
                 $this->$var = null;
             }
         }
