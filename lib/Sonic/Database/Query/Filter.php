@@ -18,14 +18,19 @@ class Filter
     protected $_patterns = array();
 
     /**
+     * @var int
+     */
+    protected $_total_weight = 0;
+
+    /**
      * adds a pattern to filter on
      *
      * @param string
      * @return void
      */
-    public function addPattern($pattern)
+    public function addPattern($pattern, $args = null)
     {
-        $this->_patterns[] = $this->_processPattern($pattern);
+        $this->_patterns[] = $this->_processPattern($pattern, $args);
     }
 
     /**
@@ -35,10 +40,10 @@ class Filter
      * @param string
      * @return array
      */
-    protected function _processPattern($pattern)
+    protected function _processPattern($pattern, $args)
     {
         // the order here matters cause if = came before == then it would match that even if the user used ==
-        $allowed_symbols = array('<=', '>=', '<>', '!=', '===', '==', '<', '>', '=', 'LIKE', 'IN');
+        $allowed_symbols = array('<=', '>=', '<>', '!=', '===', '==', '<', '>', '=', 'LIKE', 'IN', 'FULLTEXT');
 
         $valid = false;
         foreach ($allowed_symbols as $symbol) {
@@ -54,9 +59,21 @@ class Filter
                 implode(', ', $allowed_symbols));
         }
 
+        if ($symbol == 'FULLTEXT') {
+            $args = $args !== null ? $args : 1;
+            $this->_total_weight += $args;
+        }
+
         $bits = explode($symbol, $pattern);
 
-        return array(trim($bits[0]), $symbol, trim($bits[1]));
+        $filter = array(
+            'column' => trim($bits[0]),
+            'comparison' => $symbol,
+            'value' => trim($bits[1]),
+            'args' => $args
+        );
+
+        return $filter;
     }
 
     /**
@@ -71,7 +88,7 @@ class Filter
         $unfiltered = new Filter\Iterator();
         $unfiltered->setPatterns($this->_patterns);
 
-        $filtered = $unfiltered->process($rows);
+        $filtered = $unfiltered->process($rows, $this->_total_weight);
 
         return $filtered;
     }

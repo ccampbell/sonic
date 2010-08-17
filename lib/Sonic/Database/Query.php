@@ -273,13 +273,13 @@ class Query
      * @param string $pattern
      * @return Query
      */
-    public function filter($pattern)
+    public function filter($pattern, $args = null)
     {
         if ($this->_filter === null) {
             $this->_filter = new Filter();
         }
 
-        $this->_filter->addPattern($pattern);
+        $this->_filter->addPattern($pattern, $args);
         return $this;
     }
 

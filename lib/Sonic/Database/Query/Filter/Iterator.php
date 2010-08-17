@@ -21,13 +21,20 @@ class Iterator
      *
      * @return bool
      */
-    public function process($rows)
+    public function process($rows, $total_weight = null)
     {
         $filtered_data = array();
         foreach ($rows as $row) {
             foreach ($this->_patterns as $pattern) {
-                $value = $row[$pattern[0]];
-                if (!$this->matches($value, $pattern[1], $pattern[2])) {
+
+                // for fulltext search let's update the row to add relevancy scores
+                if ($pattern['comparison'] == 'FULLTEXT') {
+                    $row = $this->_processFullText($row, $pattern, $total_weight);
+                    continue;
+                }
+
+                $value = $row[$pattern['column']];
+                if (!$this->matches($value, $pattern['comparison'], $pattern['value'])) {
                     continue 2;
                 }
             }
@@ -35,6 +42,40 @@ class Iterator
         }
 
         return $filtered_data;
+    }
+
+    /**
+     * processes full text for a given row
+     *
+     * @param array $row
+     * @param array $pattern
+     * @param int $total_weight
+     */
+    protected function _processFullText($row, $pattern, $total_weight)
+    {
+        if (!isset($row['score'])) {
+            $row['score'] = 0;
+        }
+
+        $value = $row[$pattern['column']];
+        $other_value = $pattern['value'];
+        $weight = $pattern['args'];
+
+        // if there are over 255 bytes then we have to use similar text
+        if (isset($value[255]) || isset($other_value[255])) {
+            similar_text($value, $other_value, $percent);
+            $row[$pattern['column'] . '_score'] = $percent;
+            $row['score'] += $percent * ($weight / $total_weight);
+            return $row;;
+        }
+
+        // otherwise use levenschtein
+        $chars = levenshtein($value, $other_value);
+        $percent = 100 * (1 - $chars / max(strlen($value), strlen($other_value)));
+        $row[$pattern['column'] . '_score'] = $percent;
+        $row['score'] += $percent * ($weight / $total_weight);
+
+        return $row;
     }
 
     /**
