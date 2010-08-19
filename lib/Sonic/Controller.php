@@ -228,6 +228,18 @@ class Controller
     }
 
     /**
+     * redirects to another page
+     *
+     * @param string uri
+     * @return void
+     */
+    protected function _redirect($location)
+    {
+        header('location: ' . $location);
+        exit;
+    }
+
+    /**
      * sends back json response
      *
      * @param array
