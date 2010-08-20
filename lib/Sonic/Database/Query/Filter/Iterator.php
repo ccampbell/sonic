@@ -17,6 +17,11 @@ class Iterator
     protected $_patterns = array();
 
     /**
+     * @var arrays
+     */
+    protected $_arrays = array();
+
+    /**
      * function to determine if this row in the filter should be allowed through
      *
      * @return bool
@@ -34,7 +39,7 @@ class Iterator
                 }
 
                 $value = $row[$pattern['column']];
-                if (!$this->matches($value, $pattern['comparison'], $pattern['value'])) {
+                if (!$this->matches($value, $pattern)) {
                     continue 2;
                 }
             }
@@ -93,12 +98,14 @@ class Iterator
      * determines if a value matches a filter
      *
      * @param string $value value of current database field
-     * @param string $comparison comparison
-     * @param string $other_value value to match against
+     * @param array $pattern pattern to match
      * @return bool
      */
-    public function matches($value, $comparison, $other_value)
+    public function matches($value, $pattern)
     {
+        $comparison = $pattern['comparison'];
+        $other_value = $pattern['value'];
+
         // strip out quotes
         $other_value = str_replace(array('\'', '"', '`'), '', $other_value);
 
@@ -109,7 +116,7 @@ class Iterator
                 // if this is a comma separated field in the database
                 // (such as tags) then we should treat it as an array
                 if (strpos($other_value, ',') === false && strpos($value, ',') !== false) {
-                    return in_array($other_value, explode(',', $value));
+                    return in_array($other_value, $this->_getArray($pattern));
                 }
                 return $value == $other_value;
                 break;
@@ -132,9 +139,28 @@ class Iterator
             case 'LIKE':
                 return stripos($value, $other_value) !== false;
                 break;
+            case 'NOT IN':
+                return !in_array($value, $this->_getArray($pattern));
+                break;
             case 'IN':
-                return in_array($value, explode(',', $other_value));
+                return in_array($value, $this->_getArray($pattern));
                 break;
         }
+    }
+
+    /**
+     * gets an array for a specific pattern
+     * caches it so we don't have to explode on every iteration
+     *
+     * @param array
+     * @return array
+     */
+    protected function _getArray(array $pattern)
+    {
+        $cache_key = $pattern['comparison'] . $pattern['value'];
+        if (!isset($this->_arrays[$cache_key])) {
+            $this->_arrays[$cache_key] = explode(',', $pattern['value']);
+        }
+        return $this->_arrays[$cache_key];
     }
 }

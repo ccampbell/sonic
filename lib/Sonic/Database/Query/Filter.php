@@ -43,7 +43,7 @@ class Filter
     protected function _processPattern($pattern, $args)
     {
         // the order here matters cause if = came before == then it would match that even if the user used ==
-        $allowed_symbols = array('<=', '>=', '<>', '!=', '===', '==', '<', '>', '=', 'LIKE', 'IN', 'FULLTEXT');
+        $allowed_symbols = array('<=', '>=', '<>', '!=', '===', '==', '<', '>', '=', 'NOT IN', 'LIKE', 'IN', 'FULLTEXT');
 
         $valid = false;
         foreach ($allowed_symbols as $symbol) {
