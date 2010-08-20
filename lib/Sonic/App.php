@@ -46,6 +46,16 @@ class App
     protected $_layout_processed = false;
 
     /**
+     * @var array
+     */
+    protected $_configs = array();
+
+    /**
+     * @var array
+     */
+    protected static $_included = array();
+
+    /**
      * @var string
      */
     protected $_base_path;
@@ -92,6 +102,22 @@ class App
     public function autoloader($class_name)
     {
         include str_replace('\\', '/', $class_name) . '.php';
+    }
+
+    /**
+     * includes a file at the given path
+     *
+     * @param string
+     * @return void
+     */
+    public function includeFile($path)
+    {
+        if (isset($this->_included[$path])) {
+            return;
+        }
+
+        include $path;
+        $this->_included[$path] = true;
     }
 
     /**
@@ -153,32 +179,37 @@ class App
      */
     public static function getConfig($path = null)
     {
-        $environment = self::getInstance()->getEnvironment();
+        $app = self::getInstance();
+        $environment = $app->getEnvironment();
 
         // cache key
         $cache_key = __METHOD__ . '_' . $path . '_' . $environment;
 
         // if the config is in the registry return it
-        if ($config = Cache\Instance::get($cache_key)) {
-            return $config;
+        if (isset($app->_configs[$cache_key])) {
+            return $app->_configs[$cache_key];
         }
 
         // get the config path
         if ($path === null) {
-            $type = self::getInstance()->getSetting('config_file');
-            $path = self::getInstance()->getPath('configs') . '/app.' . $type;
+            $type = $app->getSetting('config_file');
+            $path = $app->getPath('configs') . '/app.' . $type;
         }
 
         // if we are not dev let's try to grab it from APC
         if (!self::isDev() && ($config = apc_fetch($cache_key))) {
-            Cache\Instance::set($cache_key, $config);
+            $app->_configs[$cache_key] = $config;
             return $config;
         }
+
+        // include the class
+        $app->includeFile('Sonic/Config.php');
+        $app->includeFile('Sonic/Util.php');
 
         // if we have gotten here then that means the config exists so we
         // now need to get the environment name and load the config
         $config = new Config($path, $environment, $type);
-        Cache\Instance::set($cache_key, $config);
+        $app->_configs[$cache_key] = $config;
         apc_store($cache_key, $config, Util::toSeconds('24 hours'));
 
         return $config;
@@ -418,11 +449,17 @@ class App
         $this->addSetting('mode', $mode);
 
         include 'Sonic/Exception.php';
+        $this->_included['Sonic/Exception.php'] = true;
         include 'Sonic/Request.php';
+        $this->_included['Sonic/Request.php'] = true;
         include 'Sonic/Router.php';
+        $this->_included['Sonic/Router.php'] = true;
         include 'Sonic/Controller.php';
+        $this->_included['Sonic/Controller.php'] = true;
         include 'Sonic/View.php';
+        $this->_included['Sonic/View.php'] = true;
         include 'Sonic/Layout.php';
+        $this->_included['Sonic/Layout.php'] = true;
 
         if ($this->getSetting('autoload')) {
             $this->autoload();
