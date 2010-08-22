@@ -230,10 +230,10 @@ class App
      *
      * @return Sonic\Cache\Memcached
      */
-    public static function getMemcached($pool = 'default')
-    {
-        return Cache\Factory::getMemcached($pool);
-    }
+    // public static function getMemcached($pool = 'default')
+    // {
+        // return Cache\Factory::getMemcached($pool);
+    // }
 
     /**
      * is this dev mode?
@@ -288,7 +288,7 @@ class App
      */
     public function getRequest()
     {
-        if ($this->_request === null) {
+        if (!$this->_request) {
             $this->_request = new Request();
         }
         return $this->_request;
@@ -301,7 +301,7 @@ class App
      */
     public function getBasePath()
     {
-        if ($this->_base_path !== null) {
+        if ($this->_base_path) {
             return $this->_base_path;
         }
 
@@ -339,6 +339,16 @@ class App
 
         $this->_paths[$cache_key] = $base_path;
         return $this->_paths[$cache_key];
+    }
+
+    /**
+     * globally disables layout
+     *
+     * @return void
+     */
+    public function disableLayout()
+    {
+        $this->_layout_processed = true;
     }
 
     /**
