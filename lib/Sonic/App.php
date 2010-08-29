@@ -41,6 +41,11 @@ class App
     protected $_controllers = array();
 
     /**
+     * @var array
+     */
+    protected $_queued = array();
+
+    /**
      * @var bool
      */
     protected $_layout_processed = false;
@@ -110,14 +115,15 @@ class App
      * @param string
      * @return void
      */
-    public function includeFile($path)
+    public static function includeFile($path)
     {
-        if (isset($this->_included[$path])) {
+        $app = self::getInstance();
+        if (isset($app->_included[$path])) {
             return;
         }
 
         include $path;
-        $this->_included[$path] = true;
+        $app->_included[$path] = true;
     }
 
     /**
@@ -378,9 +384,10 @@ class App
      * @param string $controller_name controller to use
      * @param string $action method within controller to execute
      * @param array $args arguments to be added to the Request object and view
+     * @param bool $json should we render json
      * @return void
      */
-    protected function _runController($controller_name, $action, $args = array())
+    protected function _runController($controller_name, $action, $args = array(), $json = false)
     {
         $this->getRequest()->addParams($args);
 
@@ -388,12 +395,16 @@ class App
         $controller->setView($action);
 
         $view = $controller->getView();
+        $view->setAction($action);
+
         $view->addVars($args);
 
         $run_action = false;
 
+        $can_run = $json || !$this->getSetting('turbo');
+
         // if we have already initialized the controller let's not do it again
-        if (!$controller->hasCompleted('init')) {
+        if ($can_run && !$controller->hasCompleted('init')) {
             $run_action = true;
 
             // incase the init triggers an exception we don't want to run it again
@@ -402,7 +413,7 @@ class App
         }
 
         // if for some reason this action has already run, let's not do it again
-        if ($run_action || !$controller->hasCompleted($action)) {
+        if ($can_run && ($run_action || !$controller->hasCompleted($action))) {
             $controller->$action();
             $controller->actionComplete($action);
         }
@@ -416,7 +427,7 @@ class App
         }
 
         // output the view contents
-        $view->output();
+        $view->output($json);
     }
 
     /**
@@ -425,15 +436,77 @@ class App
      * @param string $controller_name controller to use
      * @param string $action method within controller to execute
      * @param array $args arguments to be added to the Request object and view
+     * @param bool $json should we render json?
      * @param string $controller_name
      */
-    public function runController($controller_name, $action, $args = array())
+    public function runController($controller_name, $action, $args = array(), $json = false)
     {
         try {
-            $this->_runController($controller_name, $action, $args);
+            $this->_runController($controller_name, $action, $args, $json);
         } catch (\Exception $e) {
             $this->_handleException($e, $controller_name, $action);
         }
+    }
+
+    /**
+     * queues up a view for later processing
+     *
+     * only happens in turbo mode
+     *
+     * @param string
+     * @param string
+     * @return void
+     */
+    public function queueView($controller, $name)
+    {
+        $this->_queued[] = array($controller, $name);
+    }
+
+    /**
+     * processes queued up views for turbo mode
+     *
+     * @return void
+     */
+    public function processViewQueue()
+    {
+        if (!$this->getSetting('turbo')) {
+            return;
+        }
+
+        while (count($this->_queued)) {
+            foreach ($this->_queued as $key => $queue) {
+                $this->runController($queue[0], $queue[1], array(), true);
+                unset($this->_queued[$key]);
+            }
+        }
+    }
+
+    /**
+     * determines if we should turn off turbo mode
+     *
+     * @return bool
+     */
+    protected function _robotnikWins()
+    {
+        if ($this->getRequest()->isAjax()) {
+            return true;
+        }
+
+        if (isset($_COOKIE['noturbo']) || isset($_COOKIE['bot'])) {
+            return true;
+        }
+
+        if (isset($_GET['noturbo'])) {
+            setcookie('noturbo', true, time() + 86400);
+            return true;
+        }
+
+        if (strpos($_SERVER['HTTP_USER_AGENT'], 'Googlebot') !== false) {
+            setcookie('bot', true, time() + 86400);
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -446,6 +519,10 @@ class App
      */
     protected function _handleException(\Exception $e, $controller = null, $action = null)
     {
+        header('HTTP/1.1 500 Internal Server Error');
+        if ($e instanceof \Sonic\Exception) {
+            header($e->getHttpCode());
+        }
         $this->_runController('main', 'error', array('exception' => $e, 'from_controller' => $controller, 'from_action' => $action));
     }
 
@@ -477,6 +554,10 @@ class App
 
         if ($mode != self::WEB) {
             return;
+        }
+
+        if ($this->getSetting('turbo') && $this->_robotnikWins()) {
+            $this->addSetting('turbo', false);
         }
 
         // try to get the controller and action

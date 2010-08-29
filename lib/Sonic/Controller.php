@@ -223,6 +223,7 @@ class Controller
         }
 
         $this->_view = new View($this->getViewPath());
+        $this->_view->setAction($this->_view_name);
         $this->_view->setActiveController($this->_name);
         return $this->_view;
     }

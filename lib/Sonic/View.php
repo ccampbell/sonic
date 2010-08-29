@@ -18,6 +18,13 @@ class View
     protected $_active_controller;
 
     /**
+     * name of current action
+     *
+     * @var string
+     */
+    protected $_action;
+
+    /**
      * @var string
      */
     protected $_path;
@@ -46,6 +53,11 @@ class View
      * @var array
      */
     protected $_css = array();
+
+    /**
+     * @var array
+     */
+    protected static $_static_path = '/assets';
 
     /**
      * constructor
@@ -83,6 +95,21 @@ class View
     }
 
     /**
+     * sets or gets static path to js and css
+     *
+     * @param string $path
+     * @return string
+     */
+    public static function staticPath($path = null)
+    {
+        if (!$path) {
+            return self::$_static_path;
+        }
+        self::$_static_path = $path;
+        return self::$_static_path;
+    }
+
+    /**
      * sets or gets path
      *
      * @param mixed $path
@@ -105,7 +132,7 @@ class View
     public function title($title = null)
     {
         if ($title !== null) {
-            $this->_title = $title;
+            $this->_title = Layout::getTitle($title);
         }
         return $this->_title;
     }
@@ -123,6 +150,11 @@ class View
         }
     }
 
+    public function isTurbo()
+    {
+        return App::getInstance()->getSetting('turbo');
+    }
+
     /**
      * sets the active controller for this view
      *
@@ -135,6 +167,17 @@ class View
     }
 
     /**
+     * sets action for this view
+     *
+     * @param string $action
+     * @return void
+     */
+    public function setAction($name)
+    {
+        $this->_action = $name;
+    }
+
+    /**
      * adds javascript file for inclusion
      *
      * @param string
@@ -142,7 +185,7 @@ class View
      */
     public function addJs($path)
     {
-        $this->_js[] = $path;
+        $this->_js[] = $this->staticPath() . '/js/' . $path;
     }
 
     /**
@@ -153,7 +196,7 @@ class View
      */
     public function addCss($path)
     {
-        $this->_css[] = $path;
+        $this->_css[] = $this->staticPath() . '/css/' . $path;
     }
 
     /**
@@ -217,10 +260,19 @@ class View
             return;
         }
 
+        if ($this->isTurbo()) {
+            return;
+        }
+
         ob_start();
         $this->output();
         $this->_html = ob_get_contents();
         ob_end_clean();
+    }
+
+    public function getId()
+    {
+        return 'v' . substr(md5($this->_active_controller . '::' . $this->_action), 0, 7);
     }
 
     /**
@@ -230,7 +282,36 @@ class View
      */
     public function getHtml()
     {
+        if ($this->isTurbo() && !$this instanceof Layout && !$this->_html) {
+            App::getInstance()->queueView($this->_active_controller, $this->_action);
+            $this->_html = '<div class="sonic_fragment" id="' . $this->getId() . '"></div>';
+        }
         return $this->_html;
+    }
+
+    /**
+     * outputs the view as json
+     *
+     * @return string
+     */
+    public function outputAsJson()
+    {
+        $id = $this->getId();
+
+        ob_start();
+        include $this->_path;
+        $html = ob_get_contents();
+        ob_end_clean();
+
+        $data = array(
+            'id' => $id,
+            'content' => $html,
+            'title' => $this->title(),
+            'css' => $this->_css,
+            'js' => $this->_js);
+
+        $output = '<script>SonicTurbo.render(' . json_encode($data) . ');</script>';
+        return $output;
     }
 
     /**
@@ -238,16 +319,22 @@ class View
      *
      * @return void
      */
-    public function output()
+    public function output($json = false)
     {
         if ($this->_disabled) {
             return;
         }
 
-        if ($this->getHtml() !== null) {
+        if (!$json && !$this instanceof Layout && $this->getHtml() !== null) {
             echo $this->getHtml();
             return;
         }
+
+        if ($json) {
+            echo $this->outputAsJson();
+            return;
+        }
+
         include $this->_path;
     }
 }

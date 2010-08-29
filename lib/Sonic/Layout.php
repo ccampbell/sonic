@@ -21,6 +21,11 @@ class Layout extends View
     protected $_top_view;
 
     /**
+     * @var string
+     */
+    protected static $_title_pattern;
+
+    /**
      * buffers the top view before outputting the layout
      *
      * @return void
@@ -45,5 +50,55 @@ class Layout extends View
             $this->_top_view = $view;
         }
         return $this->_top_view;
+    }
+
+    /**
+     * sets title pattern
+     *
+     * @param string (something like "my application - {{title}}")
+     * @return string
+     */
+    public function setTitlePattern($pattern)
+    {
+        self::$_title_pattern = $pattern;
+        return $this->getTitle($this->topView()->title());
+    }
+
+    /**
+     * gets a title for a view
+     *
+     * @param string
+     * @return string
+     */
+    public function getTitle($string)
+    {
+        if (!self::$_title_pattern) {
+            return $string;
+        }
+        return str_replace('{{title}}', $string, self::$_title_pattern);
+    }
+
+    /**
+     * gets the url for no turbo
+     *
+     * @return string
+     */
+    public function noTurboUrl()
+    {
+        $uri = $_SERVER['REQUEST_URI'];
+        if (strpos($uri, '?') !== false) {
+            return $uri . '&amp;noturbo=1';
+        }
+        return $uri . '?noturbo=1';
+    }
+
+    /**
+     * outputs the turbo json
+     *
+     * @return string
+     */
+    public function turbo()
+    {
+        return App::getInstance()->processViewQueue();
     }
 }
