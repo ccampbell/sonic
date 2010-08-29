@@ -33,6 +33,11 @@ class App
     /**
      * @var array
      */
+    protected $_callbacks = array();
+
+    /**
+     * @var array
+     */
     protected $_paths = array();
 
     /**
@@ -527,6 +532,18 @@ class App
     }
 
     /**
+     * adds a callback function to be executed after including the core app files
+     *
+     * @param string $function
+     * @return App
+     */
+    public function addCallBack($function, $params = null)
+    {
+        $this->_callbacks[] = array($function, $params);
+        return $this;
+    }
+
+    /**
      * pushes over the first domino
      *
      * @return void
@@ -558,6 +575,10 @@ class App
 
         if ($this->getSetting('turbo') && $this->_robotnikWins()) {
             $this->addSetting('turbo', false);
+        }
+
+        foreach ($this->_callbacks as $callback) {
+            call_user_func($callback[0], $callback[1]);
         }
 
         // try to get the controller and action
