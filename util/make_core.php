@@ -71,6 +71,7 @@ foreach ($combine as $file) {
         $contents = str_replace(' { ', '{', $contents);
         $contents = str_replace('; ', ';', $contents);
         $contents = str_replace(' class', 'class', $contents);
+        $contents = str_replace('divclass', 'div class', $contents);
     }
 
     $output .= $contents;
