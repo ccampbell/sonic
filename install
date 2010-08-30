@@ -128,12 +128,17 @@ output "copying sonic library to lib/Sonic"
 cp -r lib/Sonic $install_path/lib/Sonic
 
 output "creating public_html/.htaccess"
-contents="# it is recommended to set the environment in your vhost instead of .htaccess\nSetEnv ENVIRONMENT dev\nRewriteEngine On\nRewriteRule ^.htaccess\$ - [F,L]\nRewriteCond %{REQUEST_FILENAME} -f [OR]\nRewriteCond %{REQUEST_FILENAME} -d\nRewriteRule ^.*$ - [NC,L]\nRewriteRule ^.*\$ /index.php [NC,L]"
+contents="# it is recommended to set the environment in your vhost instead of .htaccess\nSetEnv ENVIRONMENT dev\nRewriteEngine On\nRewriteRule ^.htaccess$ - [F,L]\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteCond %{REQUEST_FILENAME} !-d\nRewriteRule \.*\$ /index.php [NC,L]"
 printf "%b\n" "$contents" > $install_path/public_html/.htaccess
 
 output "creating public_html/index.php"
 contents="<?php\nset_include_path(str_replace('/public_html', '/lib', \$_SERVER['DOCUMENT_ROOT']));\ninclude 'Sonic/Core.php';\n\$app = \Sonic\App::getInstance();\n\n// if you would like autoloading uncomment this line\n// \$app->enableAutoload();\n\n\$app->start();"
 printf "%b\n" "$contents" > $install_path/public_html/index.php
+
+output "copying turbo.min.js to public_html/assets/js" verbose_only
+mkdir $install_path/public_html/assets
+mkdir $install_path/public_html/assets/js
+cp js/turbo.min.js $install_path/public_html/assets/js/
 
 output "copying skeleton_class utility to util/skeleton_class.php" verbose_only
 cp util/skeleton_class.php $install_path/util/
@@ -142,7 +147,7 @@ output "copying sync_db utility to util/sync_db.php" verbose_only
 cp util/sync_db.php $install_path/util/
 
 output "creating main layout"
-contents="<!DOCTYPE html>\n<html>\n<head>\n    <title>$app_name - <?php echo \$this->topView()->title(); ?></title>\n</head>\n<body>\n    <?php echo \$this->topView()->getHtml(); ?>\n</body>\n</html>"
+contents="<!DOCTYPE html>\n<html>\n<head>\n    <title><?php echo \$this->setTitlePattern('$app_name - {{title}}'); ?></title>\n</head>\n<body>\n    <?php echo \$this->topView()->getHtml(); ?>\n</body>\n</html>"
 printf "%b\n" "$contents" > $install_path/views/layouts/main.phtml
 
 output "creating index view"
