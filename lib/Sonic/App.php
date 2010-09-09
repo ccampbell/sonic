@@ -532,12 +532,12 @@ class App
     }
 
     /**
-     * adds a callback function to be executed after including the core app files
+     * adds a callback function to be executed after loading the core app files
      *
      * @param string $function
      * @return App
      */
-    public function addCallBack($function, $params = null)
+    public function onLoad($function, $params = null)
     {
         $this->_callbacks[] = array($function, $params);
         return $this;
