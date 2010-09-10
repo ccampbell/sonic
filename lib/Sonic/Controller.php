@@ -185,6 +185,17 @@ class Controller
     }
 
     /**
+     * sets layout
+     *
+     * @param string name of layout
+     * @return void
+     */
+    public function setLayout($name)
+    {
+        $this->_layout_name = $name;
+    }
+
+    /**
      * gets layout
      *
      * @return Layout
