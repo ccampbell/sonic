@@ -245,6 +245,15 @@ class View
             $action = $controller;
             $controller = $this->_active_controller;
         }
+
+        // this is pretty unintuitive, but in turbo mode once you have a view
+        // set for a controller initially then all the queueing of views ends
+        // up going through that view which means unless the html is reset the
+        // queueing won't happen for the view that would be rendered here
+        if ( $this->isTurbo()) {
+            $this->_html = null;
+        }
+
         App::getInstance()->runController($controller, $action, $args);
     }
 
