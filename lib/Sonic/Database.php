@@ -1,6 +1,5 @@
 <?php
 namespace Sonic;
-use PDO;
 use Sonic\App;
 
 /**
@@ -73,7 +72,7 @@ class Database
     public function getDefaultSchema()
     {
         $app = App::getInstance();
-        $schema = $app->getSetting('default_schema') ?: $app->getConfig()->get('db.default_schema');
+        $schema = $app->getSetting(App::DEFAULT_SCHEMA) ?: $app->getConfig()->get('db.default_schema');
         return $schema;
     }
 
@@ -103,10 +102,16 @@ class Database
         }
 
         $server = $this->getRandomServer($type);
-        $pdo = new PDO($server['dsn'], $server['user'], $server['password']);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $pdo->setAttribute(PDO::ATTR_CASE, PDO::CASE_LOWER);
-        $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, true);
+
+        $class = '\PDO';
+        if (App::getInstance()->getSetting(App::FAKE_PDO)) {
+            $class = '\Sonic\Database\MySql2Pdo';
+        }
+
+        $pdo = new $class($server['dsn'], $server['user'], $server['password']);
+        $pdo->setAttribute($class::ATTR_ERRMODE, $class::ERRMODE_EXCEPTION);
+        $pdo->setAttribute($class::ATTR_CASE, $class::CASE_LOWER);
+        $pdo->setAttribute($class::ATTR_EMULATE_PREPARES, true);
 
         $this->_connections[$type] = $pdo;
         return $this->_connections[$type];

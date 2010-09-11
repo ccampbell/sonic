@@ -1,6 +1,5 @@
 <?php
 namespace Sonic\Database;
-use PDO;
 use Sonic\Database;
 use Sonic\Database\Query\Filter;
 use Sonic\Database\Query\Sort;
@@ -60,6 +59,29 @@ class Query
     {
         $this->_sql = $sql;
         $this->_schema = $schema;
+    }
+
+    /**
+     * should we fake pdo using mysql_query?
+     *
+     * @return bool
+     */
+    protected function _fakePdo()
+    {
+        return \Sonic\App::getInstance()->getSetting(\Sonic\App::FAKE_PDO);
+    }
+
+    /**
+     * what class should we use for constants?
+     *
+     * @return string
+     */
+    protected function _getClass()
+    {
+        if ($this->_fakePdo()) {
+            return '\Sonic\Database\MySql2Pdo';
+        }
+        return '\PDO';
     }
 
     /**
@@ -137,7 +159,9 @@ class Query
             $this->execute();
         }
 
-        $row = $this->getStatement()->fetch(PDO::FETCH_NUM);
+        $class = $this->_getClass();
+
+        $row = $this->getStatement()->fetch($class::FETCH_NUM);
         return $row[0];
     }
 
@@ -151,7 +175,9 @@ class Query
         if (!$this->_executed)
             $this->execute();
 
-        return $this->getStatement()->fetch(PDO::FETCH_ASSOC);
+        $class = $this->_getClass();
+
+        return $this->getStatement()->fetch($class::FETCH_ASSOC);
     }
 
     /**
@@ -166,7 +192,9 @@ class Query
             $this->execute();
         }
 
-        $results = $this->getStatement()->fetchAll(PDO::FETCH_ASSOC);
+        $class = $this->_getClass();
+
+        $results = $this->getStatement()->fetchAll($class::FETCH_ASSOC);
 
         if ($this->getStatement()->columnCount() != 1) {
             return $results;
@@ -245,8 +273,10 @@ class Query
             $this->execute();
         }
 
+        $const_class = $this->_getClass();
+
         $statement = $this->getStatement();
-        $statement->setFetchMode(PDO::FETCH_CLASS, $class);
+        $statement->setFetchMode($const_class::FETCH_CLASS, $class);
         return $statement->fetchAll();
     }
 
