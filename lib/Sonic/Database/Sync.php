@@ -435,7 +435,7 @@ class Sync
      */
     public static function output($string, $verbose_only = false, $query = false)
     {
-        if (App::getInstance()->getSetting('mode') != App::COMMAND_LINE) {
+        if (App::getInstance()->getSetting(App::MODE) != App::COMMAND_LINE) {
             return;
         }
 
