@@ -76,12 +76,27 @@ class App
     protected $_environment;
 
     /**
+     * constants for settings
+     */
+    const MODE = 0;
+    const AUTOLOAD = 1;
+    const CONFIG_FILE = 2;
+    const DEVS = 3;
+    const FAKE_PDO = 4;
+    const DISABLE_CACHE = 5;
+    const TURBO = 6;
+    const DEFAULT_SCHEMA = 7;
+
+    /**
      * @var array
      */
-    protected $_settings = array('mode' => self::WEB,
-                               'autoload' => false,
-                               'config_file' => 'php',
-                               'devs' => array('dev', 'development'));
+    protected $_settings = array(self::MODE => self::WEB,
+                               self::AUTOLOAD => false,
+                               self::CONFIG_FILE => 'php',
+                               self::DEVS => array('dev', 'development'),
+                               self::FAKE_PDO => false,
+                               self::DISABLE_CACHE => false,
+                               self::TURBO => false);
 
     /**
      * constructor
@@ -111,7 +126,8 @@ class App
      */
     public function autoloader($class_name)
     {
-        include str_replace('\\', '/', $class_name) . '.php';
+        $path = str_replace('\\', '/', $class_name) . '.php';
+        return $this->includeFile($path);
     }
 
     /**
@@ -139,16 +155,6 @@ class App
     public function autoload()
     {
         spl_autoload_register(array($this, 'autoloader'));
-    }
-
-    /**
-     * enables autoloading
-     *
-     * @return void
-     */
-    public function enableAutoload()
-    {
-        $this->addSetting('autoload', true);
     }
 
     /**
@@ -203,7 +209,7 @@ class App
 
         // get the config path
         if ($path === null) {
-            $type = $app->getSetting('config_file');
+            $type = $app->getSetting(self::CONFIG_FILE);
             $path = $app->getPath('configs') . '/app.' . $type;
         }
 
@@ -254,7 +260,7 @@ class App
     public static function isDev()
     {
         $app = self::getInstance();
-        return in_array($app->getEnvironment(), $app->getSetting('devs'));
+        return in_array($app->getEnvironment(), $app->getSetting(self::DEVS));
     }
 
     /**
@@ -316,7 +322,7 @@ class App
             return $this->_base_path;
         }
 
-        switch ($this->getSetting('mode')) {
+        switch ($this->getSetting(self::MODE)) {
             case self::COMMAND_LINE:
                 $this->_base_path = str_replace('/lib','', get_include_path());
                 break;
@@ -392,7 +398,7 @@ class App
      * @param bool $json should we render json
      * @return void
      */
-    protected function _runController($controller_name, $action, $args = array(), $json = false)
+    protected function _runController($controller_name, $action, $args = array(), $json = false, $id = null)
     {
         $this->getRequest()->addParams($args);
 
@@ -406,7 +412,7 @@ class App
 
         $run_action = false;
 
-        $can_run = $json || !$this->getSetting('turbo');
+        $can_run = $json || !$this->getSetting(self::TURBO);
 
         // if we have already initialized the controller let's not do it again
         if ($can_run && !$controller->hasCompleted('init')) {
@@ -432,7 +438,7 @@ class App
         }
 
         // output the view contents
-        $view->output($json);
+        $view->output($json, $id);
     }
 
     /**
@@ -474,7 +480,7 @@ class App
      */
     public function processViewQueue()
     {
-        if (!$this->getSetting('turbo')) {
+        if (!$this->getSetting(self::TURBO)) {
             return;
         }
 
@@ -524,11 +530,22 @@ class App
      */
     protected function _handleException(\Exception $e, $controller = null, $action = null)
     {
-        header('HTTP/1.1 500 Internal Server Error');
-        if ($e instanceof \Sonic\Exception) {
-            header($e->getHttpCode());
+        if (!$this->getSetting(self::TURBO)) {
+            header('HTTP/1.1 500 Internal Server Error');
+            if ($e instanceof \Sonic\Exception) {
+                header($e->getHttpCode());
+            }
         }
-        $this->_runController('main', 'error', array('exception' => $e, 'from_controller' => $controller, 'from_action' => $action));
+
+        $json = false;
+        $id = null;
+
+        if ($this->getSetting(self::TURBO)) {
+            $json = true;
+            $id = View::generateId($controller, $action);
+        }
+
+        return $this->_runController('main', 'error', array('exception' => $e, 'from_controller' => $controller, 'from_action' => $action), $json, $id);
     }
 
     /**
@@ -550,7 +567,7 @@ class App
      */
     public function start($mode = self::WEB)
     {
-        $this->addSetting('mode', $mode);
+        $this->addSetting(self::MODE, $mode);
 
         include 'Sonic/Exception.php';
         $this->_included['Sonic/Exception.php'] = true;
@@ -565,7 +582,7 @@ class App
         include 'Sonic/Layout.php';
         $this->_included['Sonic/Layout.php'] = true;
 
-        if ($this->getSetting('autoload')) {
+        if ($this->getSetting(self::AUTOLOAD)) {
             $this->autoload();
         }
 
@@ -573,8 +590,8 @@ class App
             return;
         }
 
-        if ($this->getSetting('turbo') && $this->_robotnikWins()) {
-            $this->addSetting('turbo', false);
+        if ($this->getSetting(self::TURBO) && $this->_robotnikWins()) {
+            $this->addSetting(self::TURBO, false);
         }
 
         foreach ($this->_callbacks as $callback) {
