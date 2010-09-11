@@ -57,19 +57,20 @@ ADVANCED INSTALLATION
     SetEnv ENVIRONMENT development
     RewriteEngine On
     RewriteRule ^.htaccess$ - [F,L]
-    RewriteCond %{REQUEST_FILENAME} -f [OR]
-    RewriteCond %{REQUEST_FILENAME} -d
-    RewriteRule ^.*$ - [NC,L]
-    RewriteRule ^.*$ /index.php [NC,L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule \.*$ /index.php
 
 5.  In your /public_html/index.php file add the following:
+
     <?php
     set_include_path(str_replace('/public_html', '/lib', $_SERVER['DOCUMENT_ROOT']));
     include 'Sonic/Core.php';
-    $app = \Sonic\App::getInstance();
+    use \Sonic\App;
+    $app = App::getInstance();
 
     // if you would like autoloading uncomment this line
-    // $app->enableAutoload();
+    // $app->addSetting(App::AUTOLOAD, true);
 
     $app->start();
 
