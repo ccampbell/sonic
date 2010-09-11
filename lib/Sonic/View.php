@@ -150,9 +150,14 @@ class View
         }
     }
 
+    /**
+     * are we in turbo mode?
+     *
+     * @return bool
+     */
     public function isTurbo()
     {
-        return App::getInstance()->getSetting('turbo');
+        return App::getInstance()->getSetting(App::TURBO);
     }
 
     /**
@@ -279,9 +284,26 @@ class View
         ob_end_clean();
     }
 
+    /**
+     * generates a unique id based on the current view
+     *
+     * @param string $controller
+     * @param string $action
+     * @return string
+     */
+    public static function generateId($controller, $action)
+    {
+        return 'v' . substr(md5($controller . '::' . $action), 0, 7);
+    }
+
+    /**
+     * gets an id for the current view
+     *
+     * @return string
+     */
     public function getId()
     {
-        return 'v' . substr(md5($this->_active_controller . '::' . $this->_action), 0, 7);
+        return $this->generateId($this->_active_controller, $this->_action);
     }
 
     /**
@@ -301,11 +323,14 @@ class View
     /**
      * outputs the view as json
      *
+     * @param mixed $id id of view to output to (this is so exceptions can output into the view that caused them to begin with)
      * @return string
      */
-    public function outputAsJson()
+    public function outputAsJson($id = null)
     {
-        $id = $this->getId();
+        if (!$id) {
+            $id = $this->getId();
+        }
 
         ob_start();
         include $this->_path;
@@ -326,9 +351,11 @@ class View
     /**
      * outputs this view to the page
      *
+     * @param bool $json should we output json for turbo mode?
+     * @param mixed $id should we use a specific view for turbo mode
      * @return void
      */
-    public function output($json = false)
+    public function output($json = false, $id = null)
     {
         if ($this->_disabled) {
             return;
@@ -340,7 +367,7 @@ class View
         }
 
         if ($json) {
-            echo $this->outputAsJson();
+            echo $this->outputAsJson($id);
             return;
         }
 
