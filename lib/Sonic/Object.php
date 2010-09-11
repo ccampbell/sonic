@@ -389,14 +389,14 @@ abstract class Object
         // this is a new object
         if (!$this->id || in_array('id', $this->_updates)) {
             $this->_add();
-            $this->_reset();
+            $this->reset();
             $this->_cache();
             return;
         }
 
         // this is an object being updated
         $this->_update();
-        $this->_reset();
+        $this->reset();
         $this->_cache();
     }
 
@@ -496,7 +496,7 @@ abstract class Object
      *
      * @return void
      */
-    protected function _reset()
+    public function reset()
     {
         $definition = $this->getDefinition();
         $columns = array_keys($definition['columns']);
