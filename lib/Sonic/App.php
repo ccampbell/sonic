@@ -545,7 +545,13 @@ class App
             $id = View::generateId($controller, $action);
         }
 
-        return $this->_runController('main', 'error', array('exception' => $e, 'from_controller' => $controller, 'from_action' => $action), $json, $id);
+        $args = array(
+            'exception' => $e,
+            'from_controller' => $controller,
+            'from_action' => $action
+        );
+
+        return $this->_runController('main', 'error', $args, $json, $id);
     }
 
     /**
