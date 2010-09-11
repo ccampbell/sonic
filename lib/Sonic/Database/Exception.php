@@ -8,6 +8,4 @@ namespace Sonic\Database;
  * @subpackage Exception
  * @author Craig Campbell
  */
-class Exception extends \Sonic\Exception
-{
-}
+class Exception extends \Sonic\Exception {}
