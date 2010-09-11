@@ -121,18 +121,18 @@ contents="<?php\nuse \\Sonic\\Database;\n\n\$definitions = array();"
 printf "%b\n" "$contents" > $install_path/configs/definitions.php
 
 output "creating controllers/main.php"
-contents="<?php\nnamespace Controllers;\nuse \Sonic\App;\n\nclass Main extends \Sonic\Controller\n{\n    public function init()\n    {\n    }\n\n    public function index()\n    {\n        \$this->disableLayout();\n    }\n\n    public function welcome()\n    {\n    }\n\n    public function error()\n    {\n        \$actions = App::getInstance()->getAllActions();\n\n        // show error for exception at the highest level\n        // if the exception is within a subview we should not show it\n        \$this->view->show_error = count(\$actions) <= 1;\n        \$this->view->is_dev = App::isDev();\n\n        \$this->view->exception = \$this->request()->getParam('exception');\n        header(\$this->view->exception->getHttpCode());\n    }\n}"
+contents="<?php\nnamespace Controllers;\nuse \Sonic\App;\n\nclass Main extends \Sonic\Controller\n{\n    public function init()\n    {\n    }\n\n    public function index()\n    {\n        \$this->disableLayout();\n    }\n\n    public function welcome()\n    {\n    }\n\n    public function error()\n    {\n        \$actions = App::getInstance()->getAllActions();\n\n        // show error for exception at the highest level\n        // if the exception is within a subview we should not show it\n        \$this->view->show_error = count(\$actions) <= 1;\n        \$this->view->is_dev = App::isDev();\n\n        \$this->view->exception = \$this->request()->getParam('exception');\n    }\n}"
 printf "%b\n" "$contents" > $install_path/controllers/main.php
 
 output "copying sonic library to lib/Sonic"
 cp -r lib/Sonic $install_path/lib/Sonic
 
 output "creating public_html/.htaccess"
-contents="# it is recommended to set the environment in your vhost instead of .htaccess\nSetEnv ENVIRONMENT dev\nRewriteEngine On\nRewriteRule ^.htaccess$ - [F,L]\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteCond %{REQUEST_FILENAME} !-d\nRewriteRule \.*\$ /index.php [NC,L]"
+contents="# it is recommended to set the environment in your vhost instead of .htaccess\nSetEnv ENVIRONMENT development\nRewriteEngine On\nRewriteRule ^.htaccess$ - [F,L]\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteCond %{REQUEST_FILENAME} !-d\nRewriteRule \.*\$ /index.php [NC,L]"
 printf "%b\n" "$contents" > $install_path/public_html/.htaccess
 
 output "creating public_html/index.php"
-contents="<?php\nset_include_path(str_replace('/public_html', '/lib', \$_SERVER['DOCUMENT_ROOT']));\ninclude 'Sonic/Core.php';\n\$app = \Sonic\App::getInstance();\n\n// if you would like autoloading uncomment this line\n// \$app->enableAutoload();\n\n\$app->start();"
+contents="<?php\nset_include_path(str_replace('/public_html', '/lib', \$_SERVER['DOCUMENT_ROOT']));\ninclude 'Sonic/Core.php';\nuse \Sonic\App;\n\$app = App::getInstance();\n\n// if you would like autoloading uncomment this line\n// \$app->addSetting(App::AUTOLOAD, true);\n\n\$app->start();"
 printf "%b\n" "$contents" > $install_path/public_html/index.php
 
 output "copying turbo.min.js to public_html/assets/js" verbose_only
@@ -166,7 +166,7 @@ cd $install_path
 absolute_path=`pwd`
 
 output "creating SETUP"
-contents="your application has been successfully installed.\n\nnow all you have to do is add this to your vhosts:\n\n<VirtualHost *:80>\n    # SetEnv ENVIRONMENT dev\n    ServerName $lc_app_name.local\n    ServerAlias www.$lc_app_name.local\n    DocumentRoot \"$absolute_path/public_html\"\n    DirectoryIndex index.php\n</VirtualHost>\n\nthen add this to your /etc/hosts\n\n127.0.0.1 $lc_app_name.local\n127.0.0.1 www.$lc_app_name.local"
+contents="your application has been successfully installed.\n\nnow all you have to do is add this to your vhosts:\n\n<VirtualHost *:80>\n    # SetEnv ENVIRONMENT development\n    ServerName $lc_app_name.local\n    ServerAlias www.$lc_app_name.local\n    DocumentRoot \"$absolute_path/public_html\"\n    DirectoryIndex index.php\n</VirtualHost>\n\n<Directory \"$absolute_path/public_html\">\n    Options -Indexes FollowSymLinks\n    AllowOverride FileInfo\n    Order allow,deny\n    Allow from all\n</Directory>\n\nthen add this to your /etc/hosts\n\n127.0.0.1 $lc_app_name.local\n127.0.0.1 www.$lc_app_name.local"
 printf "%b\n" "$contents" > $install_path/SETUP
 
 output "done"
