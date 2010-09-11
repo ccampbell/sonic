@@ -61,6 +61,7 @@ foreach ($combine as $file) {
     $contents = str_replace(' || ', '||', $contents);
     $contents = str_replace(' !=', '!=', $contents);
     $contents = str_replace(' . ', '.', $contents);
+    $contents = str_replace('=> ', '=>', $contents);
     $contents = preg_replace('!/\*.*?\*/!s', '', $contents);
     $contents = preg_replace('/\/\/(.*)/', '', $contents);
     $contents = preg_replace('/\n\s*\n/', "\n", $contents);
@@ -73,7 +74,6 @@ foreach ($combine as $file) {
         $contents = str_replace(' class', 'class', $contents);
         $contents = str_replace('divclass', 'div class', $contents);
         $contents = str_replace('if (', 'if(', $contents);
-        $contents = str_replace('=> ', '=>', $contents);
     }
 
     $output .= $contents;
