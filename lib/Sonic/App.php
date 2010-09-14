@@ -85,7 +85,8 @@ class App
     const FAKE_PDO = 4;
     const DISABLE_CACHE = 5;
     const TURBO = 6;
-    const DEFAULT_SCHEMA = 7;
+    const TURBO_PLACEHOLDER = 7;
+    const DEFAULT_SCHEMA = 8;
 
     /**
      * @var array
@@ -412,7 +413,22 @@ class App
 
         $run_action = false;
 
-        $can_run = $json || !$this->getSetting(self::TURBO);
+        $is_turbo = $this->getSetting(self::TURBO);
+        $can_run = $json || !$is_turbo;
+
+        // check for pre_ methods within the controller to be processed before output is started
+        // this is for turbo mode only so that you can do things like setting cookies or redirecting
+        // before output has started in the browser
+        if ($is_turbo && !$controller->hasCompleted('pre_init') && method_exists($controller, 'pre_init')) {
+            $controller->actionComplete('pre_init');
+            $controller->pre_init();
+        }
+
+        if ($is_turbo && !$controller->hasCompleted('pre_' . $action) && method_exists($controller, 'pre_' . $action)) {
+            $method = 'pre_' . $action;
+            $controller->$method();
+            $controller->actionComplete($method);
+        }
 
         // if we have already initialized the controller let's not do it again
         if ($can_run && !$controller->hasCompleted('init')) {
@@ -592,6 +608,8 @@ class App
             $this->autoload();
         }
 
+        // if we are calling this app from command line then all we want to do
+        // is load the core application files
         if ($mode != self::WEB) {
             return;
         }
@@ -601,7 +619,7 @@ class App
         }
 
         foreach ($this->_callbacks as $callback) {
-            call_user_func($callback[0], $callback[1]);
+            call_user_func($callback[0], $this, $callback[1]);
         }
 
         // try to get the controller and action
