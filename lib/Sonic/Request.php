@@ -57,6 +57,11 @@ class Request
     protected $_action;
 
     /**
+     * @var string
+     */
+    protected $_subdomain;
+
+    /**
      * gets the base uri for the request
      * for example /profile?id=25 would return "/profile"
      *
@@ -96,6 +101,17 @@ class Request
     }
 
     /**
+     * sets the subdomain for routing
+     *
+     * @param string $subdomain
+     * @return void
+     */
+    public function setSubdomain($subdomain)
+    {
+        $this->_subdomain = $subdomain;
+    }
+
+    /**
      * gets the router object
      *
      * @return Router
@@ -103,7 +119,7 @@ class Request
     public function getRouter()
     {
         if ($this->_router === null) {
-            $this->_router = new Router($this);
+            $this->_router = new Router($this, $this->_subdomain);
         }
 
         return $this->_router;

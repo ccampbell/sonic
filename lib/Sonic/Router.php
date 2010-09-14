@@ -26,13 +26,19 @@ class Router
     protected $_match;
 
     /**
+     * @var string
+     */
+     protected $_subdomain;
+
+    /**
      * constructor
      *
      * @param Request
      */
-    public function __construct(Request $request)
+    public function __construct(Request $request, $subdomain = null)
     {
         $this->_request = $request;
+        $this->_subdomain = $subdomain;
     }
 
     /**
@@ -43,7 +49,8 @@ class Router
     public function getRoutes()
     {
         if ($this->_routes === null) {
-            $path = App::getInstance()->getPath('configs') . '/routes.php';
+            $filename = 'routes.' . (!$this->_subdomain ? 'php' : $this->_subdomain . '.php');
+            $path = App::getInstance()->getPath('configs') . '/' . $filename;
             include $path;
             $this->_routes = $routes;
         }
