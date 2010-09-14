@@ -75,7 +75,7 @@ class Layout extends View
         if (!self::$_title_pattern) {
             return $string;
         }
-        return str_replace('{{title}}', $string, self::$_title_pattern);
+        return str_replace('${title}', $string, self::$_title_pattern);
     }
 
     /**
@@ -99,6 +99,7 @@ class Layout extends View
      */
     public function turbo()
     {
+        flush();
         return App::getInstance()->processViewQueue();
     }
 }
