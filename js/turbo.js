@@ -38,6 +38,9 @@ var SonicTurbo = function()
 
         render: function(data)
         {
+            if (data.redirect) {
+                window.location = data.redirect;
+            }
             _addCss(data.css);
             document.title = data.title;
             document.getElementById(data.id).innerHTML = data.content;
