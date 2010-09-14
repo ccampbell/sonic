@@ -247,6 +247,10 @@ class Controller
      */
     protected function _redirect($location)
     {
+        if (App::getInstance()->getSetting(App::TURBO)) {
+            $this->getView()->addTurboData('redirect', $location);
+            return;
+        }
         header('location: ' . $location);
         exit;
     }
