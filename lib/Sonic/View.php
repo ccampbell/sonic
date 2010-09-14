@@ -57,6 +57,16 @@ class View
     /**
      * @var array
      */
+    protected $_turbo_data = array();
+
+    /**
+     * @var string
+     */
+    protected $_turbo_placeholder = '';
+
+    /**
+     * @var array
+     */
     protected static $_static_path = '/assets';
 
     /**
@@ -285,6 +295,21 @@ class View
     }
 
     /**
+     * gets or sets placeholder markup/text for using turbo mode
+     * for example if you want to display "loading..." or a loading gif
+     *
+     * @param string
+     * @return void
+     */
+    public function turboPlaceholder($html = null)
+    {
+        if ($html) {
+            $this->_turbo_placeholder = $html;
+        }
+        return $this->_turbo_placeholder;
+    }
+
+    /**
      * generates a unique id based on the current view
      *
      * @param string $controller
@@ -315,9 +340,21 @@ class View
     {
         if ($this->isTurbo() && !$this instanceof Layout && !$this->_html) {
             App::getInstance()->queueView($this->_active_controller, $this->_action);
-            $this->_html = '<div class="sonic_fragment" id="' . $this->getId() . '"></div>';
+            $placeholder = $this->_turbo_placeholder ?: App::getInstance()->getSetting(App::TURBO_PLACEHOLDER);
+            $this->_html = '<div class="sonic_fragment" id="' . $this->getId() . '">' . $placeholder . '</div>';
         }
         return $this->_html;
+    }
+
+    /**
+     * adds additional turbo data such as cookies to set or pages to redirect to
+     *
+     * @param string
+     * @return void
+     */
+    public function addTurboData($key, $value)
+    {
+        $this->_turbo_data[$key] = $value;
     }
 
     /**
@@ -342,7 +379,7 @@ class View
             'content' => $html,
             'title' => $this->title(),
             'css' => $this->_css,
-            'js' => $this->_js);
+            'js' => $this->_js) + $this->_turbo_data;
 
         $output = '<script>SonicTurbo.render(' . json_encode($data) . ');</script>';
         return $output;
