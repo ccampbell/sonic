@@ -93,7 +93,7 @@ class App
      */
     protected $_settings = array(self::MODE => self::WEB,
                                self::AUTOLOAD => false,
-                               self::CONFIG_FILE => 'php',
+                               self::CONFIG_FILE => 'ini',
                                self::DEVS => array('dev', 'development'),
                                self::FAKE_PDO => false,
                                self::DISABLE_CACHE => false,
