@@ -217,7 +217,7 @@ class App
         }
 
         // if we are not dev let's try to grab it from APC
-        if (!self::isDev() && ($config = apc_fetch($cache_key))) {
+        if (!self::isDev() && !$app->getSetting(self::DISABLE_CACHE) && ($config = apc_fetch($cache_key))) {
             $app->_configs[$cache_key] = $config;
             return $config;
         }
@@ -230,7 +230,10 @@ class App
         // now need to get the environment name and load the config
         $config = new Config($path, $environment, $type);
         $app->_configs[$cache_key] = $config;
-        apc_store($cache_key, $config, Util::toSeconds('24 hours'));
+
+        if (!$app->getSetting(self::DISABLE_CACHE)) {
+            apc_store($cache_key, $config, Util::toSeconds('24 hours'));
+        }
 
         return $config;
     }
