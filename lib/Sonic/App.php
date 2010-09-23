@@ -85,8 +85,9 @@ class App
     const FAKE_PDO = 4;
     const DISABLE_CACHE = 5;
     const TURBO = 6;
-    const TURBO_PLACEHOLDER = 7;
-    const DEFAULT_SCHEMA = 8;
+    const PRE_RENDER = 7;
+    const TURBO_PLACEHOLDER = 8;
+    const DEFAULT_SCHEMA = 9;
 
     /**
      * @var array
@@ -97,7 +98,8 @@ class App
                                self::DEVS => array('dev', 'development'),
                                self::FAKE_PDO => false,
                                self::DISABLE_CACHE => false,
-                               self::TURBO => false);
+                               self::TURBO => false,
+                               self::PRE_RENDER => false);
 
     /**
      * constructor
@@ -397,6 +399,7 @@ class App
      * @param string $action method within controller to execute
      * @param array $args arguments to be added to the Request object and view
      * @param bool $json should we render json
+     * @param string $id view id for if we are in turbo mode an exception is thrown
      * @return void
      */
     protected function _runController($controller_name, $action, $args = array(), $json = false, $id = null)
@@ -414,17 +417,18 @@ class App
         $run_action = false;
 
         $is_turbo = $this->getSetting(self::TURBO);
+        $pre_render = $this->getSetting(self::PRE_RENDER);
         $can_run = $json || !$is_turbo;
 
         // check for pre_ methods within the controller to be processed before output is started
-        // this is for turbo mode only so that you can do things like setting cookies or redirecting
+        // this is for turbo mode so that you can do things like setting cookies or redirecting
         // before output has started in the browser
-        if ($is_turbo && !$controller->hasCompleted('pre_init') && method_exists($controller, 'pre_init')) {
+        if ($pre_render && !$controller->hasCompleted('pre_init') && method_exists($controller, 'pre_init')) {
             $controller->actionComplete('pre_init');
             $controller->pre_init();
         }
 
-        if ($is_turbo && !$controller->hasCompleted('pre_' . $action) && method_exists($controller, 'pre_' . $action)) {
+        if ($pre_render && !$controller->hasCompleted('pre_' . $action) && method_exists($controller, 'pre_' . $action)) {
             $method = 'pre_' . $action;
             $controller->$method();
             $controller->actionComplete($method);
@@ -446,7 +450,7 @@ class App
         }
 
         // if this is the first controller and no layout has been processed and it has a layout start with that
-        if (!$this->_layout_processed && $controller->hasLayout() && count($this->_controllers) === 1) {
+        if (!$this->_layout_processed && $controller->hasLayout() && (count($this->_controllers) === 1 || isset($args['exception']))) {
             $this->_layout_processed = true;
             $layout = $controller->getLayout();
             $layout->topView($view);
@@ -546,7 +550,7 @@ class App
      */
     protected function _handleException(\Exception $e, $controller = null, $action = null)
     {
-        if (!$this->getSetting(self::TURBO)) {
+        if (!$this->_layout_processed || !$this->getSetting(self::TURBO)) {
             header('HTTP/1.1 500 Internal Server Error');
             if ($e instanceof \Sonic\Exception) {
                 header($e->getHttpCode());
@@ -556,7 +560,7 @@ class App
         $json = false;
         $id = null;
 
-        if ($this->getSetting(self::TURBO)) {
+        if ($this->getSetting(self::TURBO) && $this->_layout_processed) {
             $json = true;
             $id = View::generateId($controller, $action);
         }
