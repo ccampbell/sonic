@@ -568,8 +568,12 @@ class App
             $id = View::generateId($controller, $action);
         }
 
+        $request = $this->getRequest();
+        $action = $request->getControllerName() . '::' . $request->getAction();
+
         $args = array(
             'exception' => $e,
+            'top_level_exception' => !in_array($action, $this->getAllActions()),
             'from_controller' => $controller,
             'from_action' => $action
         );
