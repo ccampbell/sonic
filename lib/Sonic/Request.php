@@ -138,7 +138,7 @@ class Request
 
         $this->_controller_name = $this->getRouter()->getController();
         if (!$this->_controller_name) {
-            throw new Exception('page not found at ' . $this->getBaseUri(), EXCEPTION::NOT_FOUND);
+            throw new Exception('page not found at ' . $this->getBaseUri(), Exception::NOT_FOUND);
         }
 
         return $this->_controller_name;
@@ -157,7 +157,7 @@ class Request
 
         $this->_action = $this->getRouter()->getAction();
         if (!$this->_action) {
-            throw new Exception('page not found at ' . $this->getBaseUri(), EXCEPTION::NOT_FOUND);
+            throw new Exception('page not found at ' . $this->getBaseUri(), Exception::NOT_FOUND);
         }
 
         return $this->_action;
