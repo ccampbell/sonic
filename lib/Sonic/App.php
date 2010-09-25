@@ -561,15 +561,18 @@ class App
         }
 
         $json = false;
-        $id = null;
+        $id = $action = null;
 
         if ($this->getSetting(self::TURBO) && $this->_layout_processed) {
             $json = true;
             $id = View::generateId($controller, $action);
         }
 
-        $request = $this->getRequest();
-        $action = $request->getControllerName() . '::' . $request->getAction();
+        // if this is a not found exception then these calls will end up rethrowing the exception
+        if ($e->getCode() !== \Sonic\Exception::NOT_FOUND) {
+            $request = $this->getRequest();
+            $action = $request->getControllerName() . '::' . $request->getAction();
+        }
 
         $args = array(
             'exception' => $e,
