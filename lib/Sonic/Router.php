@@ -90,7 +90,7 @@ class Router
         $base_uri = $this->_request->getBaseUri();
 
         // optimization for the homepage so we don't have to hit the routes
-        if ($base_uri === '/') {
+        if ($base_uri === '/' && !$this->_subdomain) {
             $this->_match = array('main', 'index');
             return $this->_match;
         }
