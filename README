@@ -15,7 +15,7 @@ All of these are highly recommended.  Without them you will not be able to use
 Sonic to its full potential.
 
 SIMPLE INSTALLATION
-1.  Download latest source from: [url_goes_here]
+1.  Download latest source from: [http://www.sonicframework.com/latest.tar.gz]
 2.  tar xzvf sonic.tar.gz && cd sonic
 3.  ./install /path/to/install/to AppName
 4.  follow instructions in /path/to/install/to/SETUP file
@@ -64,7 +64,7 @@ ADVANCED INSTALLATION
 5.  In your /public_html/index.php file add the following:
 
     <?php
-    set_include_path(str_replace('/public_html', '/lib', $_SERVER['DOCUMENT_ROOT']));
+    set_include_path(str_replace('/public_html', '/libs', $_SERVER['DOCUMENT_ROOT']));
     include 'Sonic/Core.php';
     use \Sonic\App;
     $app = App::getInstance();
@@ -77,5 +77,5 @@ ADVANCED INSTALLATION
 6.  Setup an apache vhost to point to your /public_html directory with
     DirectoryIndex set to index.php and add the server name to your /etc/hosts.
 7.  That's all there is to it, but your app won't work until you add some
-    controllers and views.  For a more complete tutorial visit:
-    [url_goes_here]
+    controllers and views.  For a more tutorials visit:
+    [http://www.sonicframework.com/tutorials]

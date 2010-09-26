@@ -32,6 +32,8 @@ abstract class Delegate
     /**
      * called when the application first starts loading before any files are included
      *
+     * all application settings should be set here
+     *
      * @param string $mode startup mode of application
      * @return void
      */
@@ -39,6 +41,8 @@ abstract class Delegate
 
     /**
      * called when all the core files are done being included for the request
+     *
+     * all extra files you need to include for every request should happen here
      *
      * @return void
      */
