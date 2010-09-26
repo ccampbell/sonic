@@ -410,4 +410,14 @@ class View
 
         include $this->_path;
     }
+
+    /**
+     * return the class as the action name
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return (string) $this->_action;
+    }
 }
