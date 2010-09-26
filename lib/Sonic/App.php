@@ -328,7 +328,7 @@ class App
 
         switch ($this->getSetting(self::MODE)) {
             case self::COMMAND_LINE:
-                $this->_base_path = str_replace('/lib','', get_include_path());
+                $this->_base_path = str_replace('/libs','', get_include_path());
                 break;
             default:
                 $document_root = $this->getRequest()->getServer('DOCUMENT_ROOT');
@@ -416,6 +416,10 @@ class App
         $view->addVars($args);
 
         $can_run = $json || !$this->getSetting(self::TURBO);
+
+        if ($this->_delegate) {
+            $this->_delegate->actionWasCalled($controller, $action);
+        }
 
         // if for some reason this action has already run, let's not run it again
         if ($can_run && !$controller->hasCompleted($action)) {
