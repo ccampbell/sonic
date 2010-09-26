@@ -114,13 +114,6 @@ class Controller
     }
 
     /**
-     * init method - runs before anything else in this controller
-     *
-     * @return void
-     */
-    public function init() {}
-
-    /**
      * marks an action as complete once it runs
      *
      * @param string $action name of action
@@ -283,5 +276,15 @@ class Controller
         include 'Sonic/InputFilter.php';
         $this->_input_filter = new InputFilter($this->request());
         return $this->_input_filter->filter($name);
+    }
+
+    /**
+     * returns this class as a string
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        return get_class($this);
     }
 }
