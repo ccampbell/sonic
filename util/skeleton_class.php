@@ -7,7 +7,7 @@
  */
 use \Sonic\App;
 use \Sonic\Object\DefinitionFactory;
-$lib_path = str_replace('/util/skeleton_class.php', '/lib', realpath(__FILE__));
+$lib_path = str_replace('/util/skeleton_class.php', '/libs', realpath(__FILE__));
 
 set_include_path($lib_path);
 

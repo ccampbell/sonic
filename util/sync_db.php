@@ -7,7 +7,7 @@
  */
 use \Sonic\App;
 use \Sonic\Database\Sync;
-$lib_path = str_replace('/util/sync_db.php', '/lib', realpath(__FILE__));
+$lib_path = str_replace('/util/sync_db.php', '/libs', realpath(__FILE__));
 
 set_include_path($lib_path);
 
