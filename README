@@ -34,11 +34,11 @@ ADVANCED INSTALLATION
 
     [] totally_awesome_application
            [] configs
-                  • app.php
+                  • app.ini
                   • routes.php
            [] controllers
                   • main.php
-           [] lib
+           [] libs
                   [] Sonic (downloaded in step 1)
            [] public_html
                   • .htaccess
@@ -69,8 +69,8 @@ ADVANCED INSTALLATION
     use \Sonic\App;
     $app = App::getInstance();
 
-    // if you would like autoloading uncomment this line
-    // $app->addSetting(App::AUTOLOAD, true);
+    // if you would like to use an App Delegate uncomment this line
+    // $app->setDelegate('{MyApp}\App\Delegate');
 
     $app->start();
 
