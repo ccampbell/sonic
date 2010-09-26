@@ -31,9 +31,9 @@ class App
     protected $_request;
 
     /**
-     * @var array
+     * @var Delegate
      */
-    protected $_callbacks = array();
+    protected $_delegate;
 
     /**
      * @var array
@@ -85,9 +85,8 @@ class App
     const FAKE_PDO = 4;
     const DISABLE_CACHE = 5;
     const TURBO = 6;
-    const PRE_RENDER = 7;
-    const TURBO_PLACEHOLDER = 8;
-    const DEFAULT_SCHEMA = 9;
+    const TURBO_PLACEHOLDER = 7;
+    const DEFAULT_SCHEMA = 8;
 
     /**
      * @var array
@@ -98,8 +97,7 @@ class App
                                self::DEVS => array('dev', 'development'),
                                self::FAKE_PDO => false,
                                self::DISABLE_CACHE => false,
-                               self::TURBO => false,
-                               self::PRE_RENDER => false);
+                               self::TURBO => false);
 
     /**
      * constructor
@@ -203,7 +201,7 @@ class App
         $environment = $app->getEnvironment();
 
         // cache key
-        $cache_key = __METHOD__ . '_' . $path . '_' . $environment;
+        $cache_key =  'config_' . $path . '_' . $environment;
 
         // if the config is in the registry return it
         if (isset($app->_configs[$cache_key])) {
@@ -348,7 +346,7 @@ class App
      */
     public function getPath($dir = null)
     {
-        $cache_key = __METHOD__ . '_' . $dir;
+        $cache_key =  'path_' . $dir;
 
         if (isset($this->_paths[$cache_key])) {
             return $this->_paths[$cache_key];
@@ -417,51 +415,92 @@ class App
 
         $view->addVars($args);
 
-        $run_action = false;
+        $can_run = $json || !$this->getSetting(self::TURBO);
 
-        $is_turbo = $this->getSetting(self::TURBO);
-        $pre_render = $this->getSetting(self::PRE_RENDER);
-        $can_run = $json || !$is_turbo;
-
-        // check for pre_ methods within the controller to be processed before output is started
-        // this is for turbo mode so that you can do things like setting cookies or redirecting
-        // before output has started in the browser
-        if ($pre_render && !$controller->hasCompleted('pre_init') && method_exists($controller, 'pre_init')) {
-            $controller->actionComplete('pre_init');
-            $controller->pre_init();
+        // if for some reason this action has already run, let's not run it again
+        if ($can_run && !$controller->hasCompleted($action)) {
+            $this->_runAction($controller, $action);
         }
 
-        if ($pre_render && !$controller->hasCompleted('pre_' . $action) && method_exists($controller, 'pre_' . $action)) {
-            $method = 'pre_' . $action;
-            $controller->$method();
-            $controller->actionComplete($method);
+        // process the layout if we can
+        if ($this->_processLayout($controller, $view, $args)) {
+            return;
         }
 
-        // if we have already initialized the controller let's not do it again
-        if ($can_run && !$controller->hasCompleted('init')) {
-            $run_action = true;
-
-            // incase the init triggers an exception we don't want to run it again
-            $controller->actionComplete('init');
-            $controller->init();
-        }
-
-        // if for some reason this action has already run, let's not do it again
-        if ($can_run && ($run_action || !$controller->hasCompleted($action))) {
-            $controller->$action();
-            $controller->actionComplete($action);
-        }
-
-        // if this is the first controller and no layout has been processed and it has a layout start with that
-        if (!$this->_layout_processed && $controller->hasLayout() && (count($this->_controllers) === 1 || isset($args['exception']))) {
-            $this->_layout_processed = true;
-            $layout = $controller->getLayout();
-            $layout->topView($view);
-            return $layout->output();
+        if ($this->_delegate) {
+            $this->_delegate->viewStartedRendering($view, $json);
         }
 
         // output the view contents
         $view->output($json, $id);
+
+        if ($this->_delegate) {
+            $this->_delegate->viewFinishedRendering($view, $json);
+        }
+    }
+
+    /**
+     * processes the layout if it needs to be processed
+     *
+     * @param Controller $controller
+     * @param View $view
+     * @param array $args
+     * @return bool
+     */
+    protected function _processLayout(Controller $controller, View $view, $args)
+    {
+        // if the layout was already processed ignore this call
+        if ($this->_layout_processed) {
+            return false;
+        }
+
+        // if the controller doesn't have a layout ignore this call
+        if (!$controller->hasLayout()) {
+            return false;
+        }
+
+        // if this is not the first controller and not an exception, ignore
+        if (count($this->_controllers) != 1 && !isset($args['exception'])) {
+            return false;
+        }
+
+        // process the layout!
+        $this->_layout_processed = true;
+        $layout = $controller->getLayout();
+        $layout->topView($view);
+
+        if ($this->_delegate) {
+            $this->_delegate->layoutStartedRendering($layout);
+        }
+
+        $layout->output();
+
+        if ($this->_delegate) {
+            $this->_delegate->layoutFinishedRendering($layout);
+        }
+
+        return true;
+    }
+
+    /**
+     * runs a specific action in a controller
+     *
+     * @param Controller $controller
+     * @param string $action
+     * @return void
+     */
+    protected function _runAction(Controller $controller, $action)
+    {
+        if ($this->_delegate) {
+            $this->_delegate->actionStartedRunning($controller, $action);
+        }
+
+        $controller->$action();
+        $controller->actionComplete($action);
+
+        if ($this->_delegate) {
+            $this->_delegate->actionFinishedRunning($controller, $action);
+        }
     }
 
     /**
@@ -479,6 +518,7 @@ class App
             $this->_runController($controller_name, $action, $args, $json);
         } catch (\Exception $e) {
             $this->_handleException($e, $controller_name, $action);
+            return;
         }
     }
 
@@ -553,6 +593,10 @@ class App
      */
     protected function _handleException(\Exception $e, $controller = null, $action = null)
     {
+        if ($this->_delegate) {
+            $this->_delegate->appCaughtException($e, $controller, $action);
+        }
+
         if (!$this->_layout_processed || !$this->getSetting(self::TURBO)) {
             header('HTTP/1.1 500 Internal Server Error');
             if ($e instanceof \Sonic\Exception) {
@@ -585,14 +629,23 @@ class App
     }
 
     /**
-     * adds a callback function to be executed after loading the core app files
+     * sets a delegate class to receive events as the application runs
      *
-     * @param string $function
-     * @return App
+     * @param string $delegate name of delegate class
+     * @return \Sonic\App
      */
-    public function onLoad($function, $params = null)
+    public function setDelegate($delegate)
     {
-        $this->_callbacks[] = array($function, $params);
+        $this->includeFile('Sonic/App/Delegate.php');
+        $this->autoloader($delegate);
+
+        $this->_delegate = new $delegate;
+
+        if (!$this->_delegate instanceof \Sonic\App\Delegate) {
+            throw new \Exception('app delegate of class ' . get_class($delegate) . ' must be instance of \Sonic\App\Delegate');
+        }
+
+        $this->_delegate->setApp($this);
         return $this;
     }
 
@@ -603,6 +656,10 @@ class App
      */
     public function start($mode = self::WEB)
     {
+        if ($this->_delegate) {
+            $this->_delegate->appStartedLoading($mode);
+        }
+
         $this->addSetting(self::MODE, $mode);
 
         include 'Sonic/Exception.php';
@@ -632,8 +689,8 @@ class App
             $this->addSetting(self::TURBO, false);
         }
 
-        foreach ($this->_callbacks as $callback) {
-            call_user_func($callback[0], $this, $callback[1]);
+        if ($this->_delegate) {
+            $this->_delegate->appFinishedLoading();
         }
 
         // try to get the controller and action
@@ -645,6 +702,14 @@ class App
             return $this->_handleException($e);
         }
 
+        if ($this->_delegate) {
+            $this->_delegate->appStartedRunning();
+        }
+
         $this->runController($controller, $action);
+
+        if ($this->_delegate) {
+            $this->_delegate->appFinishedRunning();
+        }
     }
 }
