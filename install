@@ -90,8 +90,8 @@ mkdir $install_path/configs
 output "creating controllers directory" verbose_only
 mkdir $install_path/controllers
 
-output "creating lib directory" verbose_only
-mkdir $install_path/lib
+output "creating libs directory" verbose_only
+mkdir $install_path/libs
 
 output "creating public_html directory" verbose_only
 mkdir $install_path/public_html
@@ -124,15 +124,15 @@ output "creating controllers/main.php"
 contents="<?php\nnamespace Controllers;\nuse \Sonic\App;\n\nclass Main extends \Sonic\Controller\n{\n    public function init()\n    {\n    }\n\n    public function index()\n    {\n        \$this->disableLayout();\n    }\n\n    public function welcome()\n    {\n    }\n\n    public function error()\n    {\n        // show error for exception at the highest level\n        // if the exception is within a subview we should not show it\n        \$this->view->show_error = \$this->request()->getParam('top_level_exception');\n        \$this->view->is_dev = App::isDev();\n\n        \$this->view->exception = \$this->request()->getParam('exception');\n    }\n}"
 printf "%b\n" "$contents" > $install_path/controllers/main.php
 
-output "copying sonic library to lib/Sonic"
-cp -r lib/Sonic $install_path/lib/Sonic
+output "copying sonic library to libs/Sonic"
+cp -r lib/Sonic $install_path/libs/Sonic
 
 output "creating public_html/.htaccess"
 contents="# it is recommended to set the environment in your vhost instead of .htaccess\nSetEnv ENVIRONMENT development\nRewriteEngine On\nRewriteRule ^.htaccess$ - [F,L]\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteCond %{REQUEST_FILENAME} !-d\nRewriteRule \.*\$ /index.php [NC,L]"
 printf "%b\n" "$contents" > $install_path/public_html/.htaccess
 
 output "creating public_html/index.php"
-contents="<?php\nset_include_path(str_replace('/public_html', '/lib', \$_SERVER['DOCUMENT_ROOT']));\ninclude 'Sonic/Core.php';\nuse \Sonic\App;\n\$app = App::getInstance();\n\n// if you would like autoloading uncomment this line\n// \$app->addSetting(App::AUTOLOAD, true);\n\n\$app->start();"
+contents="<?php\nset_include_path(str_replace('/public_html', '/libs', \$_SERVER['DOCUMENT_ROOT']));\ninclude 'Sonic/Core.php';\nuse \Sonic\App;\n\$app = App::getInstance();\n\n// if you would like autoloading uncomment this line\n// \$app->addSetting(App::AUTOLOAD, true);\n\n\$app->start();"
 printf "%b\n" "$contents" > $install_path/public_html/index.php
 
 output "creating empty favicon file" verbose_only
