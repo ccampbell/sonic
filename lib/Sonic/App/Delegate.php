@@ -59,11 +59,20 @@ abstract class Delegate
     public function appFinishedRunning() {}
 
     /**
+     * fired when an action was called by the application for the first time
+     * in turbo mode this action will not run immediately
+     *
+     * @param Controller $controller
+     * @param string $action name of action
+     * @return void
+     */
+    public function actionWasCalled(Controller $controller, $action) {}
+
+    /**
      * called when an action has started running
      *
-     * @param string $controller name of controller
+     * @param Controller $controller
      * @param string $action name of action
-     * @param array $args arguments passed into controller::action() call
      * @return void
      */
     public function actionStartedRunning(Controller $controller, $action) {}
@@ -71,9 +80,8 @@ abstract class Delegate
     /**
      * called when an action has finished running
      *
-     * @param string $controller name of controller
+     * @param Controller $controller
      * @param string $action name of action
-     * @param array $args arguments passed into controller::action() call
      * @return void
      */
     public function actionFinishedRunning(Controller $controller, $action) {}
