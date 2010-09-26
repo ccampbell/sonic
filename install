@@ -135,6 +135,9 @@ output "creating public_html/index.php"
 contents="<?php\nset_include_path(str_replace('/public_html', '/lib', \$_SERVER['DOCUMENT_ROOT']));\ninclude 'Sonic/Core.php';\nuse \Sonic\App;\n\$app = App::getInstance();\n\n// if you would like autoloading uncomment this line\n// \$app->addSetting(App::AUTOLOAD, true);\n\n\$app->start();"
 printf "%b\n" "$contents" > $install_path/public_html/index.php
 
+output "creating empty favicon file" verbose_only
+touch $install_path/public_html/favicon.ico
+
 output "copying turbo.min.js to public_html/assets/js" verbose_only
 mkdir $install_path/public_html/assets
 mkdir $install_path/public_html/assets/js
