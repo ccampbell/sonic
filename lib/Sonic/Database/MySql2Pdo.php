@@ -85,6 +85,11 @@ class MySql2Pdo
     {
         if ($this->_link === null) {
             $this->_link = mysql_connect($this->_host, $this->_user, $this->_password, true);
+
+            if (!$this->_link) {
+                throw new Exception(mysql_error());
+            }
+
             mysql_select_db($this->_dbname, $this->_link);
         }
         return new Statement($sql, $this->_link);
