@@ -108,15 +108,15 @@ mkdir $INSTALL_PATH/views/layouts
 output "creating main views directory" verbose_only
 mkdir $INSTALL_PATH/views/main
 
-output "creating config/app.php" verbose_only
-contents="<?php\n\$config = array();\n\n\$config['global'] = array(\n    'urls' => array(\n        'www' => 'http://www.$LC_APP_NAME.com',\n        'static' => 'http://www.$LC_APP_NAME.com/assets'\n    )\n);\n\n\$config['production : global'] = array();\n\n\$config['dev : global'] = array(\n    'urls' => array(\n        'www' => 'http://www.$LC_APP_NAME.local',\n        'static' => 'http://www.$LC_APP_NAME.local/assets'\n    ),\n    'db.default_schema' => 'database_name',\n    'db.database_name.user' => 'username',\n    'db.database_name.password' => 'password',\n    'db.database_name' => array(\n        'host=localhost;type=master',\n        'host=localhost;type=slave;weight=10'\n    ),\n    'cache.default' => array(\n        '127.0.0.1:11211',\n        '127.0.0.1:11211'\n    )\n);"
-printf "%b\n" "$contents" > $INSTALL_PATH/configs/app.php
+output "creating configs/app.ini" verbose_only
+contents="[global]\n    urls[www] = \"http://www.$LC_APP_NAME.com\"\n    urls[static] = \"http://www.$LC_APP_NAME.com/assets\"\n    debug = 0\n\n[production : global]\n\n[dev : global]\n    urls[www] = \"http://www.$LC_APP_NAME.local\"\n    urls[static] = \"http://www.$LC_APP_NAME.local/assets\"\n    debug = 1\n\n    db.default_schema = \"database_name\"\n    db.database_name.user = \"username\"\n    db.database_name.password = \"password\"\n    db.database_name[] = \"host=localhost;type=master\"\n    db.database_name[] = \"host=localhost;type=slave;weight=10\"\n\n    cache.default[] = \"127.0.0.1:11211\"\n    cache.default[] = \"127.0.0.1:11211\""
+printf "%b\n" "$contents" > $INSTALL_PATH/configs/app.ini
 
-output "creating config/routes.php" verbose_only
+output "creating configs/routes.php" verbose_only
 contents="<?php\n\$routes = array(\n    '/welcome' => array('main', 'welcome')\n);"
 printf "%b\n" "$contents" > $INSTALL_PATH/configs/routes.php
 
-output "creating config/definitions.php" verbose_only
+output "creating configs/definitions.php" verbose_only
 contents="<?php\nuse \\Sonic\\Database;\n\n\$definitions = array();"
 printf "%b\n" "$contents" > $INSTALL_PATH/configs/definitions.php
 
