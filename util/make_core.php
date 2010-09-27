@@ -1,4 +1,4 @@
-#!/usr/bin/php
+#!/usr/bin/env php
 <?php
 /**
  * generates a lib/Sonic/Core.php that includes all the Core classes to make your app faster
