@@ -1,4 +1,4 @@
-#!/usr/bin/php
+#!/usr/bin/env php
 <?php
 /**
  * syncs the database with your object definitions
@@ -11,9 +11,15 @@ $lib_path = str_replace('/util/sync_db.php', '/libs', realpath(__FILE__));
 
 set_include_path($lib_path);
 
-include 'Sonic/App.php';
+include 'Sonic/Core.php';
 $app = App::getInstance();
-$app->addSetting('config_file', 'ini');
+$app->addSetting(App::AUTOLOAD, true);
+
+// if we would prefer mysql_query over pdo
+if (in_array('--no-pdo', $_SERVER['argv'])) {
+    $app->addSetting(App::FAKE_PDO, true);
+}
+
 $app->start(App::COMMAND_LINE);
 
 // dry run - outputs sql but doesn't run it
