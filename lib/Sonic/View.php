@@ -200,6 +200,10 @@ class View
      */
     public function addJs($path)
     {
+        if ($this->_isAbsolute($path)) {
+            $this->_js[] = $path;
+            return;
+        }
         $this->_js[] = $this->staticPath() . '/js/' . $path;
     }
 
@@ -211,7 +215,26 @@ class View
      */
     public function addCss($path)
     {
+        if ($this->_isAbsolute($path)) {
+            $this->_css[] = $path;
+            return;
+        }
         $this->_css[] = $this->staticPath() . '/css/' . $path;
+    }
+
+    /**
+     * determines if this is an absolute path
+     *
+     * @param string $path
+     * @return bool
+     */
+    protected function _isAbsolute($path)
+    {
+        // if there isn't enough characters to begin with http://
+        if (!isset($path[7])) {
+            return false;
+        }
+        return $path[0] . $path[1] . $path[2] . $path[3] . $path[4] == 'http:';
     }
 
     /**
