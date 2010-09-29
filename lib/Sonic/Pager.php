@@ -4,8 +4,8 @@ namespace Sonic;
 /**
  * Pager
  *
- * @package Sonic
- * @subpackage Pager
+ * @category Sonic
+ * @package Pager
  * @author Craig Campbell
  */
 class Pager

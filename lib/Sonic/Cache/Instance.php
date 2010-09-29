@@ -6,8 +6,8 @@ namespace Sonic\Cache;
  *
  * Stores variables used on this request
  *
+ * @category Sonic
  * @package Cache
- * @subpackage Instance
  * @author Craig Campbell
  */
 class Instance

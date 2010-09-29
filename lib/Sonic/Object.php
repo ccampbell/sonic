@@ -7,8 +7,8 @@ use Sonic\App;
 /**
  * Object
  *
- * @package Sonic
- * @subpackage Object
+ * @category Sonic
+ * @package Object
  * @author Craig Campbell
  */
 abstract class Object

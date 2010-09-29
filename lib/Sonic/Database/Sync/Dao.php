@@ -5,8 +5,9 @@ use Sonic\Database\Factory, Sonic\Object\DefinitionFactory, Sonic\Database\Sync,
 /**
  * Sync Dao
  *
- * @package Sync
- * @subpackage Dao
+ * @category Sonic
+ * @package Database
+ * @subpackage Sync
  * @author Craig Campbell
  */
 class Dao

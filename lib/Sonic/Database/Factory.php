@@ -5,8 +5,8 @@ use Sonic\App;
 /**
  * Factory
  *
+ * @category Sonic
  * @package Database
- * @subpackage Factory
  * @author Craig Campbell
  */
 class Factory

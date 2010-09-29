@@ -5,8 +5,8 @@ use Sonic\App;
 /**
  * Database
  *
- * @package Sonic
- * @subpackage Database
+ * @category Sonic
+ * @package Database
  * @author Craig Campbell
  */
 class Database

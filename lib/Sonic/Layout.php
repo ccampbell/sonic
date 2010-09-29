@@ -4,8 +4,8 @@ namespace Sonic;
 /**
  * Layout - it's a view that holds another view
  *
- * @package Sonic
- * @subpackage Layout
+ * @category Sonic
+ * @package Layout
  * @author Craig Campbell
  */
 class Layout extends View

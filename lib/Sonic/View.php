@@ -4,8 +4,8 @@ namespace Sonic;
 /**
  * View
  *
- * @package Sonic
- * @subpackage View
+ * @category Sonic
+ * @package View
  * @author Craig Campbell
  */
 class View

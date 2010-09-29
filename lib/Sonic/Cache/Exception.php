@@ -4,8 +4,8 @@ namespace Sonic\Cache;
 /**
  * Exception class
  *
+ * @category Sonic
  * @package Cache
- * @subpackage Exception
  * @author Craig Campbell
  */
 class Exception extends \Sonic\Exception {}

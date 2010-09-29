@@ -4,8 +4,8 @@ namespace Sonic;
 /**
  * App singleton
  *
- * @package Sonic
- * @subpackage App
+ * @category Sonic
+ * @package App
  * @author Craig Campbell
  */
 class App

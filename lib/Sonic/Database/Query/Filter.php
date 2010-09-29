@@ -6,8 +6,9 @@ use ArrayIterator;
 /**
  * Query Filter Class
  *
- * @package Query
- * @subpackage Filter
+ * @category Sonic
+ * @package Database
+ * @subpackage Query
  * @author Craig Campbell
  */
 class Filter

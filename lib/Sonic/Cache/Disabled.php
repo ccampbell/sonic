@@ -4,8 +4,8 @@ namespace Sonic\Cache;
 /**
  * Disabled
  *
+ * @category Sonic
  * @package Cache
- * @subpackage Disabled
  * @author Craig Campbell
  */
 class Disabled

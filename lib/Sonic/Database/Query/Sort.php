@@ -5,8 +5,9 @@ use Sonic\Database\Query;
 /**
  * Query Sort Class
  *
- * @package Query
- * @subpackage Sort
+ * @category Sonic
+ * @package Database
+ * @subpackage Query
  * @author Craig Campbell
  */
 class Sort

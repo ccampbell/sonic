@@ -4,9 +4,9 @@ namespace Sonic\Database\Query\Filter;
 /**
  * Query Filter Iterator Class
  *
- * @todo optimize explode(',') calls so they don't have to happen on every iteration
- * @package Query
- * @subpackage Filter
+ * @category Sonic
+ * @package Database
+ * @subpackage Query
  * @author Craig Campbell
  */
 class Iterator

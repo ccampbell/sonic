@@ -5,8 +5,8 @@ use Sonic\Request;
 /**
  * InputFilter
  *
- * @package Sonic
- * @subpackage InputFilter
+ * @category Sonic
+ * @package InputFilter
  * @author Craig Campbell
  */
 class InputFilter

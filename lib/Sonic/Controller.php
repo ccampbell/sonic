@@ -4,8 +4,8 @@ namespace Sonic;
 /**
  * Controller
  *
- * @package Sonic
- * @subpackage Controller
+ * @category Sonic
+ * @package Controller
  * @author Craig Campbell
  */
 class Controller

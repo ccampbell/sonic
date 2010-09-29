@@ -4,8 +4,8 @@ namespace Sonic;
 /**
  * Util
  *
- * @package Sonic
- * @subpackage Util
+ * @category Sonic
+ * @package Util
  * @author Craig Campbell
  */
 class Util

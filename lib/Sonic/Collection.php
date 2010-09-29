@@ -5,8 +5,8 @@ use \ArrayObject;
 /**
  * Collection
  *
- * @package Sonic
- * @subpackage Collection
+ * @category Sonic
+ * @package Collection
  * @author Craig Campbell
  */
 class Collection extends ArrayObject

@@ -6,8 +6,8 @@ use Sonic\Util;
 /**
  * Memcache
  *
+ * @category Sonic
  * @package Cache
- * @subpackage Memcache
  * @author Craig Campbell
  */
 class Memcache

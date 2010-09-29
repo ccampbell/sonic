@@ -6,8 +6,9 @@ use Sonic\App;
 /**
  * Cached Query Class
  *
+ * @category Sonic
  * @package Database
- * @subpackage QueryCached
+ * @subpackage Query
  * @author Craig Campbell
  */
 class QueryCached extends Query

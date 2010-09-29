@@ -5,8 +5,8 @@ use \Sonic\Exception;
 /**
  * Request object - you know, for handling $_GET, $_POST, and other params
  *
- * @package Sonic
- * @subpackage Request
+ * @category Sonic
+ * @package Request
  * @author Craig Campbell
  */
 class Request

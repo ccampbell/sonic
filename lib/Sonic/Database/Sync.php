@@ -8,9 +8,9 @@ use Sonic\Object\DefinitionFactory;
 /**
  * Sync class for syncing object definitions to the database
  *
- * @package Object
+ * @category Sonic
+ * @package Database
  * @subpackage Sync
- * @todo add mode for outputting sql that would run but not actually executing it
  * @author Craig Campbell
  */
 class Sync

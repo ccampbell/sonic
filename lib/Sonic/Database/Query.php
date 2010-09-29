@@ -7,6 +7,7 @@ use Sonic\Database\Query\Sort;
 /**
  * Query
  *
+ * @category Sonic
  * @package Database
  * @subpackage Query
  * @author Craig Campbell

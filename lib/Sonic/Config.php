@@ -4,8 +4,8 @@ namespace Sonic;
 /**
  * Config
  *
- * @package Sonic
- * @subpackage Config
+ * @category Sonic
+ * @package Config
  * @author Craig Campbell
  */
 class Config

@@ -4,8 +4,8 @@ namespace Sonic;
 /**
  * App router - you know, to take the request and map it to a controller and action
  *
- * @package Sonic
- * @subpackage Router
+ * @category Sonic
+ * @package Router
  * @author Craig Campbell
  */
 class Router
