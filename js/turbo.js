@@ -2,6 +2,7 @@
  * class for handling injecting JSON views rendered into the DOM
  *
  * @author Craig Campbell
+ * @version 1.0 beta
  */
 window.SonicTurbo = (function()
 {
@@ -10,7 +11,7 @@ window.SonicTurbo = (function()
      *
      * @var array
      */
-    var _js_queue = {};
+    var _js_queue = [];
 
     /**
      * adds an array of css files to the document
@@ -110,7 +111,11 @@ window.SonicTurbo = (function()
             _addCss(data.css);
             document.title = data.title;
             document.getElementById(data.id).innerHTML = data.content;
-            _js_queue = data.js
+
+            for (i in data.js) {
+                _js_queue.push(data.js[i]);
+            }
+
             _processQueue();
         }
     };
