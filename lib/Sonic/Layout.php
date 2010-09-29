@@ -100,6 +100,10 @@ class Layout extends View
      */
     public function turbo()
     {
+        // fixes weird issue where some servers won't flush the output
+        while (ob_get_level()) {
+            ob_end_flush();
+        }
         flush();
         return App::getInstance()->processViewQueue();
     }
