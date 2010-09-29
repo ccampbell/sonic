@@ -40,6 +40,7 @@ ADVANCED INSTALLATION
                   • main.php
            [] libs
                   [] Sonic (downloaded in step 1)
+                  [] MyApp
            [] public_html
                   • .htaccess
                   [] assets
@@ -77,5 +78,5 @@ ADVANCED INSTALLATION
 6.  Setup an apache vhost to point to your /public_html directory with
     DirectoryIndex set to index.php and add the server name to your /etc/hosts.
 7.  That's all there is to it, but your app won't work until you add some
-    controllers and views.  For a more tutorials visit:
+    controllers and views.  For more tutorials visit:
     [http://www.sonicframework.com/tutorials]
