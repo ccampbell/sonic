@@ -7,5 +7,6 @@ namespace Sonic\Cache;
  * @category Sonic
  * @package Cache
  * @author Craig Campbell
+ * @version 1.0 beta
  */
 class Exception extends \Sonic\Exception {}

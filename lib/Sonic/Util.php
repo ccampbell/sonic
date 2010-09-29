@@ -7,6 +7,7 @@ namespace Sonic;
  * @category Sonic
  * @package Util
  * @author Craig Campbell
+ * @version 1.0 beta
  */
 class Util
 {

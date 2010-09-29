@@ -7,6 +7,7 @@ namespace Sonic;
  * @category Sonic
  * @package Config
  * @author Craig Campbell
+ * @version 1.0 beta
  */
 class Config
 {

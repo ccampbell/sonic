@@ -10,6 +10,7 @@ use Sonic\App;
  * @package Database
  * @subpackage Query
  * @author Craig Campbell
+ * @version 1.0 beta
  */
 class QueryCached extends Query
 {

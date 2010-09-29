@@ -8,6 +8,7 @@ use \Sonic\Exception;
  * @category Sonic
  * @package Request
  * @author Craig Campbell
+ * @version 1.0 beta
  */
 class Request
 {

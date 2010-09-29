@@ -7,6 +7,7 @@ namespace Sonic\Object;
  * @category Sonic
  * @package Object
  * @author Craig Campbell
+ * @version 1.0 beta
  */
 class Exception extends \Sonic\Exception
 {

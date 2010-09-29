@@ -9,6 +9,7 @@ use Sonic\Database\Query;
  * @package Database
  * @subpackage Query
  * @author Craig Campbell
+ * @version 1.0 beta
  */
 class Sort
 {

@@ -7,6 +7,7 @@ namespace Sonic;
  * @category Sonic
  * @package View
  * @author Craig Campbell
+ * @version 1.0 beta
  */
 class View
 {

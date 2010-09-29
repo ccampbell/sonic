@@ -8,6 +8,7 @@ use \ArrayObject;
  * @category Sonic
  * @package Collection
  * @author Craig Campbell
+ * @version 1.0 beta
  */
 class Collection extends ArrayObject
 {

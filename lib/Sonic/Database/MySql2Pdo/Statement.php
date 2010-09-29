@@ -9,6 +9,7 @@ use Sonic\Database\MySql2Pdo\Exception;
  * @package MySql2Pdo
  * @subpackage Statement
  * @author Craig Campbell
+ * @version 1.0 beta
  */
 class Statement
 {

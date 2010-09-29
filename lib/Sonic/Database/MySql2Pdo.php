@@ -8,6 +8,7 @@ use Sonic\Database\MySql2Pdo\Statement;
  * @package Database
  * @subpackage MySql2Pdo
  * @author Craig Campbell
+ * @version 1.0 beta
  */
 class MySql2Pdo
 {
