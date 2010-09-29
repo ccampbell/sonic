@@ -7,7 +7,6 @@ namespace Sonic;
  * @category Sonic
  * @package Layout
  * @author Craig Campbell
- * @version 1.0 beta
  */
 class Layout extends View
 {

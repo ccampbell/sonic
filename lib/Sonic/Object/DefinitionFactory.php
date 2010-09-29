@@ -8,7 +8,6 @@ use Sonic\App;
  * @category Sonic
  * @package Object
  * @author Craig Campbell
- * @version 1.0 beta
  */
 class DefinitionFactory
 {

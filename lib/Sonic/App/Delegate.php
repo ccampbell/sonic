@@ -8,7 +8,6 @@ use Sonic\App, Sonic\Controller, Sonic\View, Sonic\Layout;
  * @category Sonic
  * @package App
  * @author Craig Campbell
- * @version 1.0 beta
  */
 abstract class Delegate
 {

@@ -12,7 +12,6 @@ use Sonic\Object\DefinitionFactory;
  * @package Database
  * @subpackage Sync
  * @author Craig Campbell
- * @version 1.0 beta
  */
 class Sync
 {

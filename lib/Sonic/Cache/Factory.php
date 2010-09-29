@@ -8,7 +8,6 @@ use Sonic\App;
  * @category Sonic
  * @package Cache
  * @author Craig Campbell
- * @version 1.0 beta
  */
 class Factory
 {

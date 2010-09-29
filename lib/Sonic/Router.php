@@ -7,7 +7,6 @@ namespace Sonic;
  * @category Sonic
  * @package Router
  * @author Craig Campbell
- * @version 1.0 beta
  */
 class Router
 {
