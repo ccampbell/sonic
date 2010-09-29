@@ -15,7 +15,7 @@ All of these are highly recommended.  Without them you will not be able to use
 Sonic to its full potential.
 
 SIMPLE INSTALLATION
-1.  Download latest source from: [http://www.sonicframework.com/latest.tar.gz]
+1.  Download latest source from: [http://www.sonicframework.com]
 2.  tar xzvf sonic.tar.gz && cd sonic
 3.  ./install /path/to/install/to AppName
 4.  follow instructions in /path/to/install/to/SETUP file
