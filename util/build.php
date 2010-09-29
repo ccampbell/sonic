@@ -35,6 +35,12 @@ if (file_exists($lib_path . '/Core.php')) {
 
 $minimize = in_array('--minimize', $_SERVER['argv']);
 
+$version = null;
+$key = array_search('--version', $_SERVER['argv']);
+if ($key !== false && isset($_SERVER['argv'][$key + 1])) {
+    $version = $_SERVER['argv'][$key + 1];
+}
+
 // figure out the last revision
 shell_exec('cd ' . $lib_path);
 $revision = shell_exec('git log | head -1');
