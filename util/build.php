@@ -55,6 +55,7 @@ $revision = shell_exec('git log | head -1');
 $revision_text = 'last commit: ' . str_replace(array("\n", 'commit '), '', $revision);
 
 // start output
+date_default_timezone_set('America/New_York');
 $output = "<?php\n/**\n * combined core files to speed up your application (with comments stripped)\n *\n * includes " . implode(', ', $combine) . "\n *\n * @category Sonic\n * @package Core\n * @author Craig Campbell\n * @link http://www.sonicframework.com\n * @license http://www.apache.org/licenses/LICENSE-2.0.html\n * @version\n *\n * " . $revision_text . "\n * generated: " . date('Y-m-d H:i:s') . " EST\n */\nnamespace Sonic;\n";
 
 foreach ($combine as $file) {
