@@ -11,6 +11,17 @@ $lib_path = str_replace('/util/sync_db.php', '/libs', realpath(__FILE__));
 
 set_include_path($lib_path);
 
+if (in_array('-h', $_SERVER['argv']) || in_array('--help', $_SERVER['argv'])) {
+    echo "./util/sync_db.php","\n\n";
+    echo "arguments: ","\n";
+    echo "--dry-run         outputs the sql of the changes since the last sync","\n";
+    echo "                  does not actually run the sql","\n";
+    echo "--no-pdo          use mysql_query instead of PDO","\n";
+    echo "-v,--verbose      show verbose output","\n";
+    echo "-h,--help         shows this menu","\n";
+    exit;
+}
+
 include 'Sonic/Core.php';
 $app = App::getInstance();
 $app->addSetting(App::AUTOLOAD, true);
