@@ -146,7 +146,13 @@ class Query
             $statement->bindValue($key, $value);
         }
 
-        return $statement->execute();
+        try {
+            $result = $statement->execute();
+        } catch (\Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+
+        return $result;
     }
 
     /**
