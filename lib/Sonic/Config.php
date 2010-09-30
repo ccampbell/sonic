@@ -60,6 +60,9 @@ class Config
         switch ($type) {
             case self::INI:
                 $parsed_file = parse_ini_file($path, true);
+                if ($parsed_file === false) {
+                    throw new Exception('configuration file does not exist at ' . $path);
+                }
                 break;
             default:
                 include $path;
