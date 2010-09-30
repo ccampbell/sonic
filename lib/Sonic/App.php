@@ -609,7 +609,7 @@ class App
         }
 
         $json = false;
-        $id = $action = null;
+        $id = null;
 
         if ($this->getSetting(self::TURBO) && $this->_layout_processed) {
             $json = true;
