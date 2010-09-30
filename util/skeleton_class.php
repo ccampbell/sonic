@@ -13,6 +13,7 @@ set_include_path($lib_path);
 
 include 'Sonic/App.php';
 $app = App::getInstance();
+$app->addSetting(App::AUTOLOAD, true);
 $app->start(App::COMMAND_LINE);
 
 if (!isset($_SERVER['argv'][1])) {
