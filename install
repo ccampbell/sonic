@@ -209,7 +209,7 @@ contents="<?php \$this->title('Welcome!'); ?>\n<h1>Welcome to $APP_NAME</h1>"
 printf "%b\n" "$contents" > $INSTALL_PATH/views/main/welcome.phtml
 
 output "creating error view"
-contents="<h1>This is the error view</h1>\n\n<?php if (\$this->is_dev && \$this->show_error): ?>\n    <h3>debug information</h3>\n    <p><?php echo \$this->exception->getMessage(); ?></p>\n    <pre><?php echo \$this->exception->getTraceAsString(); ?></pre>\n<?php endif; ?>"
+contents="<?php if (\$this->show_error): ?>\n    <h1>This is the error view</h1>\n<?php endif; ?>\n\n<?php if (\$this->is_dev && \$this->show_error): ?>\n    <h3>debug information</h3>\n    <p><?php echo \$this->exception->getMessage(); ?></p>\n    <pre><?php echo \$this->exception->getTraceAsString(); ?></pre>\n<?php endif; ?>"
 printf "%b\n" "$contents" > $INSTALL_PATH/views/main/error.phtml
 
 cd $INSTALL_PATH
