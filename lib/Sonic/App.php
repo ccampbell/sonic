@@ -315,15 +315,12 @@ class App
             return $this->_base_path;
         }
 
-        switch ($this->getSetting(self::MODE)) {
-            case self::COMMAND_LINE:
-                $this->_base_path = str_replace('/libs','', get_include_path());
-                break;
-            default:
-                $document_root = $this->getRequest()->getServer('DOCUMENT_ROOT');
-                $this->_base_path = str_replace('/public_html', '', $document_root);
+        if ($this->getSetting(self::MODE) == self::COMMAND_LINE) {
+            $this->_base_path = str_replace('/libs','', get_include_path());
+            return $this->_base_path;
         }
 
+        $this->_base_path = str_replace('/public_html', '', $this->getRequest()->getServer('DOCUMENT_ROOT'));
         return $this->_base_path;
     }
 
@@ -568,11 +565,7 @@ class App
      */
     protected function _robotnikWins()
     {
-        if ($this->getRequest()->isAjax()) {
-            return true;
-        }
-
-        if (isset($_COOKIE['noturbo']) || isset($_COOKIE['bot'])) {
+        if ($this->getRequest()->isAjax() || isset($_COOKIE['noturbo']) || isset($_COOKIE['bot'])) {
             return true;
         }
 
