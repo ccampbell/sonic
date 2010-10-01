@@ -520,9 +520,12 @@ class App
      *
      * @return void
      */
-    public function outputStarted()
+    public function outputStarted($started = null)
     {
-        $this->_output_started = true;
+        if ($started) {
+            $this->_output_started = true;
+        }
+        return $this->_output_started;
     }
 
     /**
@@ -600,7 +603,7 @@ class App
             $this->_delegate->appCaughtException($e, $controller, $action);
         }
 
-        if (!$this->_output_started) {
+        if (!$this->outputStarted()) {
             header('HTTP/1.1 500 Internal Server Error');
             if ($e instanceof \Sonic\Exception) {
                 header($e->getHttpCode());
@@ -623,7 +626,7 @@ class App
 
         $args = array(
             'exception' => $e,
-            'top_level_exception' => !$this->_output_started,
+            'top_level_exception' => !$this->outputStarted(),
             'from_controller' => $controller,
             'from_action' => $action
         );
