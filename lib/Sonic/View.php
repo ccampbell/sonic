@@ -421,6 +421,8 @@ class View
             return;
         }
 
+        App::getInstance()->outputStarted();
+
         if (!$json && !$this instanceof Layout && $this->getHtml() !== null) {
             echo $this->getHtml();
             return;

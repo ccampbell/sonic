@@ -56,6 +56,11 @@ class App
     protected $_layout_processed = false;
 
     /**
+     * @var bool
+     */
+    protected $_output_started = false;
+
+    /**
      * @var array
      */
     protected $_configs = array();
@@ -287,22 +292,6 @@ class App
     }
 
     /**
-     * gets all controller::action() combinations that have been executed on this page load
-     *
-     * @return array
-     */
-    public function getAllActions()
-    {
-        $actions = array();
-        foreach ($this->_controllers as $controller) {
-            foreach ($controller->getActionsCompleted() as $action) {
-                $actions[] = $controller->name() . '::' . $action;
-            }
-        }
-        return $actions;
-    }
-
-    /**
      * gets the request object
      *
      * @return Request
@@ -527,6 +516,16 @@ class App
     }
 
     /**
+     * tells the application that output has started
+     *
+     * @return void
+     */
+    public function outputStarted()
+    {
+        $this->_output_started = true;
+    }
+
+    /**
      * queues up a view for later processing
      *
      * only happens in turbo mode
@@ -601,7 +600,7 @@ class App
             $this->_delegate->appCaughtException($e, $controller, $action);
         }
 
-        if (!$this->_layout_processed || !$this->getSetting(self::TURBO)) {
+        if (!$this->_output_started) {
             header('HTTP/1.1 500 Internal Server Error');
             if ($e instanceof \Sonic\Exception) {
                 header($e->getHttpCode());
@@ -624,7 +623,7 @@ class App
 
         $args = array(
             'exception' => $e,
-            'top_level_exception' => !in_array($action, $this->getAllActions()),
+            'top_level_exception' => !$this->_output_started,
             'from_controller' => $controller,
             'from_action' => $action
         );
@@ -666,6 +665,8 @@ class App
 
         $this->addSetting(self::MODE, $mode);
 
+        // this could use App::includeFile() but it is faster to duplicate
+        // that logic here
         include 'Sonic/Exception.php';
         $this->_included['Sonic/Exception.php'] = true;
         include 'Sonic/Request.php';
