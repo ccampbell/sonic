@@ -145,12 +145,12 @@ class App
     public static function includeFile($path)
     {
         $app = self::getInstance();
-        if (isset($app->_included[$path])) {
+        if (isset(self::$_included[$path])) {
             return;
         }
 
         include $path;
-        $app->_included[$path] = true;
+        self::$_included[$path] = true;
     }
 
     /**
@@ -678,17 +678,17 @@ class App
         // this could use App::includeFile() but it is faster to duplicate
         // that logic here
         include 'Sonic/Exception.php';
-        $this->_included['Sonic/Exception.php'] = true;
+        self::$_included['Sonic/Exception.php'] = true;
         include 'Sonic/Request.php';
-        $this->_included['Sonic/Request.php'] = true;
+        self::$_included['Sonic/Request.php'] = true;
         include 'Sonic/Router.php';
-        $this->_included['Sonic/Router.php'] = true;
+        self::$_included['Sonic/Router.php'] = true;
         include 'Sonic/Controller.php';
-        $this->_included['Sonic/Controller.php'] = true;
+        self::$_included['Sonic/Controller.php'] = true;
         include 'Sonic/View.php';
-        $this->_included['Sonic/View.php'] = true;
+        self::$_included['Sonic/View.php'] = true;
         include 'Sonic/Layout.php';
-        $this->_included['Sonic/Layout.php'] = true;
+        self::$_included['Sonic/Layout.php'] = true;
 
         if ($this->getSetting(self::AUTOLOAD)) {
             $this->autoload();

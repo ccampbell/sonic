@@ -30,7 +30,7 @@ class Layout extends View
      *
      * @return void
      */
-    public function output()
+    public function output($json = false, $id = null)
     {
         if ($this->topView() !== null) {
             $this->topView()->buffer();
