@@ -596,30 +596,44 @@ class App
             $this->_delegate->appCaughtException($e, $controller, $action);
         }
 
+        // turn other exceptions into sonic exceptions
+        if (!$e instanceof \Sonic\Exception) {
+            $e = new \Sonic\Exception($e->getMessage(), \Sonic\Exception::INTERNAL_SERVER_ERROR, $e);
+        }
+
+        // only set the http code if output hasn't started
         if (!$this->outputStarted()) {
-            header('HTTP/1.1 500 Internal Server Error');
-            if ($e instanceof \Sonic\Exception) {
-                header($e->getHttpCode());
-            }
+            header($e->getHttpCode());
         }
 
         $json = false;
         $id = null;
 
+        // in turbo mode we have to write the exception markup out to the
+        // same div created before the exception was triggered.  this means
+        // we have to get the id based on the controller and action that the
+        // exception came from
         if ($this->getSetting(self::TURBO) && $this->_layout_processed) {
             $json = true;
             $id = View::generateId($controller, $action);
         }
 
-        // if this is a not found exception then these calls will end up rethrowing the exception
-        if ($e->getCode() !== \Sonic\Exception::NOT_FOUND) {
-            $request = $this->getRequest();
-            $action = $request->getControllerName() . '::' . $request->getAction();
+        $completed = false;
+
+        // controller and action are only null if this is a page not found
+        // because we were not able to match any routes.  in all other cases
+        // we can get the initial controller and action to determine if it has
+        // completed
+        if ($controller !== null && $action !== null) {
+            $req = $this->getRequest();
+            $first_controller = $req->getControllerName();
+            $first_action = $req->getAction();
+            $completed = $this->getController($first_controller)->hasCompleted($first_action);
         }
 
         $args = array(
             'exception' => $e,
-            'top_level_exception' => !$this->outputStarted(),
+            'top_level_exception' => !$completed,
             'from_controller' => $controller,
             'from_action' => $action
         );
