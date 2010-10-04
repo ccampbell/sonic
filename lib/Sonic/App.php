@@ -146,11 +146,12 @@ class App
     {
         $app = self::getInstance();
         if (isset(self::$_included[$path])) {
-            return;
+            return false;
         }
 
         include $path;
         self::$_included[$path] = true;
+        return true;
     }
 
     /**
@@ -292,6 +293,17 @@ class App
     }
 
     /**
+     * sets environment
+     *
+     * @param string
+     * @return void
+     */
+    public function setEnvironment($env)
+    {
+        $this->_environment = $env;
+    }
+
+    /**
      * gets the request object
      *
      * @return Request
@@ -316,7 +328,7 @@ class App
         }
 
         if ($this->getSetting(self::MODE) == self::COMMAND_LINE) {
-            $this->_base_path = str_replace('/libs','', get_include_path());
+            $this->_base_path = str_replace(array('/libs', '/lib'),'', get_include_path());
             return $this->_base_path;
         }
 
@@ -346,6 +358,29 @@ class App
 
         $this->_paths[$cache_key] = $base_path;
         return $this->_paths[$cache_key];
+    }
+
+    /**
+     * overrides base path
+     *
+     * @param string $dir
+     * @return void
+     */
+    public function setBasePath($path)
+    {
+        $this->_base_path = $path;
+    }
+
+    /**
+     * overrides a default path
+     *
+     * @param string $dir
+     * @param string $path
+     * @return void
+     */
+    public function setPath($dir, $path)
+    {
+        $this->_paths['path_' . $dir] = $path;
     }
 
     /**
@@ -652,12 +687,13 @@ class App
         $this->includeFile('Sonic/App/Delegate.php');
         $this->autoloader($delegate);
 
-        $this->_delegate = new $delegate;
+        $delegate = new $delegate;
 
-        if (!$this->_delegate instanceof \Sonic\App\Delegate) {
+        if (!$delegate instanceof \Sonic\App\Delegate) {
             throw new \Exception('app delegate of class ' . get_class($delegate) . ' must be instance of \Sonic\App\Delegate');
         }
 
+        $this->_delegate = $delegate;
         $this->_delegate->setApp($this);
         return $this;
     }
@@ -665,9 +701,11 @@ class App
     /**
      * pushes over the first domino
      *
+     * @param string $mode
+     * @param bool $load used for unit tests to prevent fatal errors
      * @return void
      */
-    public function start($mode = self::WEB)
+    public function start($mode = self::WEB, $load = true)
     {
         if ($this->_delegate) {
             $this->_delegate->appStartedLoading($mode);
@@ -677,18 +715,20 @@ class App
 
         // this could use App::includeFile() but it is faster to duplicate
         // that logic here
-        include 'Sonic/Exception.php';
-        self::$_included['Sonic/Exception.php'] = true;
-        include 'Sonic/Request.php';
-        self::$_included['Sonic/Request.php'] = true;
-        include 'Sonic/Router.php';
-        self::$_included['Sonic/Router.php'] = true;
-        include 'Sonic/Controller.php';
-        self::$_included['Sonic/Controller.php'] = true;
-        include 'Sonic/View.php';
-        self::$_included['Sonic/View.php'] = true;
-        include 'Sonic/Layout.php';
-        self::$_included['Sonic/Layout.php'] = true;
+        if ($load) {
+            include 'Sonic/Exception.php';
+            self::$_included['Sonic/Exception.php'] = true;
+            include 'Sonic/Request.php';
+            self::$_included['Sonic/Request.php'] = true;
+            include 'Sonic/Router.php';
+            self::$_included['Sonic/Router.php'] = true;
+            include 'Sonic/Controller.php';
+            self::$_included['Sonic/Controller.php'] = true;
+            include 'Sonic/View.php';
+            self::$_included['Sonic/View.php'] = true;
+            include 'Sonic/Layout.php';
+            self::$_included['Sonic/Layout.php'] = true;
+        }
 
         if ($this->getSetting(self::AUTOLOAD)) {
             $this->autoload();
