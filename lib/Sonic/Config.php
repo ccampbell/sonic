@@ -54,19 +54,20 @@ class Config
      * @param string $path path to config file
      * @param string $environment section of config file to load
      */
-    public function __construct($path, $environment, $type = self::PHP)
+    public function __construct($path, $environment, $type = self::INI)
     {
+        if (!file_exists($path)) {
+            throw new Exception('configuration file does not exist at ' . $path);
+        }
+
         // parse the file
         switch ($type) {
-            case self::INI:
-                $parsed_file = parse_ini_file($path, true);
-                if ($parsed_file === false) {
-                    throw new Exception('configuration file does not exist at ' . $path);
-                }
-                break;
-            default:
+            case self::PHP:
                 include $path;
                 $parsed_file = $config;
+                break;
+            default:
+                $parsed_file = parse_ini_file($path, true);
                 break;
         }
 
@@ -76,8 +77,7 @@ class Config
         // make sure environment exists
         $map = $this->_getEnvironmentMap($sections);
         if (!isset($map[$environment])) {
-            throw new Exception('environment : ' . $environment .
-                ' not found in config at : ' . $path);
+            throw new Exception('environment : ' . $environment . 'not found in config at : ' . $path);
         }
 
         $parents = $this->getParents($sections, $environment);
