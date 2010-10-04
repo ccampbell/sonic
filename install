@@ -12,6 +12,11 @@ usage_and_exit()
 {
     echo $1
     echo "./install /path/to/install/to AppName"
+    echo "optional arguments"
+    echo "--verbose             shows verbose output"
+    echo "--core-only           install only the core framework"
+    echo "--test-framework      include the unit test framework in this installation"
+    echo "--help                show this menu"
     exit 1
 }
 
@@ -59,6 +64,10 @@ in_array()
     return 1
 }
 
+if in_array "--help" "$*" ; then
+    usage_and_exit "usage"
+fi
+
 # if no path was specified bail
 if [ ! $1 ] ; then
     usage_and_exit "missing path"
@@ -75,6 +84,7 @@ APP_NAME=$2
 LC_APP_NAME=`to_lower $APP_NAME`
 VERBOSE=false
 ALL_FILES=true
+UNIT_TEST_FRAMEWORK=false
 
 if in_array "--verbose" "$*" ; then
     VERBOSE=true
@@ -82,6 +92,10 @@ fi
 
 if in_array "--core-only" "$*" ; then
     ALL_FILES=false
+fi
+
+if in_array "--test-framework" "$*" ; then
+    UNIT_TEST_FRAMEWORK=true
 fi
 
 # if the directory and name already exists then find out if we should overwrite it
@@ -153,6 +167,10 @@ printf "%b\n" "$contents" > $INSTALL_PATH/controllers/main.php
 if [ $ALL_FILES == true ] ; then
     output "copying sonic library to libs/Sonic"
     cp -r lib/Sonic $INSTALL_PATH/libs/Sonic
+
+    if [ $UNIT_TEST_FRAMEWORK == false ] ; then
+        rm -r $INSTALL_PATH/libs/Sonic/UnitTest
+    fi
 else
     output "copying sonic core to libs/Sonic/Core.php"
     mkdir $INSTALL_PATH/libs/Sonic
