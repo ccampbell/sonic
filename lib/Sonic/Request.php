@@ -27,9 +27,9 @@ class Request
     const PARAM = 'PARAM';
 
     /**
-     * @var array
+     * @var string
      */
-    protected $_caches = array();
+    protected $_base_url;
 
     /**
      * @var array
@@ -69,20 +69,20 @@ class Request
      */
     public function getBaseUri()
     {
-        if (isset($this->_caches['base_uri'])) {
-            return $this->_caches['base_uri'];
+        if ($this->_base_url) {
+            return $this->_base_url;
         }
 
         // if redirect url is present use that to avoid extra processing
         if (($uri = $this->getServer('REDIRECT_URL')) !== null) {
-            $this->_caches['base_uri'] = $uri == '/' ? $uri : rtrim($uri, '/');
-            return $this->_caches['base_uri'];
+            $this->_base_url = $uri == '/' ? $uri : rtrim($uri, '/');
+            return $this->_base_url;
         }
 
         $bits = explode('?', $this->getServer('REQUEST_URI'));
-        $this->_caches['base_uri'] = $bits[0] == '/' ? $bits[0] : rtrim($bits[0], '/');
+        $this->_base_url = $bits[0] == '/' ? $bits[0] : rtrim($bits[0], '/');
 
-        return $this->_caches['base_uri'];
+        return $this->_base_url;
     }
 
     /**
@@ -269,5 +269,18 @@ class Request
     public function isAjax()
     {
         return $this->getServer('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest';
+    }
+
+    /**
+     * allows the request to be reset for unit tests only
+     *
+     * @return void
+     */
+    public function reset()
+    {
+        $this->_action = null;
+        $this->_controller_name = null;
+        $this->_base_url = null;
+        $this->_router = null;
     }
 }
