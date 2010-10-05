@@ -88,10 +88,11 @@ class App
     const CONFIG_FILE = 2;
     const DEVS = 3;
     const FAKE_PDO = 4;
-    const DISABLE_CACHE = 5;
-    const TURBO = 6;
-    const TURBO_PLACEHOLDER = 7;
-    const DEFAULT_SCHEMA = 8;
+    const DISABLE_MEMCACHE = 5;
+    const DISABLE_APC = 6;
+    const TURBO = 7;
+    const TURBO_PLACEHOLDER = 8;
+    const DEFAULT_SCHEMA = 9;
 
     /**
      * @var array
@@ -101,7 +102,8 @@ class App
                                self::CONFIG_FILE => 'ini',
                                self::DEVS => array('dev', 'development'),
                                self::FAKE_PDO => false,
-                               self::DISABLE_CACHE => false,
+                               self::DISABLE_MEMCACHE => false,
+                               self::DISABLE_APC => false,
                                self::TURBO => false);
 
     /**
@@ -221,7 +223,7 @@ class App
         }
 
         // if we are not dev let's try to grab it from APC
-        if (!self::isDev() && !$app->getSetting(self::DISABLE_CACHE) && ($config = apc_fetch($cache_key))) {
+        if (!self::isDev() && !$app->getSetting(self::DISABLE_APC) && ($config = apc_fetch($cache_key))) {
             $app->_configs[$cache_key] = $config;
             return $config;
         }
@@ -235,7 +237,7 @@ class App
         $config = new Config($path, $environment, $type);
         $app->_configs[$cache_key] = $config;
 
-        if (!$app->getSetting(self::DISABLE_CACHE)) {
+        if (!$app->getSetting(self::DISABLE_APC)) {
             apc_store($cache_key, $config, Util::toSeconds('24 hours'));
         }
 

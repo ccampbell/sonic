@@ -33,7 +33,7 @@ class Factory
             return self::$_caches[$pool];
         }
 
-        if (App::getInstance()->getSetting(App::DISABLE_CACHE)) {
+        if (App::getInstance()->getSetting(App::DISABLE_MEMCACHE)) {
             self::$_caches[$pool] = new \Sonic\Cache\Disabled();
             return self::$_caches[$pool];
         }
