@@ -16,9 +16,9 @@ class Util
      * for example if you pass in
      * array(0 => 10, 1 => 10, 2 => 20)
      *
-     * half the time this would return 3
+     * half the time this would return 2
+     * a quarter of the time it would return 0
      * a quarter of the time it would return 1
-     * a quarter of the time it would return 2
      *
      * @todo support any array keys and not numbers starting at 0
      * @param array $weights
