@@ -7,6 +7,11 @@ class AppTest extends TestCase
     public function testGetInstance()
     {
         $app = App::getInstance();
+
+        if (!extension_loaded('apc')) {
+            $app->addSetting(App::DISABLE_APC, true);
+        }
+
         $this->isTrue($app instanceof App);
     }
 
