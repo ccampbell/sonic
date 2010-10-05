@@ -11,6 +11,7 @@ class Main extends Controller
     {
         throw new \Exception('test exception');
     }
+    public function test() {}
     public function error()
     {
         $this->view->exception = $e =$this->request()->getParam('exception');
