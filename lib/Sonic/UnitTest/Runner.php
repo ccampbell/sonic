@@ -155,6 +155,7 @@ class Runner
             return;
         }
 
+        mkdir($coverage_directory);
         $path = $this->_convertDirectoryToPath($coverage_directory);
         $this->coverageDirectory($path);
     }
