@@ -155,7 +155,9 @@ class Runner
             return;
         }
 
-        mkdir($coverage_directory);
+        if (!file_exists($coverage_directory)) {
+            mkdir($coverage_directory);
+        }
         $path = $this->_convertDirectoryToPath($coverage_directory);
         $this->coverageDirectory($path);
     }
@@ -360,7 +362,7 @@ class Runner
     protected function _runMethod(TestCase $test, $method)
     {
         // if the method is not a test method then we should ignore it
-        if (preg_match('/test[A-Z0-9]{1}/', $method) == 0) {
+        if (preg_match('/test[A-Z0-9_]{1}/', $method) == 0) {
             return;
         }
 
