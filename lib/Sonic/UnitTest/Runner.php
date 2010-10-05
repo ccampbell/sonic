@@ -90,6 +90,7 @@ class Runner
      */
     protected function _loadFramework()
     {
+        include 'Exception.php';
         include 'Coverage.php';
         include 'Result.php';
         include 'Result/Error.php';
@@ -137,7 +138,16 @@ class Runner
      */
     protected function _processArgs($args = array())
     {
-        $directory = $this->_convertDirectoryToPath(array_pop($args));
+        if (count($args) == 1) {
+            throw new Exception('no test directory specified');
+        }
+
+        $dir = array_pop($args);
+        if (!file_exists($dir)) {
+            throw new Exception('invalid test directory specified: ' . $dir);
+        }
+
+        $directory = $this->_convertDirectoryToPath($dir);
         $this->directory($directory);
 
         $coverage_directory = $this->_getArgValue('--coverage-html', $args);
