@@ -67,7 +67,7 @@ class InputFilter
      *
      * @return InputFilter
      */
-    public function reset()
+    protected function _reset()
     {
         $this->_name = null;
         $this->_type = null;
@@ -85,7 +85,7 @@ class InputFilter
      */
     public function filter($name)
     {
-        $this->reset();
+        $this->_reset();
         $this->_name = $name;
         return $this;
     }
@@ -241,9 +241,11 @@ class InputFilter
                 break;
         }
 
-        if (!$arg && $this->_default !== null) {
-            return $this->_default;
-        }
+        // @todo remove this
+        // can't think of any way to get this code to run
+        // if (!$arg && $this->_default !== null) {
+            // return $this->_default;
+        // }
 
         if (!$arg) {
             return null;
