@@ -126,4 +126,14 @@ class MySql
 
         return $server;
     }
+
+    /**
+     * returns the insert id of the last insert
+     *
+     * @return int
+     */
+    public function lastInsertId()
+    {
+        return mysql_insert_id($this->_link);
+    }
 }

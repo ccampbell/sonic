@@ -60,6 +60,7 @@ class Statement
         if ($this->_result === false) {
             throw new Exception(mysql_error());
         }
+        return $this->_result;
     }
 
     /**

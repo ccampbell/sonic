@@ -30,4 +30,14 @@ class MySqli extends MySql
         }
         return new Statement($sql, $this->_link);
     }
+
+    /**
+     * returns the insert id of the last insert
+     *
+     * @return int
+     */
+    public function lastInsertId()
+    {
+        return mysqli_insert_id($this->_link);
+    }
 }

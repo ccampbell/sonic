@@ -18,12 +18,13 @@ class Statement extends MySql\Statement
      *
      * @return void
      */
-    public function execute()
+    public function execute($type = MYSQLI_STORE_RESULT)
     {
-        $this->_result = mysqli_query($this->_link, $this->_sql);
+        $this->_result = mysqli_query($this->_link, $this->_sql, $type);
         if ($this->_result === false) {
             throw new Exception(mysqli_error($this->_link));
         }
+        return $this->_result;
     }
 
     /**
