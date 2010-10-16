@@ -63,26 +63,13 @@ class Query
     }
 
     /**
-     * should we fake pdo using mysql_query?
-     *
-     * @return bool
-     */
-    protected function _fakePdo()
-    {
-        return \Sonic\App::getInstance()->getSetting(\Sonic\App::FAKE_PDO);
-    }
-
-    /**
      * what class should we use for constants?
      *
      * @return string
      */
     protected function _getClass()
     {
-        if ($this->_fakePdo()) {
-            return '\Sonic\Database\MySql2Pdo';
-        }
-        return '\PDO';
+        return Database::getDriverClass();
     }
 
     /**

@@ -87,12 +87,15 @@ class App
     const AUTOLOAD = 1;
     const CONFIG_FILE = 2;
     const DEVS = 3;
-    const FAKE_PDO = 4;
-    const DISABLE_MEMCACHE = 5;
-    const DISABLE_APC = 6;
-    const TURBO = 7;
-    const TURBO_PLACEHOLDER = 8;
-    const DEFAULT_SCHEMA = 9;
+    const DB_DRIVER = 4;
+    const PDO = 5;
+    const MYSQL = 6;
+    const MYSQLI = 7;
+    const DISABLE_MEMCACHE = 8;
+    const DISABLE_APC = 9;
+    const TURBO = 10;
+    const TURBO_PLACEHOLDER = 11;
+    const DEFAULT_SCHEMA = 12;
 
     /**
      * @var array
@@ -101,7 +104,7 @@ class App
                                self::AUTOLOAD => false,
                                self::CONFIG_FILE => 'ini',
                                self::DEVS => array('dev', 'development'),
-                               self::FAKE_PDO => false,
+                               self::DB_DRIVER => self::PDO,
                                self::DISABLE_MEMCACHE => false,
                                self::DISABLE_APC => false,
                                self::TURBO => false);

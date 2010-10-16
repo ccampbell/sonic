@@ -103,10 +103,7 @@ class Database
 
         $server = $this->getRandomServer($type);
 
-        $class = '\PDO';
-        if (App::getInstance()->getSetting(App::FAKE_PDO)) {
-            $class = '\Sonic\Database\MySql2Pdo';
-        }
+        $class = self::getDriverClass();
 
         $pdo = new $class($server['dsn'], $server['user'], $server['password']);
         $pdo->setAttribute($class::ATTR_ERRMODE, $class::ERRMODE_EXCEPTION);
@@ -115,6 +112,28 @@ class Database
 
         $this->_connections[$type] = $pdo;
         return $this->_connections[$type];
+    }
+
+    /**
+     * returns the class of what driver to use depending on the application setting
+     *
+     * @return string
+     */
+    public static function getDriverClass()
+    {
+        $driver = App::getInstance()->getSetting(App::DB_DRIVER);
+        switch ($driver) {
+            case App::MYSQL:
+                $class = 'Sonic\Database\MySql';
+                break;
+            case App::MYSQLI:
+                $class = 'Sonic\Database\MySqli';
+                break;
+            default:
+                $class = '\PDO';
+                break;
+        }
+        return $class;
     }
 
     /**
