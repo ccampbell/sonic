@@ -102,6 +102,11 @@ class Statement
     public function fetchObject($class)
     {
         $row = $this->fetch();
+
+        if (!$row) {
+            return null;
+        }
+
         $object = $this->_populateObjectFromRow(new $class, $row);
         $object->reset();
         return $object;
