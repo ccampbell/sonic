@@ -23,7 +23,7 @@ class MySqli extends MySql
             $this->_link = mysqli_connect($this->_host, $this->_user, $this->_password);
 
             if (!$this->_link) {
-                throw new Exception(mysqli_error($this->_link));
+                throw new Exception(mysqli_connect_error());
             }
 
             mysqli_select_db($this->_link, $this->_dbname);

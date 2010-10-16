@@ -64,6 +64,16 @@ class Statement
     }
 
     /**
+     * gets link
+     *
+     * @return mixed
+     */
+    public function getLink()
+    {
+        return $this->_link;
+    }
+
+    /**
      * binds a value to the query
      *
      * @param string $key

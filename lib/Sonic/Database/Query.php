@@ -119,6 +119,16 @@ class Query
     }
 
     /**
+     * gets the bound params for this query
+     *
+     * @return array
+     */
+    public function getBoundParams()
+    {
+        return $this->_binds;
+    }
+
+    /**
      * executes this query
      *
      * @return bool
