@@ -1,15 +1,15 @@
 <?php
 namespace Sonic\Database;
-use Sonic\Database\MySql2Pdo\Statement;
+use Sonic\Database\MySql\Statement;
 
 /**
- * MySql2Pdo class
+ * MySql class
  *
  * @package Database
- * @subpackage MySql2Pdo
+ * @subpackage MySql
  * @author Craig Campbell
  */
-class MySql2Pdo
+class MySql
 {
     /**
      * some predefined constants that PDO has

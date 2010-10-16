@@ -1,12 +1,12 @@
 <?php
-namespace Sonic\Database\MySql2Pdo;
-use Sonic\Database\MySql2Pdo;
-use Sonic\Database\MySql2Pdo\Exception;
+namespace Sonic\Database\MySql;
+use Sonic\Database\MySql;
+use Sonic\Database\MySql\Exception;
 
 /**
  * Statement class
  *
- * @package MySql2Pdo
+ * @package MySql
  * @subpackage Statement
  * @author Craig Campbell
  */
@@ -149,7 +149,7 @@ class Statement
     public function fetch($type = null)
     {
         switch ($type) {
-            case MySql2Pdo::FETCH_NUM:
+            case MySql::FETCH_NUM:
                 return mysql_fetch_row($this->_result);
             default:
                 return mysql_fetch_assoc($this->_result);
@@ -165,7 +165,7 @@ class Statement
      */
     public function setFetchMode($mode, $class)
     {
-        if ($mode = MySql2Pdo::FETCH_CLASS) {
+        if ($mode = MySql::FETCH_CLASS) {
             $this->_fetch_into_class = $class;
         }
     }

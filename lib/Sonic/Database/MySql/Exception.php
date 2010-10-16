@@ -1,10 +1,10 @@
 <?php
-namespace Sonic\Database\MySql2Pdo;
+namespace Sonic\Database\MySql;
 
 /**
  * Exception class
  *
- * @package MySql2Pdo
+ * @package MySql
  * @subpackage Exception
  * @author Craig Campbell
  */
