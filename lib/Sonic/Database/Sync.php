@@ -411,7 +411,8 @@ class Sync
      */
     public static function outputQuery(Database\Query $query)
     {
-        $sql = $query->getSql();
+        $sql = rtrim($query->getSql(), ';');
+        $sql .= ';';
 
         self::output("\n" . $sql, false, true);
     }
