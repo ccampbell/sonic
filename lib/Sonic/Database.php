@@ -135,6 +135,11 @@ class Database
             }
         }
 
+        // if there are no slave servers specified, use the master
+        if (count($matching_servers) == 0 && $type == self::SLAVE) {
+            return $this->getRandomServer(self::MASTER);
+        }
+
         if (count($matching_servers) == 0) {
             throw new Database\Exception('no ' . $type . ' servers found matching schema: ' . $this->_schema);
         }
