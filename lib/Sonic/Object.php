@@ -189,28 +189,33 @@ abstract class Object
      * @param string $column column to get that value from
      * @return Object
      */
-    public final static function get($id, $column = 'id')
+    public final static function get($key, $value = null)
     {
-        if (!is_array($id)) {
-            return self::_getSingle($id, $column);
+        if ($value === null) {
+            $value = $key;
+            $key = 'id';
         }
 
-        if (count($id) == 0) {
+        if (!is_array($value)) {
+            return self::_getSingle($key, $value);
+        }
+
+        if (count($value) == 0) {
             return array();
         }
 
-        if ($column != 'id') {
+        if ($key != 'id') {
             throw new Object\Exception('you can only multiget an object by id');
         }
 
         // if this is an array of one return it as an array of one
-        if (count($id) == 1) {
-            $id = array_pop($id);
-            $object = self::_getSingle($id, 'id');
+        if (count($value) == 1) {
+            $value = array_pop($value);
+            $object = self::_getSingle('id', $value);
             return array($object);
         }
 
-        return self::_getMultiple($id);
+        return self::_getMultiple($value);
     }
 
     /**
@@ -304,7 +309,7 @@ abstract class Object
      * @param string $column
      * @return Object
      */
-    protected final static function _getSingle($value, $column)
+    protected final static function _getSingle($column, $value)
     {
         $class = get_called_class();
         $definition = self::getDefinition($class);

@@ -7,7 +7,7 @@ use Sonic\Database\MySqli\Exception;
 /**
  * Statement class
  *
- * @package MySql
+ * @package MySqli
  * @subpackage Statement
  * @author Craig Campbell
  */
