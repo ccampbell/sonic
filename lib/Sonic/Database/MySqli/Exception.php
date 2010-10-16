@@ -1,5 +1,6 @@
 <?php
 namespace Sonic\Database\MySqli;
+use Sonic\Database\MySql;
 
 /**
  * Exception class
@@ -8,4 +9,4 @@ namespace Sonic\Database\MySqli;
  * @subpackage Exception
  * @author Craig Campbell
  */
-class Exception extends \Sonic\Database\MySql\Exception {}
+class Exception extends MySql\Exception {}
