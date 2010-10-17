@@ -223,7 +223,7 @@ abstract class Object
      *
      * @todo implement
      */
-    protected final static function _getMultiple(array $ids)
+    protected static function _getMultiple(array $ids)
     {
         // first build an array of cache keys
         $cache_keys = $cache_key_to_id = array();
@@ -309,7 +309,7 @@ abstract class Object
      * @param string $column
      * @return Object
      */
-    protected final static function _getSingle($column, $value)
+    protected static function _getSingle($column, $value)
     {
         $class = get_called_class();
         $definition = self::getDefinition($class);
@@ -410,7 +410,7 @@ abstract class Object
      *
      * @return bool
      */
-    protected final function _add()
+    protected function _add()
     {
         $definition = $this->getDefinition();
         $sql = 'INSERT INTO `' . $definition['table'] . '` (`' . implode('`, `', $this->_updates) . '`) VALUES (:' . implode(', :', $this->_updates) . ')';
@@ -439,7 +439,7 @@ abstract class Object
      *
      * @return bool
      */
-    protected final function _update()
+    protected function _update()
     {
         if (in_array('id', $this->_updates)) {
             throw new Object\Exception('you cannot update an id after you create an object');
@@ -531,7 +531,7 @@ abstract class Object
      *
      * @return void
      */
-    protected final function _cache()
+    protected function _cache()
     {
         $cache_key = self::_getCacheKey('id', $this->id);
         App::getMemcache()->set($cache_key, $this, '1 week');
