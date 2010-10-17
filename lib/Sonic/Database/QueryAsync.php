@@ -95,4 +95,14 @@ class QueryAsync
     {
         return $this->_getAsync()->fetchResultsForQuery($this->_query, Async::FETCH_VALUE);
     }
+
+    /**
+     * executes a bunch of queries when called for the final query
+     *
+     * @return mixed
+     */
+    public function execute()
+    {
+        return $this->_getAsync()->fetchResultsForQuery($this->_query, Async::EXECUTE);
+    }
 }

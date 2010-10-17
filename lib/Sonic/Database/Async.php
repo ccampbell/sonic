@@ -16,6 +16,7 @@ class Async
     const FETCH_ROW = 1;
     const FETCH_ALL = 2;
     const FETCH_VALUE = 3;
+    const EXECUTE = 4;
 
     /**
      * @var array
@@ -150,6 +151,8 @@ class Async
                 $row = mysqli_fetch_assoc($result);
                 return array_pop($row);
                 break;
+            case self::EXECUTE:
+                break;
             default:
                 $field_count = mysqli_num_fields($result);
                 $rows = array();
@@ -182,6 +185,9 @@ class Async
                 break;
             case self::FETCH_ROW:
                 return $query->fetchRow();
+                break;
+            case self::EXECUTE:
+                return $query->execute();
                 break;
         }
     }
