@@ -74,14 +74,12 @@ class Request
         }
 
         // if redirect url is present use that to avoid extra processing
-        if (($uri = $this->getServer('REDIRECT_URL')) !== null) {
-            $this->_base_url = $uri == '/' ? $uri : rtrim($uri, '/');
-            return $this->_base_url;
+        if (($uri = $this->getServer('REDIRECT_URL')) === null) {
+            $bits = explode('?', $this->getServer('REQUEST_URI'));
+            $uri = $bits[0];
         }
 
-        $bits = explode('?', $this->getServer('REQUEST_URI'));
-        $this->_base_url = $bits[0] == '/' ? $bits[0] : rtrim($bits[0], '/');
-
+        $this->_base_url = $uri == '/' ? $uri : rtrim($uri, '/');
         return $this->_base_url;
     }
 
@@ -214,7 +212,6 @@ class Request
                 }
                 break;
         }
-
         return null;
     }
 
