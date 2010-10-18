@@ -61,7 +61,7 @@ class Layout extends View
     public function setTitlePattern($pattern)
     {
         self::$_title_pattern = $pattern;
-        return $this->getTitle($this->topView()->title());
+        return $this->getTitle($this->topView() ? $this->topView()->title() : '');
     }
 
     /**
@@ -87,7 +87,7 @@ class Layout extends View
     {
         $uri = $_SERVER['REQUEST_URI'];
         if (strpos($uri, '?') !== false) {
-            return $uri . '&amp;noturbo=1';
+            return $uri . '&noturbo=1';
         }
         return $uri . '?noturbo=1';
     }
