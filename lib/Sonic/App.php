@@ -240,7 +240,7 @@ class App
         $config = new Config($path, $environment, $type);
         $app->_configs[$cache_key] = $config;
 
-        if (!$app->getSetting(self::DISABLE_APC)) {
+        if (!self::isDev() && !$app->getSetting(self::DISABLE_APC)) {
             apc_store($cache_key, $config, Util::toSeconds('24 hours'));
         }
 
