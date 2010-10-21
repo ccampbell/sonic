@@ -166,10 +166,21 @@ class InputFilter
      * @param string $type
      * @return mixed
      */
-    public function from($type = Request::GET)
+    public function getValue($type = Request::GET)
     {
         $arg = $this->_request->getParam($this->_name, $type);
         return $this->_applyFilters($arg);
+    }
+
+    /**
+     * gets the value after filtering
+     *
+     * @param string $type
+     * @return mixed
+     */
+    public function from($type = Request::GET)
+    {
+        return $this->getValue($type);
     }
 
     /**
