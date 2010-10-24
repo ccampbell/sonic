@@ -105,6 +105,10 @@ class InputFilterTest extends TestCase
         $cool = $this->_filter('is_cool')->setType('bool')->from(Request::GET);
         $this->isFalse($cool);
         $this->isEqual($cool, false);
+
+        $_GET['mode'] = 'blah';
+        $mode = $this->_filter('mode')->setType('bool')->in(array('test'))->setDefault(false)->getValue(Request::GET);
+        $this->isFalse($mode);
     }
 
     public function testHex()

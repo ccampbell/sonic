@@ -252,11 +252,9 @@ class InputFilter
                 break;
         }
 
-        // @todo remove this
-        // can't think of any way to get this code to run
-        // if (!$arg && $this->_default !== null) {
-            // return $this->_default;
-        // }
+        if (!$arg && $this->_default !== null) {
+            return $this->_default;
+        }
 
         if (!$arg) {
             return null;
