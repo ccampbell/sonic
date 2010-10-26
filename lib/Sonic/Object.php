@@ -177,7 +177,22 @@ abstract class Object
      */
     public function setCacheTime($key)
     {
-        $this->_cache_times[$key] = time();
+        $time = $_SERVER['REQUEST_TIME'];
+
+        // figure out what time was set
+        $stored_time = null;
+        if (isset($this->_cache_times[$key])) {
+            $stored_time = $this->_cache_times[$key];
+        }
+
+        $this->_cache_times[$key] = $time;
+
+        // if the time we are setting this to is equal to the stored time
+        // make it not equal
+        if ($stored_time == $time) {
+            $this->_cache_times[$key] .= '_' . mt_rand(0, 99);
+        }
+
         $this->_cache();
         return $this->_cache_times[$key];
     }
