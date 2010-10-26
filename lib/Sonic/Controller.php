@@ -95,7 +95,15 @@ class Controller
             $this->_view_name = $name;
             $this->_view === null ?: $this->getView()->path($this->getViewPath());
         }
+
+        // if the layout is null that means it was disabled
+        if ($this->_layout_name === null) {
+            return $this;
+        }
+
+        // @todo why is this here? can it be removed?
         $this->_layout_name = Layout::MAIN;
+
         return $this;
     }
 
