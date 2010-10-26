@@ -614,7 +614,7 @@ class App
             return true;
         }
 
-        if (strpos($_SERVER['HTTP_USER_AGENT'], 'Googlebot') !== false) {
+        if (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'Googlebot') !== false) {
             setcookie('bot', true, time() + 86400);
             return true;
         }
