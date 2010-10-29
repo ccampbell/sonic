@@ -288,7 +288,7 @@ class View
         // set for a controller initially then all the queueing of views ends
         // up going through that view which means unless the html is reset the
         // queueing won't happen for the view that would be rendered here
-        if ( $this->isTurbo()) {
+        if ($this->isTurbo()) {
             $this->_html = null;
         }
 
