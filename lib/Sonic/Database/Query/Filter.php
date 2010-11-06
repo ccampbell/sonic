@@ -68,9 +68,9 @@ class Filter
         $bits = explode($symbol, $pattern);
 
         $filter = array(
-            'column' => trim($bits[0]),
+            'column' => trim(array_shift($bits)),
             'comparison' => $symbol,
-            'value' => trim($bits[1]),
+            'value' => trim(implode($symbol, $bits)),
             'args' => $args
         );
 
