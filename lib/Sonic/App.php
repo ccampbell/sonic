@@ -21,6 +21,11 @@ class App
     const COMMAND_LINE = 'cli';
 
     /**
+     * @var float
+     */
+    const VERSION = '1.0.4';
+
+    /**
      * @var App
      */
     protected static $_instance;
@@ -406,6 +411,8 @@ class App
      */
     public function getController($name)
     {
+        $name = strtolower($name);
+
         if (isset($this->_controllers[$name])) {
             return $this->_controllers[$name];
         }
