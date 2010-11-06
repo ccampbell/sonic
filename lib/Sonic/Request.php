@@ -269,6 +269,18 @@ class Request
     }
 
     /**
+     * sets a header for this request
+     *
+     * @param string $key
+     * @param string $value
+     * @param bool $overwrite
+     */
+    public function setHeader($key, $value, $overwrite = true)
+    {
+        return header($key . ': ' . $value, $overwrite);
+    }
+
+    /**
      * allows the request to be reset for unit tests only
      *
      * @return void
