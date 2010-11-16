@@ -251,7 +251,7 @@ class Sync
             $sql .= ",\n" . self::getCreateField($column, $column_definition, $definition['table']);
         }
 
-        $sql .= ') ENGINE=INNODB;';
+        $sql .= ') ENGINE=INNODB; DEFAULT CHARSET=utf8;';
 
         return $sql;
     }
