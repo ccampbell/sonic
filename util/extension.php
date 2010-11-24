@@ -42,7 +42,7 @@ $app->addSetting(App::AUTOLOAD, true);
 $app->start(App::COMMAND_LINE);
 
 $type = $_SERVER['argv'][1];
-$extension_name = $_SERVER['argv'][2];
+$extension_name = strtolower($_SERVER['argv'][2]);
 
 $extension_path = $app->getPath('extensions') . '/' . $extension_name;
 
