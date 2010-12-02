@@ -67,10 +67,19 @@ class Filter
 
         $bits = explode($symbol, $pattern);
 
+        $column = trim(array_shift($bits));
+        $value = trim(implode($symbol, $bits));
+
+        // the database sometimes return integers as strings so when there are
+        // comparisons, php should use an integer to behave the same way as mysql
+        if (is_numeric($value)) {
+            $value = (int) $value;
+        }
+
         $filter = array(
-            'column' => trim(array_shift($bits)),
+            'column' => $column,
             'comparison' => $symbol,
-            'value' => trim(implode($symbol, $bits)),
+            'value' => $value,
             'args' => $args
         );
 
