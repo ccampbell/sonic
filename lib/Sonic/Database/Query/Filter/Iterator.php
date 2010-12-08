@@ -113,11 +113,6 @@ class Iterator
             case '===':
             case '==':
             case '=':
-                // if this is a comma separated field in the database
-                // (such as tags) then we should treat it as an array
-                if (strpos($other_value, ',') === false && strpos($value, ',') !== false) {
-                    return in_array($other_value, $this->_getArray($pattern));
-                }
                 return $value == $other_value;
                 break;
             case '<=':
