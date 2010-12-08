@@ -121,4 +121,9 @@ window.SonicTurbo = (function()
     };
 }) ();
 
-window.onload = SonicTurbo.init();
+if (window.addEventListener) {
+    window.addEventListener('load', SonicTurbo.init, false);
+}
+else {
+    window.attachEvent('onload', SonicTurbo.init);
+}
