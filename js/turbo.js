@@ -4,7 +4,7 @@
  * @author Craig Campbell
  * @version 1.0 beta
  */
-window.SonicTurbo = (function()
+window.SonicTurbo = (function(doc)
 {
     /**
      * array of javascript files to load
@@ -34,11 +34,11 @@ window.SonicTurbo = (function()
      */
     function _addCssFile(filename)
     {
-        var stylesheet = document.createElement("link");
+        var stylesheet = doc.createElement("link");
         stylesheet.setAttribute("rel", "stylesheet");
         stylesheet.setAttribute("type", "text/css");
         stylesheet.setAttribute("href", filename);
-        document.getElementsByTagName("head")[0].appendChild(stylesheet);
+        doc.getElementsByTagName("head")[0].appendChild(stylesheet);
     };
 
     /**
@@ -61,8 +61,8 @@ window.SonicTurbo = (function()
      */
     function _addJsFile(filename)
     {
-        var body = document.getElementsByTagName("body")[0];
-        var script = document.createElement("script");
+        var body = doc.getElementsByTagName("body")[0];
+        var script = doc.createElement("script");
         script.src = filename;
 
         var done = false;
@@ -93,7 +93,7 @@ window.SonicTurbo = (function()
          */
         init : function()
         {
-            document.cookie = 'noturbo=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
+            doc.cookie = 'noturbo=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
         },
 
         /**
@@ -109,8 +109,8 @@ window.SonicTurbo = (function()
                 window.location = data.redirect;
             }
             _addCss(data.css);
-            document.title = data.title;
-            document.getElementById(data.id).innerHTML = data.content;
+            doc.title = data.title;
+            doc.getElementById(data.id).innerHTML = data.content;
 
             for (i in data.js) {
                 _js_queue.push(data.js[i]);
@@ -119,7 +119,7 @@ window.SonicTurbo = (function()
             _processQueue();
         }
     };
-}) ();
+})(document);
 
 if (window.addEventListener) {
     window.addEventListener('load', SonicTurbo.init, false);
