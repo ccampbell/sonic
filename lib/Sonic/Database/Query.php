@@ -361,15 +361,4 @@ class Query
         }
         return $this->_sort->process($data);
     }
-
-    /**
-     * turns on no join mode
-     *
-     * @return Query
-     */
-    public function noJoins()
-    {
-        $this->_use_joins = false;
-        return $this;
-    }
 }
