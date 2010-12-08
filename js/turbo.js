@@ -19,7 +19,7 @@ window.SonicTurbo = (function()
      * @param JSON
      * @return void
      */
-    var _addCss = function(css)
+    function _addCss(css)
     {
         for (i = 0; i < css.length; ++i) {
             _addCssFile(css[i]);
@@ -32,7 +32,7 @@ window.SonicTurbo = (function()
      * @param string
      * @return void
      */
-    var _addCssFile = function(filename)
+    function _addCssFile(filename)
     {
         var stylesheet = document.createElement("link");
         stylesheet.setAttribute("rel", "stylesheet");
@@ -46,7 +46,7 @@ window.SonicTurbo = (function()
      *
      * @return void
      */
-    var _processQueue = function()
+    function _processQueue()
     {
         if (_js_queue.length) {
             _addJsFile(_js_queue[0]);
@@ -59,7 +59,7 @@ window.SonicTurbo = (function()
      * @param string
      * @return void
      */
-    var _addJsFile = function(filename)
+    function _addJsFile(filename)
     {
         var body = document.getElementsByTagName("body")[0];
         var script = document.createElement("script");
