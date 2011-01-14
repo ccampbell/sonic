@@ -192,11 +192,11 @@ class InputFilter
     protected function _applyFilters($arg)
     {
         // if there is no arg but there is a default return that
-        if (!$arg && $this->_default !== null) {
+        if ($arg === null && $this->_default !== null) {
             return $this->_default;
         }
 
-        if (!$arg) {
+        if ($arg === null) {
             return null;
         }
 
@@ -252,11 +252,11 @@ class InputFilter
                 break;
         }
 
-        if (!$arg && $this->_default !== null) {
+        if ($arg === null && $this->_default !== null) {
             return $this->_default;
         }
 
-        if (!$arg) {
+        if ($arg === null) {
             return null;
         }
 

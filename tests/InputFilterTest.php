@@ -82,7 +82,7 @@ class InputFilterTest extends TestCase
         // check with value not in array
         $_POST['brand'] = 'Toyota';
         $brand = $this->_filter('brand')->setType('string')->in(array('BMW', 'Mazda', 'Lexus', 'Mercedes'))->from(Request::POST);
-        $this->isNull($brand);
+        $this->isEqual($brand, '');
     }
 
     public function testBoolean()
