@@ -61,7 +61,7 @@ class Layout extends View
     public function setTitlePattern($pattern)
     {
         self::$_title_pattern = $pattern;
-        return $this->getTitle($this->topView() ? $this->topView()->title() : '');
+        return self::getTitle($this->topView() ? $this->topView()->title() : '');
     }
 
     /**
@@ -70,7 +70,7 @@ class Layout extends View
      * @param string
      * @return string
      */
-    public function getTitle($string)
+    public static function getTitle($string)
     {
         if (!self::$_title_pattern) {
             return $string;
