@@ -1,9 +1,9 @@
-Copyright 2010 Craig Campbell
+Copyright 2011 Craig Campbell
 
 Sonic Framework is a blazing fast PHP 5 MVC framework.
 
 VERSION
-1.0.4 beta
+1.0.5 beta
 
 SYSTEM REQUIREMENTS:
 PHP 5.3+
@@ -18,8 +18,8 @@ All of these are highly recommended.  Without them you will not be able to use
 Sonic to its full potential.
 
 SIMPLE INSTALLATION
-1.  Download latest source from: [http://www.sonicframework.com]
-2.  tar xzvf sonic.tar.gz && cd sonic
+1.  wget http://sonicframework.com/sonic.tar.gz
+2.  mkdir sonic && tar xzvf sonic.tar.gz -C sonic && cd sonic
 3.  ./install /path/to/install/to AppName
 4.  follow instructions in /path/to/install/to/SETUP file
 
