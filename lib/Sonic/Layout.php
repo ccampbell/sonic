@@ -79,6 +79,27 @@ class Layout extends View
     }
 
     /**
+     * bypasses the render method used by views in order to default the controller to 'main'
+     *
+     * @see View::render()
+     * @param string
+     * @param string
+     * @param array
+     * @return void
+     */
+    public function render($controller, $action = null, $args = array())
+    {
+        if ($action === null || is_array($action)) {
+            $args = (array) $action;
+            $action = $controller;
+            $controller = self::MAIN;
+        }
+
+        $app = App::getInstance();
+        App::getInstance()->runController($controller, $action, $args);
+    }
+
+    /**
      * gets the url for no turbo
      *
      * @return string

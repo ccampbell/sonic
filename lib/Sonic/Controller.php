@@ -87,13 +87,28 @@ class Controller
      * sets the view for this controller run
      *
      * @param string $name name of view to render
+     * @param bool $from_controller was this called from a controller
      * @return Controller
      */
-    final public function setView($name)
+    final public function setView($name, $from_controller = true)
     {
-        if ($this->_view_name !== $name) {
-            $this->_view_name = $name;
-            $this->_view === null ?: $this->getView()->path($this->getViewPath());
+        // setting the view to the view we are already on
+        if ($this->_view_name == $name) {
+            return $this;
+        }
+
+        $this->_view_name = $name;
+
+        // if we are setting the view from a controller that means
+        // all we should do is update the path
+        if ($from_controller) {
+            $this->getView()->path($this->getViewPath());
+        }
+
+        // if the view is being set from the application then that means
+        // the view needs to get reset to prevent it from being cached
+        if (!$from_controller) {
+            $this->_view = null;
         }
 
         // if the layout is null that means it was disabled

@@ -441,7 +441,7 @@ class App
         $this->getRequest()->addParams($args);
 
         $controller = $this->getController($controller_name);
-        $controller->setView($action);
+        $controller->setView($action, false);
 
         $view = $controller->getView();
         $view->setAction($action);
