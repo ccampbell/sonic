@@ -173,6 +173,7 @@ class AppTest extends TestCase
         $app->getRequest()->reset();
         $app->addSetting(App::TURBO, true);
         $app->start(App::WEB, false);
+        $app->processViewQueue();
 
         // make sure turbo is turned off for ajax requests
         $_SERVER['HTTP_X_REQUESTED_WITH'] = 'XMLHttpRequest';
@@ -180,12 +181,14 @@ class AppTest extends TestCase
         $app->addSetting(App::TURBO, true);
         $app->start(App::WEB, false);
         $this->isFalse($app->getSetting(App::TURBO));
+        $app->processViewQueue();
 
         // exception in turbo mode
         $_SERVER['REQUEST_URI'] = '/blah';
         $app->getRequest()->reset();
         $app->addSetting(App::TURBO, true);
         $app->start(App::WEB, false);
+        $app->processViewQueue();
         ob_end_clean();
     }
 
