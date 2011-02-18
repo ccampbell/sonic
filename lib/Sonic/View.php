@@ -281,7 +281,7 @@ class View
         if ($action === null || is_array($action)) {
             $args = (array) $action;
             $action = $controller;
-            $controller = $this->_active_controller;
+            $controller = $this instanceof Layout ? Layout::MAIN : $this->_active_controller;
         }
 
         App::getInstance()->runController($controller, $action, $args);
