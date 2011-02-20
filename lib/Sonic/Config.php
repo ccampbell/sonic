@@ -77,7 +77,7 @@ class Config
         // make sure environment exists
         $map = $this->_getEnvironmentMap($sections);
         if (!isset($map[$environment])) {
-            throw new Exception('environment : ' . $environment . 'not found in config at : ' . $path);
+            throw new Exception('environment: ' . $environment . ' not found in config at : ' . $path);
         }
 
         $parents = $this->getParents($sections, $environment);
