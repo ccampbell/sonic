@@ -230,6 +230,9 @@ class App
             $path = $app->getPath('configs') . '/app.' . $type;
         }
 
+        // we need to load the config object before it fetches it from APC
+        $app->includeFile('Sonic/Config.php');
+
         // if we are not dev let's try to grab it from APC
         if (!self::isDev() && !$app->getSetting(self::DISABLE_APC) && ($config = apc_fetch($cache_key))) {
             $app->_configs[$cache_key] = $config;
@@ -237,7 +240,6 @@ class App
         }
 
         // include the class
-        $app->includeFile('Sonic/Config.php');
         $app->includeFile('Sonic/Util.php');
 
         // if we have gotten here then that means the config exists so we
