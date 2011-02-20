@@ -116,9 +116,6 @@ class Controller
             return $this;
         }
 
-        // @todo why is this here? can it be removed?
-        $this->_layout_name = Layout::MAIN;
-
         return $this;
     }
 
