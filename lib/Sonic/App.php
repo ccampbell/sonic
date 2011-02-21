@@ -216,18 +216,18 @@ class App
         $app = self::getInstance();
         $environment = $app->getEnvironment();
 
+        // get the config path
+        if ($path === null) {
+            $type = $app->getSetting(self::CONFIG_FILE);
+            $path = $app->getPath('configs') . '/app.' . $type;
+        }
+
         // cache key
         $cache_key =  'config_' . $path . '_' . $environment;
 
         // if the config is in the registry return it
         if (isset($app->_configs[$cache_key])) {
             return $app->_configs[$cache_key];
-        }
-
-        // get the config path
-        if ($path === null) {
-            $type = $app->getSetting(self::CONFIG_FILE);
-            $path = $app->getPath('configs') . '/app.' . $type;
         }
 
         // we need to load the config object before it fetches it from APC
