@@ -143,7 +143,7 @@ class App
     public function autoloader($class_name)
     {
         $path = str_replace('\\', '/', $class_name) . '.php';
-        return $this->includeFile($path);
+        return self::includeFile($path);
     }
 
     /**
@@ -231,7 +231,7 @@ class App
         }
 
         // we need to load the config object before it fetches it from APC
-        $app->includeFile('Sonic/Config.php');
+        self::includeFile('Sonic/Config.php');
 
         // if we are not dev let's try to grab it from APC
         if (!self::isDev() && !$app->getSetting(self::DISABLE_APC) && ($config = apc_fetch($cache_key))) {
@@ -240,7 +240,7 @@ class App
         }
 
         // include the class
-        $app->includeFile('Sonic/Util.php');
+        self::includeFile('Sonic/Util.php');
 
         // if we have gotten here then that means the config exists so we
         // now need to get the environment name and load the config
@@ -340,7 +340,7 @@ class App
         }
 
         if ($this->getSetting(self::MODE) == self::COMMAND_LINE) {
-            $this->_base_path = str_replace(array('/libs', '/lib'),'', get_include_path());
+            $this->_base_path = str_replace(array('/libs', '/lib'), '', get_include_path());
             return $this->_base_path;
         }
 
@@ -698,7 +698,7 @@ class App
      */
     public function setDelegate($delegate)
     {
-        $this->includeFile('Sonic/App/Delegate.php');
+        self::includeFile('Sonic/App/Delegate.php');
         $this->autoloader($delegate);
 
         $delegate = new $delegate;
