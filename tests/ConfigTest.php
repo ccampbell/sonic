@@ -61,6 +61,9 @@ class ConfigTest extends TestCase
         $debug = $config->get('debug');
         $this->isEqual($debug, 1);
 
+        $new_array = $config->get('new_array');
+        $this->isEqual($new_array, array(25));
+
         $url = $config->get('urls', 'www');
         $this->isEqual($url, 'http://user.website.local');
 
