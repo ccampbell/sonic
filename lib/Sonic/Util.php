@@ -97,7 +97,7 @@ class Util
         foreach ($array2 as $key => $value) {
 
             // if the key is an integer that means it is a straight up
-            // array so we should just append it to the first array istead
+            // array so we should just append it to the first array instead
             // of overwriting the key
             if (is_int($key) && isset($array1[$key])) {
                 $array1[] = $value;
