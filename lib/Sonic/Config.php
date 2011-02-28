@@ -89,7 +89,7 @@ class Config
 
         foreach ($to_merge as $environment) {
             $full_section = $map[$environment];
-            $this->_combined = array_merge($this->_combined, $parsed_file[$full_section]);
+            $this->_combined = Util::extendArray($this->_combined, $parsed_file[$full_section]);
         }
     }
 

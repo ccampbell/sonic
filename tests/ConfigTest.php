@@ -37,6 +37,7 @@ class ConfigTest extends TestCase
     {
         $app = App::getInstance();
         $path = $app->getPath('configs') . '/app.ini';
+
         $config = new Config($path, 'production');
         $var = $config->get('made_up_var');
         $this->isNull($var);
@@ -47,8 +48,14 @@ class ConfigTest extends TestCase
         $debug = $config->get('debug');
         $this->isEqual($debug, 0);
 
+        $evil_users = $config->get('evil_users');
+        $this->isEqual(count($evil_users), 4);
+
         $url = $config->get('urls', 'www');
         $this->isEqual($url, 'http://www.website.com');
+
+        $url = $config->get('urls', 'test');
+        $this->isEqual($url, 'http://www.testwebsite.com');
 
         $config = new Config($path, 'user');
         $debug = $config->get('debug');
@@ -59,6 +66,12 @@ class ConfigTest extends TestCase
 
         $urls = $config->get('urls');
         $this->isArray($urls);
-        $this->isEqual(count($urls), 1);
+        $this->isEqual(count($urls), 2);
+
+        $url = $config->get('urls', 'test');
+        $this->isEqual($url, 'http://www.website.com/test');
+
+        $analytics = $config->get('use_analytics');
+        $this->isEqual($analytics, 0);
     }
 }

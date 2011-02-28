@@ -83,6 +83,47 @@ class Util
     }
 
     /**
+     * helper function to extend an array
+     *
+     * this is similar to array_merge except that values in the first array
+     * are never deleted just added or updated
+     *
+     * @param array $array1
+     * @param array $array2
+     * @return array
+     */
+    public static function extendArray($array1, $array2)
+    {
+        foreach ($array2 as $key => $value) {
+
+            // if the key is an integer that means it is a straight up
+            // array so we should just append it to the first array istead
+            // of overwriting the key
+            if (is_int($key) && isset($array1[$key])) {
+                $array1[] = $value;
+                continue;
+            }
+
+            // if this is a straight up value overwrite it
+            if (!is_array($value)) {
+                $array1[$key] = $value;
+                continue;
+            }
+
+            // if it is an array that doesn't exist in the first array
+            if (!isset($array1[$key])) {
+                $array1[$key] = $value;
+                continue;
+            }
+
+            // an array in both should come back around through this method
+            $array1[$key] = self::extendArray($array1[$key], $value);
+        }
+
+        return $array1;
+    }
+
+    /**
      * maps english representation of time to seconds
      *
      * @param string
