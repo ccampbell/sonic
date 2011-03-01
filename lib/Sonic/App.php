@@ -713,6 +713,40 @@ class App
     }
 
     /**
+     * loads an extension by name
+     *
+     * @param string $name
+     * @return void
+     */
+    public function loadExtension($name)
+    {
+        $name = strtolower($name);
+
+        $extensions = $this->getSetting('extensions');
+        if (!$extensions) {
+            $path = $this->getPath('extensions/installed.json');
+            $extensions = json_decode(file_get_contents($path), true);
+            $this->addSetting('extensions', $extensions);
+        }
+
+        if (!isset($extensions[$name])) {
+            throw new Exception('extension ' . $name . ' is not installed!');
+        }
+
+        $base_path = $this->getPath();
+        foreach ($extensions[$name]['files'] as $file) {
+
+            // if the file is not in the extensions directory then skip it
+            // we don't want to load controllers/views/etc. here
+            if (strpos($file, 'extensions') != 0) {
+                continue;
+            }
+
+            include $base_path . '/' . $file;
+        }
+    }
+
+    /**
      * pushes over the first domino
      *
      * @param string $mode
