@@ -293,7 +293,7 @@ class Controller
             return $this->_input_filter->filter($name);
         }
 
-        App::getInstance()->includeFile('Sonic/InputFilter.php');
+        App::includeFile('Sonic/InputFilter.php');
         $this->_input_filter = new InputFilter($this->request());
         return $this->_input_filter->filter($name);
     }
