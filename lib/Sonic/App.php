@@ -744,6 +744,11 @@ class App
                 continue;
             }
 
+            // if this is not a PHP file then skip it
+            if (substr($file, -4) != '.php') {
+                continue;
+            }
+
             include $base_path . '/' . $file;
         }
 
