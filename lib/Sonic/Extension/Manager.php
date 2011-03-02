@@ -101,18 +101,20 @@ class Manager
         }
 
         $path = rtrim($path, DIRECTORY_SEPARATOR);
+        $path = $manager->_lowercaseEnd($path);
+        $name = $manager->_nameFromPath($path);
+
+        $force = $action == self::RELOAD ? true : $force;
 
         switch ($action) {
             case self::UPGRADE:
             case self::INSTALL:
-                $manager->install($path, $local);
-                break;
             case self::RELOAD:
-                $force = true;
+                $manager->uninstall($name, $force, true);
                 $manager->install($path, $local, $force);
                 break;
             case self::UNINSTALL:
-                $manager->uninstall($path, $force);
+                $manager->uninstall($name, $force);
                 break;
             default:
                 throw new Exception("invalid action specified\n" . $manager->showUsage());
@@ -127,91 +129,15 @@ class Manager
      * @param bool $local
      * @return void
      */
-    public function install($name, $local = false, $force = false)
+    public function install($path, $local = false, $force = false)
     {
-        $name = $this->_lowercaseEnd($name);
-        $this->_output('installing ' . $name, true);
+        $this->_output('installing from ' . $path, true);
         if ($local) {
-            return $this->_localInstall($name, $force);
+            return $this->_localInstall($path, $force);
         }
-        return $this->_remoteInstall($name, $force);
+        return $this->_remoteInstall($path, $force);
     }
 
-    /**
-     * uninstalls extension with given name
-     *
-     * @param string $name
-     * @param bool $force
-     * @return void
-     */
-    public function uninstall($name, $force = false)
-    {
-        $lc_name = strtolower($name);
-        $data = $this->_getInstallationData();
-        if (!isset($data[$lc_name])) {
-            throw new Exception('extension: ' . $name . ' is not installed');
-        }
-
-        // find extensions that depend on this one and will break if this one
-        // is uninstalled
-        $will_break = array();
-        foreach ($data as $ext => $info) {
-            if (!isset($info['dependencies'])) {
-                continue;
-            }
-
-            if (in_array($lc_name, $info['dependencies'])) {
-                $will_break[] = $ext;
-            }
-        }
-
-        if (!$force && count($will_break)) {
-            throw new Exception(implode(', ', $will_break) . ' ' . (count($will_break) == 1 ? 'depends' : 'depend') . ' on ' . $name . '.  use --force to uninstall anyway.');
-        }
-
-        // force uninstall
-        $base_path = App::getInstance()->getPath() . '/';
-        foreach ($data[$lc_name]['files'] as $path) {
-            unlink($base_path . $path);
-            $this->_output('removed file ' . $path, true);
-        }
-
-        foreach ($data[$lc_name]['dirs'] as $dir) {
-
-            // ignore warnings cause that means files were added after this directory
-            // was created by the extension which means we don't want to remove the directory
-            @rmdir($base_path . $dir);
-            $this->_output('removed dir ' . $dir, true);
-        }
-
-        foreach ($data[$lc_name]['moved'] as $moved) {
-            $this->_output('restored backup from ' . $moved . '.backup', true);
-            rename($base_path . $moved . '.backup', $base_path . $moved);
-        }
-
-        $extension_dir = App::getInstance()->getPath('extensions') . '/' . $name;
-        if (is_dir($extension_dir)) {
-            exec('rm -r ' . $extension_dir);
-        }
-
-        unset($data[$lc_name]);
-        $this->_saveInstallationData($data);
-        $this->_output('extension: ' . $name . ' uninstalled successfully');
-    }
-
-    /**
-     * strips the filename off the path and returns the whole path with it lowercase
-     *
-     * @param string $path
-     * @return string
-     */
-    protected function _lowercaseEnd($path)
-    {
-        $path_bits = explode(DIRECTORY_SEPARATOR, $path);
-        $file = strtolower(array_pop($path_bits));
-        $path = implode(DIRECTORY_SEPARATOR, $path_bits) . DIRECTORY_SEPARATOR . $file;
-        return $path;
-    }
 
     /**
      * local installation of extension by name
@@ -248,9 +174,8 @@ class Manager
         }
 
         $data = $this->_getInstallationData();
-
         if (isset($data[$name]['version']) && $data[$name]['version'] >= $manifest::VERSION && !$force) {
-            $this->_output('installed version of ' . $name . ' (' . $data[$name]['version'] . ') is greater than or equal to ' . $manifest::VERSION,"\n");
+            $this->_output('installed version of ' . $name . ' (' . $data[$name]['version'] . ') is greater than or equal to ' . $manifest::VERSION);
             return;
         }
 
@@ -278,6 +203,92 @@ class Manager
 
         $this->_saveInstallationData($data);
         $this->_output('extension: ' . $name . ' installed successfully');
+
+        if ($manifest->getInstructions()) {
+            $this->_output($manifest->getInstructions());
+        }
+    }
+
+    /**
+     * does a remote installation by name
+     *
+     * @param $name
+     * @return void
+     */
+    protected function _remoteInstall($name, $force = false)
+    {
+        throw new Exception('remote installation coming soon!');
+    }
+
+    /**
+     * uninstalls extension with given name
+     *
+     * @param string $name
+     * @param bool $force
+     * @return void
+     */
+    public function uninstall($name, $force = false, $reload = false)
+    {
+        $lc_name = strtolower($name);
+        $data = $this->_getInstallationData();
+
+        // if not installed and reload
+        if (!isset($data[$lc_name]) && $reload) {
+            return;
+        }
+
+        if (!isset($data[$lc_name])) {
+            throw new Exception('extension: ' . $name . ' is not installed');
+        }
+
+        // find extensions that depend on this one and will break if this one
+        // is uninstalled
+        $will_break = array();
+        foreach ($data as $ext => $info) {
+            if (!isset($info['dependencies'])) {
+                continue;
+            }
+
+            if (in_array($lc_name, $info['dependencies'])) {
+                $will_break[] = $ext;
+            }
+        }
+
+        if (!$force && !$reload && count($will_break)) {
+            throw new Exception(implode(', ', $will_break) . ' ' . (count($will_break) == 1 ? 'depends' : 'depend') . ' on ' . $name . '.  use --force to uninstall anyway.');
+        }
+
+        // force uninstall
+        $base_path = App::getInstance()->getPath() . '/';
+        foreach ($data[$lc_name]['files'] as $path) {
+            $this->_output('removing file ' . $path, true);
+            unlink($base_path . $path);
+        }
+
+        foreach ($data[$lc_name]['dirs'] as $dir) {
+
+            // ignore warnings cause that means files were added after this directory
+            // was created by the extension which means we don't want to remove the directory
+            $this->_output('removing dir ' . $dir, true);
+            @rmdir($base_path . $dir);
+        }
+
+        foreach ($data[$lc_name]['moved'] as $moved) {
+            $this->_output('restoring backup from ' . $moved . '.backup', true);
+            rename($base_path . $moved . '.backup', $base_path . $moved);
+        }
+
+        $extension_dir = App::getInstance()->getPath('extensions') . '/' . $name;
+        if (is_dir($extension_dir)) {
+            exec('rm -r ' . $extension_dir);
+        }
+
+        // if this is not part of an installation
+        unset($data[$lc_name]);
+        $this->_saveInstallationData($data);
+        if (!$reload) {
+            $this->_output('extension: ' . $name . ' uninstalled successfully');
+        }
     }
 
     /**
@@ -320,13 +331,13 @@ class Manager
             }
 
             if (!$installed && file_exists($new_path)) {
-                $this->_output('WARNING: file already exists at path: ' . $new_path . '! it has been backed up for you.');
+                $this->_output('WARNING: file already exists at path: ' . $new_path . '! it has been backed up for you');
                 copy($new_path, $new_path . '.backup');
                 $this->getTracker($ext_name)->moved($this->_stripApp($new_path));
             }
 
+            $this->_output('copying ' . $old_path . ' => ' . $new_path, true);
             copy($old_path, $new_path);
-            $this->_output('copied ' . $old_path . ' to ' . $new_path, true);
             $this->getTracker($ext_name)->addedFile($this->_stripApp($new_path));
         }
     }
@@ -375,14 +386,28 @@ class Manager
     }
 
     /**
-     * does a remote installation by name
+     * strips the filename off the path and returns the whole path with it lowercase
      *
-     * @param $name
-     * @return void
+     * @param string $path
+     * @return string
      */
-    protected function _remoteInstall($name, $force = false)
+    protected function _lowercaseEnd($path)
     {
-        throw new Exception('remote installation coming soon!');
+        $path_bits = explode(DIRECTORY_SEPARATOR, $path);
+        $file = strtolower(array_pop($path_bits));
+        $path = implode(DIRECTORY_SEPARATOR, $path_bits) . DIRECTORY_SEPARATOR . $file;
+        return $path;
+    }
+
+    /**
+     * gets extension name from path
+     *
+     * @return string
+     */
+    protected function _nameFromPath($path)
+    {
+        $path_bits = explode(DIRECTORY_SEPARATOR, $path);
+        return array_pop($path_bits);
     }
 
     /**
