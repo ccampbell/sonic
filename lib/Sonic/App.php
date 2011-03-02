@@ -727,8 +727,12 @@ class App
         $extensions = $this->getSetting(self::EXTENSION_DATA);
         if (!$extensions) {
             $path = $this->getPath('extensions/installed.json');
-            $extensions = json_decode(file_get_contents($path), true);
-            $this->addSetting(self::EXTENSION_DATA, $extensions);
+
+            if (file_exists($path)) {
+                $extensions = json_decode(file_get_contents($path), true);
+                $this->addSetting(self::EXTENSION_DATA, $extensions);
+            }
+
         }
 
         if (!isset($extensions[$name])) {
