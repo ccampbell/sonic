@@ -153,7 +153,7 @@ class Router
 
             // if the first character of this part of the route is a ':' that means this is a parameter
             // let's store it and continue
-            if ($route_bits[$i][0] === ':') {
+            if (isset($route_bits[$i][0]) && $route_bits[$i][0] === ':') {
                 $param = substr($route_bits[$i], 1);
                 $params[$param] = $url_bits[$i];
                 continue;
