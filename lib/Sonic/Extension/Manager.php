@@ -18,6 +18,8 @@ class Manager
     const LOCAL = '--local';
     const FORCE = '--force';
     const VERBOSE = '--verbose';
+    const DOWNLOAD_URL = 'http://extensions.sonicframework.com/download';
+    const LIST_URL = 'http://extensions.sonicframework.com/list';
 
     /**
      * @var Manager
@@ -60,19 +62,6 @@ class Manager
     }
 
     /**
-     * gets a tracker by name
-     *
-     * @param string $name name of extension
-     */
-    public function getTracker($name)
-    {
-        if (!isset($this->_trackers[$name])) {
-            $this->_trackers[$name] = new Tracker();
-        }
-        return $this->_trackers[$name];
-    }
-
-    /**
      * starts extension manager
      *
      * @param array $args
@@ -110,7 +99,6 @@ class Manager
             case self::UPGRADE:
             case self::INSTALL:
             case self::RELOAD:
-                $manager->uninstall($name, $force, true);
                 $manager->install($path, $local, $force);
                 break;
             case self::UNINSTALL:
@@ -120,6 +108,25 @@ class Manager
                 throw new Exception("invalid action specified\n" . $manager->showUsage());
                 break;
         }
+
+        $tmp_path = $manager->_getTmpPath();
+        if (is_dir($tmp_path)) {
+            $manager->_output('removing ' . $tmp_path, true);
+            exec('rm -r ' . $tmp_path);
+        }
+    }
+
+    /**
+     * gets a tracker by name
+     *
+     * @param string $name name of extension
+     */
+    public function getTracker($name)
+    {
+        if (!isset($this->_trackers[$name])) {
+            $this->_trackers[$name] = new Tracker();
+        }
+        return $this->_trackers[$name];
     }
 
     /**
@@ -131,7 +138,8 @@ class Manager
      */
     public function install($path, $local = false, $force = false)
     {
-        $this->_output('installing from ' . $path, true);
+        $sentence = $local ? 'installing from ' : 'installing ';
+        $this->_output($sentence . $path, true);
         if ($local) {
             return $this->_localInstall($path, $force);
         }
@@ -145,7 +153,7 @@ class Manager
      * @param string $name
      * @return void
      */
-    protected function _localInstall($path, $force = false)
+    protected function _localInstall($path, $force = false, $from_remote = false)
     {
         if (!file_exists($path)) {
             throw new Exception('extension not found at path: ' . $path);
@@ -161,16 +169,22 @@ class Manager
         }
 
         App::includeFile($manifest_path);
-        $class = $name . 'Manifest';
+        $class = "\Sonic\Extension\\" . $name;
         $manifest = new $class;
 
         if (!$manifest instanceof Manifest) {
             throw new Exception('manifest file for ' . $name . ' must extend Sonic\Extension\Manifest');
         }
 
+        if (count($manifest->getDependencies())) {
+            $this->_output($name . ' requires: ' . implode(',', $manifest->getDependencies()));
+        }
+
         foreach ($manifest->getDependencies() as $dependency) {
             $this->_output('processing dependency: ' . $dependency, true);
-            $this->install($base_path . '/' . $dependency, true, $force);
+            $local = $from_remote ? false : true;
+            $dependency = $from_remote ? $dependency : $base_path . '/' . $dependency;
+            $this->install($dependency, $local, $force);
         }
 
         $data = $this->_getInstallationData();
@@ -178,6 +192,10 @@ class Manager
             $this->_output('installed version of ' . $name . ' (' . $data[$name]['version'] . ') is greater than or equal to ' . $manifest::VERSION);
             return;
         }
+
+        // uninstall the current version to remove/reset all files
+        // incase the new version has moved files around
+        $this->uninstall($name, $force, true);
 
         // time to actually install this extension
         $already_installed = isset($data[$name]);
@@ -217,7 +235,29 @@ class Manager
      */
     protected function _remoteInstall($name, $force = false)
     {
-        throw new Exception('remote installation coming soon!');
+        $download_url = self::DOWNLOAD_URL . '/' . $name;
+        $this->_output('downloading ' . $name . ' extension from ' . $download_url);
+        $tmp_path = $this->_getTmpPath();
+
+        if (!is_dir($tmp_path)) {
+            mkdir($tmp_path);
+        }
+
+        $file = @file_get_contents($download_url);
+        if (!$file) {
+            throw new Exception('ERROR: extension not found!');
+        }
+
+        $path = $tmp_path . '/' . $name . '.tar.gz';
+        file_put_contents($path, $file);
+
+        $this->_output('extracting ' . $name . '.tar.gz', true);
+
+        $options = $this->_verbose ? 'xzfv' : 'xzf';
+        exec('tar ' . $options . ' ' . $path . ' -C ' . $tmp_path);
+        exec('rm ' . $path);
+
+        $this->_localInstall($tmp_path . '/' . $name, $force, true);
     }
 
     /**
@@ -284,9 +324,9 @@ class Manager
         }
 
         // if this is not part of an installation
-        unset($data[$lc_name]);
-        $this->_saveInstallationData($data);
         if (!$reload) {
+            unset($data[$lc_name]);
+            $this->_saveInstallationData($data);
             $this->_output('extension: ' . $name . ' uninstalled successfully');
         }
     }
@@ -395,6 +435,9 @@ class Manager
     {
         $path_bits = explode(DIRECTORY_SEPARATOR, $path);
         $file = strtolower(array_pop($path_bits));
+        if (count($path_bits) == 0) {
+            return $file;
+        }
         $path = implode(DIRECTORY_SEPARATOR, $path_bits) . DIRECTORY_SEPARATOR . $file;
         return $path;
     }
@@ -422,6 +465,16 @@ class Manager
             return;
         }
         echo $message,"\n";
+    }
+
+    /**
+     * gets tmp directory for remote installation
+     *
+     * @return string
+     */
+    protected function _getTmpPath()
+    {
+        return App::getInstance()->getPath('tmp_extensions');
     }
 
     /**
