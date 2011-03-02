@@ -732,7 +732,7 @@ class App
         }
 
         if (!isset($extensions[$name])) {
-            throw new Exception('extension ' . $name . ' is not installed!');
+            throw new Exception('trying to load extension "' . $name . '" which is not installed!');
         }
 
         $base_path = $this->getPath();
