@@ -73,17 +73,17 @@ class Manager
     {
         $manager = self::getInstance();
 
+        if (in_array('-h', $args) || in_array('--help', $args)) {
+            echo $manager->showUsage();
+            exit;
+        }
+
         if (in_array(self::LIST_ACTION, $args)) {
             return $manager->listExtensions($args);
         }
 
         if (count($args) < 3 && !in_array(self::LIST_ACTION, $args)) {
             throw new Exception("invalid arguments\n" . $manager->showUsage());
-        }
-
-        if (in_array('-h', $args) || in_array('--help', $args)) {
-            echo $manager->showUsage();
-            exit;
         }
 
         $action = $args[1];
@@ -639,7 +639,9 @@ class Manager
      */
     public function showUsage()
     {
-        $usage = "./util/extension.php (install|upgrade|uninstall|reload) NameOfExtension\n\n";
+        $usage = "./util/extension.php (install|upgrade|uninstall|reload) NameOfExtension\n";
+        $usage .= "OR\n";
+        $usage .= "./util/extension.php list (installed|outdated)\n\n";
         $usage .= "--help           shows this menu\n";
         $usage .= "--force          forces the extension to install/uninstall\n";
         $usage .= "--verbose        shows verbose output\n";
