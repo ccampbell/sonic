@@ -101,6 +101,8 @@ class App
     const TURBO = 10;
     const TURBO_PLACEHOLDER = 11;
     const DEFAULT_SCHEMA = 12;
+    const EXTENSION_DATA = 13;
+    const EXTENSIONS_LOADED = 14;
 
     /**
      * @var array
@@ -722,11 +724,11 @@ class App
     {
         $name = strtolower($name);
 
-        $extensions = $this->getSetting('extensions');
+        $extensions = $this->getSetting(self::EXTENSION_DATA);
         if (!$extensions) {
             $path = $this->getPath('extensions/installed.json');
             $extensions = json_decode(file_get_contents($path), true);
-            $this->addSetting('extensions', $extensions);
+            $this->addSetting(self::EXTENSION_DATA, $extensions);
         }
 
         if (!isset($extensions[$name])) {
@@ -744,6 +746,22 @@ class App
 
             include $base_path . '/' . $file;
         }
+
+        $loaded = $this->getSetting(self::EXTENSIONS_LOADED) ?: array();
+        $loaded[] = $name;
+        $this->addSetting(self::EXTENSIONS_LOADED, $loaded);
+    }
+
+    /**
+     * determines if an extension is loaded
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function extensionLoaded($name)
+    {
+        $loaded = $this->getSetting(self::EXTENSIONS_LOADED) ?: array();
+        return in_array(strtolower($name), $loaded);
     }
 
     /**
