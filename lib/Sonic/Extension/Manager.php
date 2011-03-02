@@ -15,6 +15,9 @@ class Manager
     const UNINSTALL = 'uninstall';
     const UPGRADE = 'upgrade';
     const RELOAD = 'reload';
+    const LIST_ACTION = 'list';
+    const OUTDATED = 'outdated';
+    const INSTALLED = 'installed';
     const LOCAL = '--local';
     const FORCE = '--force';
     const VERBOSE = '--verbose';
@@ -70,7 +73,11 @@ class Manager
     {
         $manager = self::getInstance();
 
-        if (count($args) < 3) {
+        if (in_array(self::LIST_ACTION, $args)) {
+            return $manager->listExtensions($args);
+        }
+
+        if (count($args) < 3 && !in_array(self::LIST_ACTION, $args)) {
             throw new Exception("invalid arguments\n" . $manager->showUsage());
         }
 
@@ -104,6 +111,8 @@ class Manager
             case self::UNINSTALL:
                 $manager->uninstall($name, $force);
                 break;
+            case self::LIST_ACTION:
+                break;
             default:
                 throw new Exception("invalid action specified\n" . $manager->showUsage());
                 break;
@@ -127,6 +136,109 @@ class Manager
             $this->_trackers[$name] = new Tracker();
         }
         return $this->_trackers[$name];
+    }
+
+    /**
+     * lists extensions
+     *
+     * @param array $args
+     * @return string
+     */
+    public function listExtensions($args = array())
+    {
+        if (in_array(self::INSTALLED, $args)) {
+            $installed = $this->_getInstalled();
+            if (empty($outdated)) {
+                return $this->_output('you do not have any extensions installed');
+            }
+            return $this->_outputList($installed);
+        }
+
+        if (in_array(self::OUTDATED, $args)) {
+            $outdated = $this->_getOutdated();
+            if (empty($outdated)) {
+                return $this->_output('all extensions are up to date');
+            }
+            return $this->_outputList($outdated);
+        }
+
+        $all = $this->_getAll();
+        return $this->_outputList($all);
+    }
+
+    /**
+     * lists installed extensions
+     *
+     * @return string
+     */
+    protected function _getInstalled()
+    {
+        $path = App::getInstance()->getPath('extensions/installed.json');
+        return json_decode(file_get_contents($path), true);
+    }
+
+    /**
+     * lists outdated extensions
+     *
+     * @return string
+     */
+    protected function _getOutdated()
+    {
+        $all = $this->_getAll();
+        $installed = $this->_getInstalled();
+        $outdated = array();
+        foreach ($installed as $name => $extension) {
+            if (isset($all[$name]) && $extension['version'] < $all[$name]['version']) {
+                $outdated[$name] = array('version' => $all[$name]['version'] . ' (' . $extension['version'] . ' installed)');
+            }
+        }
+        return $outdated;
+    }
+
+    /**
+     * lists all extensions
+     *
+     * @return string
+     */
+    protected function _getAll()
+    {
+        $this->_output('getting extension list...');
+        $json = file_get_contents(self::LIST_URL);
+        return json_decode($json, true);
+    }
+
+    /**
+     * outputs list of extensions
+     *
+     * @param array
+     * @return string
+     */
+    protected function _outputList($extensions)
+    {
+        ksort($extensions);
+        $pad = $this->_getStringPad($extensions);
+        echo str_pad('NAME', $pad) . 'VERSION',"\n";
+        foreach ($extensions as $name => $data) {
+            echo str_pad($name, $pad) . $data['version'],"\n";
+        }
+        echo "\n";
+    }
+
+    /**
+     * gets string pad value based on extension names
+     *
+     * @return int
+     */
+    protected function _getStringPad($extensions = array())
+    {
+        // do some magic to find the longest name
+        $lengths = array();
+        foreach ($extensions as $name => $data) {
+            $lengths[$name] = strlen($name);
+        }
+
+        asort($lengths);
+        return array_pop($lengths) + 5;
     }
 
     /**
@@ -204,9 +316,6 @@ class Manager
         }
 
         $extension_dir = App::getInstance()->getPath('extensions') . '/' . $name;
-        if (is_dir($extension_dir)) {
-            exec('rm -r ' . $extension_dir);
-        }
 
         mkdir($extension_dir);
 
@@ -320,6 +429,7 @@ class Manager
 
         $extension_dir = App::getInstance()->getPath('extensions') . '/' . $name;
         if (is_dir($extension_dir)) {
+            $this->_output('removing dir ' . $extension_dir, true);
             exec('rm -r ' . $extension_dir);
         }
 
