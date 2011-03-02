@@ -21,6 +21,11 @@ abstract class Manifest
     protected $_dependencies = array();
 
     /**
+     * @var string
+     */
+    protected $_instructions = '';
+
+    /**
      * gets dependencies
      *
      * @return array
@@ -28,5 +33,22 @@ abstract class Manifest
     public function getDependencies()
     {
         return array_map('strtolower', $this->_dependencies);
+    }
+
+    /**
+     * gets extra installation instructions
+     *
+     * @return string
+     */
+    public final function getInstructions()
+    {
+        $instructions = '';
+        if ($this->_instructions) {
+            $instructions .= "\n" . '----------------------------' . "\n";
+            $instructions .= " INSTRUCTIONS" . "\n";
+            $instructions .= '----------------------------' . "\n";
+            $instructions .= $this->_instructions . "\n";
+        }
+        return $instructions;
     }
 }
