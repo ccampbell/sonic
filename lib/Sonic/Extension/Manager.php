@@ -148,7 +148,7 @@ class Manager
     {
         if (in_array(self::INSTALLED, $args)) {
             $installed = $this->_getInstalled();
-            if (empty($outdated)) {
+            if (empty($installed)) {
                 return $this->_output('you do not have any extensions installed');
             }
             return $this->_outputList($installed);
