@@ -35,6 +35,14 @@ class Manager
     protected $_trackers = array();
 
     /**
+     * list of extensions that started to install to prevent infinite loop
+     * when two extensions depend on eachother
+     *
+     * @var array
+     */
+    protected $_started = array();
+
+    /**
      * @var bool
      */
     protected $_verbose = false;
@@ -288,11 +296,19 @@ class Manager
             throw new Exception('manifest file for ' . $name . ' must extend Sonic\Extension\Manifest');
         }
 
+        $this->_started[] = $name;
+
         if (count($manifest->getDependencies())) {
             $this->_output($name . ' requires: ' . implode(',', $manifest->getDependencies()));
         }
 
         foreach ($manifest->getDependencies() as $dependency) {
+
+            // prevent infinite loop if this depends on an extension that depends on it
+            if (in_array($dependency, $this->_started)) {
+                continue;
+            }
+
             $this->_output('processing dependency: ' . $dependency, true);
             $local = $from_remote ? false : true;
             $dependency = $from_remote ? $dependency : $base_path . '/' . $dependency;
