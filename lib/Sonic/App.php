@@ -744,7 +744,7 @@ class App
 
             // if the file is not in the extensions directory then skip it
             // we don't want to load controllers/views/etc. here
-            if (strpos($file, 'extensions') != 0) {
+            if (strpos($file, 'extensions') !== 0) {
                 continue;
             }
 
@@ -753,7 +753,7 @@ class App
                 continue;
             }
 
-            include $base_path . '/' . $file;
+            self::includeFile($base_path . '/' . $file);
         }
 
         $loaded = $this->getSetting(self::EXTENSIONS_LOADED) ?: array();
