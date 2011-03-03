@@ -140,9 +140,6 @@ mkdir $INSTALL_PATH/public_html
 if [ $ALL_FILES == true ] ; then
     output "creating util directory" verbose_only
     mkdir $INSTALL_PATH/util
-
-    output "creating extensions directory" verbose_only
-    mkdir $INSTALL_PATH/extensions
 fi
 
 output "creating views directory" verbose_only
@@ -220,12 +217,6 @@ cp js/turbo.min.js $INSTALL_PATH/public_html/assets/js/
 
 
 if [ $ALL_FILES == true ] ; then
-    output "copying skeleton_class utility to util/skeleton_class.php" verbose_only
-    cp util/skeleton_class.php $INSTALL_PATH/util/
-
-    output "copying sync_db utility to util/sync_db.php" verbose_only
-    cp util/sync_db.php $INSTALL_PATH/util/
-
     output "copying extension utility to util/extension.php" verbose_only
     cp util/extension.php $INSTALL_PATH/util/
 fi
