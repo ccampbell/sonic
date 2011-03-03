@@ -504,6 +504,11 @@ class Manager
 
             $this->_output('copying ' . $old_path . ' => ' . $new_path, true);
             copy($old_path, $new_path);
+            $perms = fileperms($old_path);
+            if (fileperms($new_path) != $perms) {
+                $this->_output('updating file permissions to ' . substr(decoct($perms), 2), true);
+                chmod($new_path, $perms);
+            }
             $this->getTracker($ext_name)->addedFile($this->_stripApp($new_path));
         }
     }
