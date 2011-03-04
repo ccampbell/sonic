@@ -11,6 +11,41 @@ namespace Sonic;
 class View
 {
     /**
+     * @var string
+     */
+    const TITLE = 1;
+
+    /**
+     * @var string
+     */
+    const CSS = 2;
+
+    /**
+     * @var string
+     */
+    const JS = 3;
+
+    /**
+     * @var string
+     */
+    const PATH = 4;
+
+    /**
+     * @var string
+     */
+    const TURBO_PLACEHOLDER = 5;
+
+    /**
+     * @var string
+     */
+    const KEYWORDS = 6;
+
+    /**
+     * @var string
+     */
+    const DESCRIPTION = 7;
+
+    /**
      * name of current controller
      *
      * @var string
@@ -25,14 +60,12 @@ class View
     protected $_action;
 
     /**
-     * @var string
+     * @var array
      */
-    protected $_path;
-
-    /**
-     * @var string
-     */
-    protected $_title;
+    protected $_data = array(
+        self::JS => array(),
+        self::CSS => array()
+    );
 
     /**
      * @var string
@@ -47,22 +80,7 @@ class View
     /**
      * @var array
      */
-    protected $_js = array();
-
-    /**
-     * @var array
-     */
-    protected $_css = array();
-
-    /**
-     * @var array
-     */
     protected $_turbo_data = array();
-
-    /**
-     * @var string
-     */
-    protected $_turbo_placeholder = '';
 
     /**
      * @var array
@@ -120,6 +138,29 @@ class View
     }
 
     /**
+     * sets or gets data related to this view
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return mixed
+     */
+    public function data($key, $value = null)
+    {
+        $data = isset($this->_data[$key]) ? $this->_data[$key] : null;
+
+        if ($value === null) {
+                return $data;
+        }
+
+        if (is_array($data)) {
+            $this->_data[$key][] = $value;
+            return;
+        }
+
+        $this->_data[$key] = $value;
+    }
+
+    /**
      * sets or gets path
      *
      * @param mixed $path
@@ -127,10 +168,7 @@ class View
      */
     public function path($path = null)
     {
-        if ($path !== null) {
-            $this->_path = $path;
-        }
-        return $this->_path;
+        return $this->data(self::PATH, $path);
     }
 
     /**
@@ -142,9 +180,31 @@ class View
     public function title($title = null)
     {
         if ($title !== null) {
-            $this->_title = Layout::getTitle($title);
+            $title = Layout::getTitle($title);
         }
-        return $this->_title;
+        return $this->data(self::TITLE, $title);
+    }
+
+    /**
+     * sets or gets keywords
+     *
+     * @param string $keywords
+     * @return string
+     */
+    public function keywords($keywords = null)
+    {
+        return $this->data(self::KEYWORDS, $keywords);
+    }
+
+    /**
+     * sets or gets description
+     *
+     * @param string $description
+     * @return string
+     */
+    public function description($description = null)
+    {
+        return $this->data(self::DESCRIPTION, $description);
     }
 
     /**
@@ -201,10 +261,10 @@ class View
     public function addJs($path)
     {
         if ($this->_isAbsolute($path)) {
-            $this->_js[] = $path;
+            $this->data(self::JS, $path);
             return;
         }
-        $this->_js[] = $this->staticPath() . '/js/' . $path;
+        $this->data(self::JS, $this->staticPath() . '/js/' . $path);
     }
 
     /**
@@ -216,10 +276,10 @@ class View
     public function addCss($path)
     {
         if ($this->_isAbsolute($path)) {
-            $this->_css[] = $path;
+            $this->data(self::CSS, $path);
             return;
         }
-        $this->_css[] = $this->staticPath() . '/css/' . $path;
+        $this->data(self::CSS, $this->staticPath() . '/css/' . $path);
     }
 
     /**
@@ -244,7 +304,7 @@ class View
      */
     public function getJs()
     {
-        return $this->_js;
+        return $this->data(self::JS);
     }
 
     /**
@@ -254,7 +314,7 @@ class View
      */
     public function getCss()
     {
-        return $this->_css;
+        return $this->data(self::CSS);
     }
 
     /**
@@ -318,10 +378,7 @@ class View
      */
     public function turboPlaceholder($html = null)
     {
-        if ($html) {
-            $this->_turbo_placeholder = $html;
-        }
-        return $this->_turbo_placeholder;
+        return $this->data(self::TURBO_PLACEHOLDER, $html);
     }
 
     /**
@@ -355,7 +412,7 @@ class View
     {
         if ($this->isTurbo() && !$this instanceof Layout && !$this->_html) {
             App::getInstance()->queueView($this->_active_controller, $this->_action);
-            $placeholder = $this->_turbo_placeholder ?: App::getInstance()->getSetting(App::TURBO_PLACEHOLDER);
+            $placeholder = $this->data(self::TURBO_PLACEHOLDER) ?: App::getInstance()->getSetting(App::TURBO_PLACEHOLDER);
             $this->_html = '<div class="sonic_fragment" id="' . $this->getId() . '">' . $placeholder . '</div>';
         }
         return $this->_html;
@@ -385,7 +442,7 @@ class View
         }
 
         ob_start();
-        include $this->_path;
+        include $this->data(self::PATH);
         $html = ob_get_contents();
         ob_end_clean();
 
@@ -393,8 +450,8 @@ class View
             'id' => $id,
             'content' => $html,
             'title' => $this->title(),
-            'css' => $this->_css,
-            'js' => $this->_js) + $this->_turbo_data;
+            'css' => $this->getCss(),
+            'js' => $this->getJs()) + $this->_turbo_data;
 
         $output = '<script>SonicTurbo.render(' . json_encode($data) . ');</script>';
         return $output;
@@ -425,7 +482,7 @@ class View
             return;
         }
 
-        include $this->_path;
+        include $this->data(self::PATH);
     }
 
     /**

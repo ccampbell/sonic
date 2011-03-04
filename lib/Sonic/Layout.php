@@ -16,9 +16,9 @@ class Layout extends View
     const MAIN = 'main';
 
     /**
-     * @var View
+     * @var string
      */
-    protected $_top_view;
+    const TOP_VIEW = 'top_view';
 
     /**
      * @var string
@@ -46,10 +46,7 @@ class Layout extends View
      */
     public function topView(View $view = null)
     {
-        if ($this->_top_view === null && $view !== null) {
-            $this->_top_view = $view;
-        }
-        return $this->_top_view;
+        return $this->data(self::TOP_VIEW, $view);
     }
 
     /**
