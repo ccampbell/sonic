@@ -468,6 +468,8 @@ class Manager
     protected function _sync($dir1, $dir2, $installed = false, $ext_name)
     {
         $files = new \RecursiveDirectoryIterator($dir1);
+
+        $file_count = 0;
         foreach ($files as $file) {
             $name = $file->getFilename();
 
@@ -475,6 +477,8 @@ class Manager
             if (in_array($name[0], array('.', '_'))) {
                 continue;
             }
+
+            ++$file_count;
 
             // if this is a directory used by the app then copy the files into
             // that directory
@@ -510,6 +514,16 @@ class Manager
                 chmod($new_path, $perms);
             }
             $this->getTracker($ext_name)->addedFile($this->_stripApp($new_path));
+        }
+
+        // if the first directory has no files in it we should create it in the new location
+        if ($file_count == 0 && !is_dir($dir2)) {
+            $this->_output('creating directory ' . $dir2, true);
+            mkdir($dir2);
+
+            // for now assume that an empty directory means the app is going to write to it
+            chmod($dir2, 0777);
+            $this->getTracker($ext_name)->addedDir($this->_stripApp($dir2));
         }
     }
 
