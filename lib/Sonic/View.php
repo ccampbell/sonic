@@ -261,8 +261,7 @@ class View
     public function addJs($path)
     {
         if ($this->_isAbsolute($path)) {
-            $this->data(self::JS, $path);
-            return;
+            return $this->data(self::JS, $path);
         }
         $this->data(self::JS, $this->staticPath() . '/js/' . $path);
     }
@@ -276,8 +275,7 @@ class View
     public function addCss($path)
     {
         if ($this->_isAbsolute($path)) {
-            $this->data(self::CSS, $path);
-            return;
+            return $this->data(self::CSS, $path);
         }
         $this->data(self::CSS, $this->staticPath() . '/css/' . $path);
     }
