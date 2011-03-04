@@ -42,7 +42,7 @@ abstract class Delegate
     /**
      * called when all the core files are done being included for the request
      *
-     * all extra files you need to include for every request should happen here
+     * all extra files and extensions you need to include for every request should happen here
      *
      * @return void
      */
