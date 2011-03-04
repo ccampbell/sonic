@@ -149,7 +149,7 @@ class View
         $data = isset($this->_data[$key]) ? $this->_data[$key] : null;
 
         if ($value === null) {
-                return $data;
+            return $data;
         }
 
         if (is_array($data)) {
