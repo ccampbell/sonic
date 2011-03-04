@@ -25,7 +25,7 @@ SIMPLE INSTALLATION
 
 ADVANCED INSTALLATION
 
-1.  Download latest source from: [url_goes_here]
+1.  Download latest source from: [http://www.sonicframework.com/sonic.tar.gz]
 2.  Create a directory somewhere where you want the application to live
 3.  Within that directory add the sonic library from step 1 and some other
     directories and files that the app will need.
