@@ -215,13 +215,12 @@ class Controller
      */
     public function getLayout()
     {
-        if ($this->_layout !== null) {
-            return $this->_layout;
+        if ($this->_layout === null) {
+            $layout_dir = App::getInstance()->getPath('views/layouts');
+            $layout = new Layout($layout_dir . '/' . $this->_layout_name . '.phtml');
+            $this->_layout = $layout;
         }
 
-        $layout_dir = App::getInstance()->getPath('views/layouts');
-        $layout = new Layout($layout_dir . '/' . $this->_layout_name . '.phtml');
-        $this->_layout = $layout;
         return $this->_layout;
     }
 
@@ -242,13 +241,12 @@ class Controller
      */
     public function getView()
     {
-        if ($this->_view !== null) {
-            return $this->_view;
+        if ($this->_view === null) {
+            $this->_view = new View($this->getViewPath());
+            $this->_view->setAction($this->_view_name);
+            $this->_view->setActiveController($this->_name);
         }
 
-        $this->_view = new View($this->getViewPath());
-        $this->_view->setAction($this->_view_name);
-        $this->_view->setActiveController($this->_name);
         return $this->_view;
     }
 
@@ -278,7 +276,7 @@ class Controller
     {
         header('Content-Type: application/json');
         echo json_encode($data);
-        exit();
+        exit;
     }
 
     /**
