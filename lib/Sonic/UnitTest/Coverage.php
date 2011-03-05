@@ -139,10 +139,11 @@ class Coverage
 
                 body, html {
                     font-family: monospace;
+                    font-size: 1em;
                     white-space: pre-wrap;
                 }
                 ul, li {
-                    line-height: 0em;
+                    line-height: .25em;
                     margin: 0px;
                     padding: 0px;
                 }
@@ -150,7 +151,10 @@ class Coverage
                     list-style: none;
                 }
                 li {
-                    padding: 5px 0px 5px 0px;
+                    padding: 6px 0px 8px 0px;
+                }
+                li.alt {
+                    background: #ddd;
                 }
                 li.covered {
                     background: #00DD02;
@@ -168,14 +172,18 @@ class Coverage
             $line_number = $key + 1;
             $output .= '<li class="';
 
+            $alt = $key % 2 == 0;
+            if ($alt) {
+                $output .= 'alt';
+            }
+
             if (in_array($line_number, $this->getCoveredLines())) {
-                $output .= 'covered';
+                $output .=  ($alt ? ' ' : '') . 'covered';
             }
 
             if (in_array($line_number, $this->getUncoveredLines())) {
-                $output .= 'not_covered';
+                $output .=  ($alt ? ' ' : '') . 'not_covered';
             }
-
 
             $output .= '">' . htmlentities($line, ENT_QUOTES, 'UTF-8') . '</li>' . "\n";
         }
