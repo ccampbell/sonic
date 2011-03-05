@@ -37,16 +37,57 @@ class Config
     /**
      * array of valid environments
      *
-     * @var
+     * @var array
      */
     protected $_environments = array();
 
     /**
      * mapping of environment to parent environment
      *
-     * @var
+     * @var array
      */
     protected $_parents = array();
+
+    /**
+     * list of variables to exclude from inheritence
+     *
+     * @var array
+     */
+    protected $_exceptions = array();
+
+    /**
+     * list of inheritance separators
+     *
+     * for example:
+     *
+     * [production : global]
+     * [production extends global]
+     * [production inherits from global]
+     *
+     * @var array
+     */
+    protected $_separators = array(':', 'extends', 'inherits from', 'inherits');
+
+    /**
+     * separator we are using
+     *
+     * @var string
+     */
+    protected $_separator;
+
+    /**
+     * list of inheritance exceptions
+     *
+     * @var array
+     */
+    protected $_exception_separators = array('-', 'except', 'but skips', 'but overwrites', 'but not');
+
+    /**
+     * exception we are using
+     *
+     * @var string
+     */
+    protected $_exception_separator;
 
     /**
      * constructor
@@ -89,7 +130,7 @@ class Config
 
         foreach ($to_merge as $environment) {
             $full_section = $map[$environment];
-            $this->_combined = Util::extendArray($this->_combined, $parsed_file[$full_section]);
+            $this->_combined = Util::extendArray($this->_combined, $parsed_file[$full_section], $this->_exceptions[$environment]);
         }
     }
 
@@ -114,11 +155,64 @@ class Config
      */
     protected function _addSectionToMap($section)
     {
-        $bits = explode(':', $section);
-        $this->_environments[trim($bits[0])] = $section;
+        // figur out what separator to use
+        $separator = $this->_getSeparator($section);
+        $bits = explode($separator, $section);
+
+        $env = trim($bits[0]);
+        $this->_environments[$env] = $section;
+
+        // if this environment inherits from another
         if (isset($bits[1])) {
-            $this->_parents[trim($bits[0])] = trim($bits[1]);
+            $separator = $this->_getExceptionSeparator($bits[1]);
+            $new_bits = explode($separator, $bits[1]);
+            $this->_parents[$env] = trim($new_bits[0]);
+            $this->_exceptions[$env] = isset($new_bits[1]) ? explode(',', trim($new_bits[1])) : array();
         }
+    }
+
+    /**
+     * figures out what separator to use for inheritence
+     *
+     * @param string $section
+     * @return string
+     */
+    protected function _getSeparator($section)
+    {
+        if ($this->_separator) {
+            return $this->_separator;
+        }
+
+        foreach ($this->_separators as $separator) {
+            if (strpos($section, $separator) > 0) {
+                $this->_separator = $separator;
+                return $this->_separator;
+            }
+        }
+
+        return $this->_separators[0];
+    }
+
+    /**
+     * figures out what separator to use for keys to skip
+     *
+     * @param string $env
+     * @return string
+     */
+    protected function _getExceptionSeparator($env)
+    {
+        if ($this->_exception_separator) {
+            return $this->_exception_separator;
+        }
+
+        foreach ($this->_exception_separators as $separator) {
+            if (strpos($env, $separator) > 0) {
+                $this->_exception_separator = $separator;
+                return $this->_exception_separator;
+            }
+        }
+
+        return $this->_exception_separators[0];
     }
 
     /**
@@ -180,6 +274,16 @@ class Config
             $environment = $parent;
         }
         return $parents;
+    }
+
+    /**
+     * gets an array of all config values
+     *
+     * @return array
+     */
+    public function getAll()
+    {
+        return $this->_combined;
     }
 
     /**

@@ -90,9 +90,10 @@ class Util
      *
      * @param array $array1
      * @param array $array2
+     * @param array $keys array of keys to not inherit
      * @return array
      */
-    public static function extendArray($array1, $array2)
+    public static function extendArray($array1, $array2, $keys_to_skip = array())
     {
         foreach ($array2 as $key => $value) {
 
@@ -104,8 +105,9 @@ class Util
                 continue;
             }
 
-            // if this is a straight up value overwrite it
-            if (!is_array($value)) {
+            // if this is a straight up value or a key that
+            // should not be inherited then overwrite it
+            if (!is_array($value) || in_array($key, $keys_to_skip)) {
                 $array1[$key] = $value;
                 continue;
             }
