@@ -151,6 +151,22 @@ class Runner
 
         $dir = array_pop($args);
 
+        if (!is_dir($dir) && !file_exists($dir)) {
+            throw new Exception('invalid test directory specified: ' . $dir);
+        }
+
+        // single file
+        if (!is_dir($dir) && file_exists($dir)) {
+            $path = $this->_convertDirectoryToPath($dir);
+            $this->_file = new \SplFileInfo($path);
+            $this->directory($this->_file->getPath());
+        }
+
+        if (is_dir($dir)) {
+            $directory = $this->_convertDirectoryToPath($dir);
+            $this->directory($directory);
+        }
+
         $coverage_directory = $this->_getArgValue('--coverage-html', $args);
         if (!$coverage_directory) {
             return;
@@ -161,21 +177,6 @@ class Runner
         }
         $path = $this->_convertDirectoryToPath($coverage_directory);
         $this->coverageDirectory($path);
-
-        // single file
-        if (!is_dir($dir) && file_exists($dir)) {
-            $path = $this->_convertDirectoryToPath($dir);
-            $this->_file = new \SplFileInfo($path);
-            $this->directory($this->_file->getPath());
-            return;
-        }
-
-        if (!is_dir($dir)) {
-            throw new Exception('invalid test directory specified: ' . $dir);
-        }
-
-        $directory = $this->_convertDirectoryToPath($dir);
-        $this->directory($directory);
     }
 
     /**
