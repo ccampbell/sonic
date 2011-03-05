@@ -75,7 +75,8 @@ class Request
 
         // if redirect url is present use that to avoid extra processing
         // unless the redirect url comes in as /index.php
-        if (($uri = $this->getServer('REDIRECT_URL')) === null || $uri == '/index.php') {
+        $uri = $this->getServer('REDIRECT_URL');
+        if ($uri === null || $uri == '/index.php') {
             $bits = explode('?', $this->getServer('REQUEST_URI'));
             $uri = $bits[0];
         }
