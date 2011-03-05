@@ -116,7 +116,7 @@ class Coverage
         foreach ($this->_lines as $key => $line) {
             $line_number = $key + 1;
 
-            if (trim($line) == '}' && preg_match('/^(throw|return|break|continue)/', trim($this->_lines[$key - 1]))) {
+            if ((trim($line) == '}' || trim($line) == 'break;') && preg_match('/^(throw|return|break|continue|})/', trim($this->_lines[$key - 1]))) {
                 $key = array_search($line_number, $this->_uncovered_lines);
                 if ($key !== false) {
                     unset($this->_uncovered_lines[$key]);
