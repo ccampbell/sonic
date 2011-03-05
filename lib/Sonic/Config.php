@@ -78,6 +78,12 @@ class Config
     /**
      * list of inheritance exceptions
      *
+     * for example:
+     *
+     * [production extends global but overwrites urls]
+     * [production : global - urls]
+     * [production extends global but not urls,cache,db]
+     *
      * @var array
      */
     protected $_exception_separators = array('-', 'except', 'but skips', 'but overwrites', 'but not');
