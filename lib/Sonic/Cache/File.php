@@ -5,6 +5,7 @@ use Sonic\Util;
 /**
  * File
  *
+ * @todo add cleanup so on x percent of requests expired keys are removed
  * @category Sonic
  * @package Cache
  * @author Craig Campbell
