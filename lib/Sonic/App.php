@@ -61,11 +61,6 @@ class App
     protected $_layout_processed = false;
 
     /**
-     * @var bool
-     */
-    protected $_output_started = false;
-
-    /**
      * @var array
      */
     protected $_configs = array();
@@ -107,14 +102,16 @@ class App
     /**
      * @var array
      */
-    protected $_settings = array(self::MODE => self::WEB,
-                               self::AUTOLOAD => false,
-                               self::CONFIG_FILE => 'ini',
-                               self::DEVS => array('dev', 'development'),
-                               self::DB_DRIVER => self::PDO,
-                               self::DISABLE_MEMCACHE => false,
-                               self::DISABLE_APC => false,
-                               self::TURBO => false);
+    protected $_settings = array(
+        self::MODE => self::WEB,
+        self::AUTOLOAD => false,
+        self::CONFIG_FILE => 'ini',
+        self::DEVS => array('dev', 'development'),
+        self::DB_DRIVER => self::PDO,
+        self::DISABLE_MEMCACHE => false,
+        self::DISABLE_APC => false,
+        self::TURBO => false
+    );
 
     /**
      * constructor
@@ -564,19 +561,6 @@ class App
     }
 
     /**
-     * tells the application that output has started
-     *
-     * @return void
-     */
-    public function outputStarted($started = null)
-    {
-        if ($started) {
-            $this->_output_started = true;
-        }
-        return $this->_output_started;
-    }
-
-    /**
      * queues up a view for later processing
      *
      * only happens in turbo mode
@@ -653,7 +637,7 @@ class App
         }
 
         // only set the http code if output hasn't started
-        if (!$this->outputStarted()) {
+        if (!headers_sent()) {
             header($e->getHttpCode());
         }
 
