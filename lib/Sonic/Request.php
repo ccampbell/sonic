@@ -119,7 +119,7 @@ class Request
     public function getRouter()
     {
         if ($this->_router === null) {
-            $this->_router = new Router($this, $this->_subdomain);
+            $this->_router = new Router($this, null, $this->_subdomain);
         }
 
         return $this->_router;

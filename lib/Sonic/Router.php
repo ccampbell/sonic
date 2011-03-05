@@ -30,14 +30,20 @@ class Router
      */
      protected $_subdomain;
 
+     /**
+      * @var string
+      */
+     protected $_path;
+
     /**
      * constructor
      *
      * @param Request
      */
-    public function __construct(Request $request, $subdomain = null)
+    public function __construct(Request $request, $path = null, $subdomain = null)
     {
         $this->_request = $request;
+        $this->_path = $path;
         $this->_subdomain = $subdomain;
     }
 
@@ -48,14 +54,30 @@ class Router
      */
     public function getRoutes()
     {
-        if ($this->_routes === null) {
-            $filename = 'routes.' . (!$this->_subdomain ? 'php' : $this->_subdomain . '.php');
-            $path = App::getInstance()->getPath('configs') . '/' . $filename;
-            include $path;
-            $this->_routes = $routes;
+        if ($this->_routes) {
+            return $this->_routes;
         }
 
+        if (!$this->_path) {
+            $filename = 'routes.' . (!$this->_subdomain ? 'php' : $this->_subdomain . '.php');
+            $this->_path = App::getInstance()->getPath('configs') . '/' . $filename;
+        }
+
+        include $this->_path;
+        $this->_routes = $routes;
+
         return $this->_routes;
+    }
+
+    /**
+     * allows you to set routes to an array
+     *
+     * @param array $routes
+     * @return void
+     */
+    public function setRoutes(array $routes)
+    {
+        $this->_routes = $routes;
     }
 
     /**
@@ -68,6 +90,12 @@ class Router
         if ($match === null) {
             $this->_match = array(null, null);
             return $this;
+        }
+
+        // extra params related to the match
+        if (isset($match[2])) {
+            $params = $match[2];
+            $this->_request->addParams($params);
         }
 
         $this->_match = $match;
@@ -107,13 +135,10 @@ class Router
         $route_keys = array_keys($routes);
         $len = count($route_keys);
 
-        // explode the base uri for comparisons
-        $base_bits = explode('/', $base_uri);
-
         // loop through all of the routes and check for a match
         $match = false;
         for ($i = 0; $i < $len; ++$i) {
-            if ($this->_matches(explode('/', $route_keys[$i]), $base_bits)) {
+            if ($this->_matches($route_keys[$i], $base_uri)) {
                 $match = true;
 
                 // stop after the first match!
@@ -133,20 +158,21 @@ class Router
     /**
      * checks if parts of the requested uri match a route uri
      *
-     * @param array $route_bits (something like array('', 'profile', ':user_id'))
-     * @param array $url_bits (something like array('', 'profile', '25'))
+     * @param string $route_uri /profile/:user_id
+     * @param string $base_uri /profile/25
      * @return bool
      */
-    protected function _matches($route_bits, $url_bits)
+    protected function _matches($route_uri, $base_uri)
     {
+        $route_bits = explode('/', $route_uri);
+        $url_bits = explode('/', $base_uri);
+
         $route_bit_count = count($route_bits);
 
         // if the urls don't have the same number of parts then this is not a match
         if ($route_bit_count !== count($url_bits)) {
             return false;
         }
-
-        $match = true;
 
         $params = array();
         for ($i = 1; $i < $route_bit_count; ++$i) {
