@@ -5,7 +5,11 @@ $routes = array(
     '/lesson/:lesson_name' => array('lesson', 'main'),
     '/artist/*name' => array('artist', 'main'),
     '/profile/#user_id' => array('profile', 'user', array('magic' => true)),
+    'r:\/regex(\/(\w+))?$' => array('regex', 'index', array(2 => 'var')),
     '/word/@word' => array('word', 'main'),
     '/word/@word/translate/:language' => array('word', 'translate'),
-    '/something-something' => array('tests', 'something')
+    '/something-something' => array('tests', 'something'),
+    '/special/:CONTROLLER/:ACTION' => array(),
+    '/special/:ACTION' => array('special'),
+    'r:\/action\/(one|two|three)$' => array('action', 'not_found', array(1 => 'ACTION'))
 );

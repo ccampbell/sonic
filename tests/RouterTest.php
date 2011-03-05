@@ -66,9 +66,6 @@ class RouterTest extends TestCase
 
     public function testRoutes()
     {
-        $app = App::getInstance();
-        $request = $app->getRequest();
-
         // test homepage
         $router = new Router('/');
         $this->isEqual('main', $router->getController());
@@ -161,5 +158,61 @@ class RouterTest extends TestCase
 
         $this->isTrue(array_key_exists('language', $params));
         $this->isEqual($params['language'], 'japanese');
+    }
+
+    public function testRegexRoutes()
+    {
+        $router = new Router('/regex', null, 'tests');
+        $this->isEqual('regex', $router->getController());
+        $this->isEqual('index', $router->getAction());
+        $params = $router->getParams();
+        $this->isArray($params);
+        $this->isEqual(0, count($params));
+
+        $router = new Router('/regex/random', null, 'tests');
+        $this->isEqual('regex', $router->getController());
+        $this->isEqual('index', $router->getAction());
+        $params = $router->getParams();
+        $this->isEqual(1, count($params));
+        $this->isTrue(array_key_exists('var', $params));
+        $this->isEqual($params['var'], 'random');
+    }
+
+    public function testDynamicAction()
+    {
+        $router = new Router('/special/synthesizer', null, 'tests');
+        $this->isEqual('special', $router->getController());
+        $this->isEqual('synthesizer', $router->getAction());
+    }
+
+    public function testDynamicControllerAndAction()
+    {
+        $router = new Router('/special/guitar/gibson', null, 'tests');
+        $this->isEqual('guitar', $router->getController());
+        $this->isEqual('gibson', $router->getAction());
+    }
+
+    public function testDynamicRouteFromRegex()
+    {
+        $router = new Router('/action/test', null, 'tests');
+        $this->isEqual(null, $router->getController());
+        $this->isEqual(null, $router->getAction());
+
+        $router = new Router('/action/one', null, 'tests');
+        $this->isEqual('action', $router->getController());
+        $this->isEqual('one', $router->getAction());
+
+        $router = new Router('/action/two', null, 'tests');
+        $this->isEqual('action', $router->getController());
+        $this->isEqual('two', $router->getAction());
+
+        $router = new Router('/action/three', null, 'tests');
+        $this->isEqual('action', $router->getController());
+        $this->isEqual('three', $router->getAction());
+
+        $router = new Router('/action/threehundred', null, 'tests');
+        $this->isEqual(null, $router->getController());
+        $this->isEqual(null, $router->getAction());
+
     }
 }

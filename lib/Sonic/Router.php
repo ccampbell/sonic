@@ -90,7 +90,7 @@ class Router
      *
      * @return Router
      */
-    protected function _setMatch($match)
+    protected function _setMatch($match, $result = null)
     {
         if ($match === null) {
             $this->_match = array(null, null);
@@ -98,13 +98,52 @@ class Router
         }
 
         // extra params related to the match
-        if (isset($match[2])) {
-            $params = $match[2];
-            $this->_params = array_merge($this->_params, $params);
+        if (!isset($match[2])) {
+            $this->_match = $this->_alterMatch($match);
+            return $this;
         }
 
-        $this->_match = $match;
+        $params = $match[2];
+        foreach ($params as $key => $param) {
+
+            if (!is_int($key)) {
+                $this->_params[$key] = $param;
+                continue;
+            }
+
+            // if the key is an integer that means this is a regex param
+            // only add it if it is part of the regex matches
+            if (isset($result[$key])) {
+                $this->_params[$param] = $result[$key];
+                continue;
+            }
+        }
+
+        $this->_match = $this->_alterMatch($match);
         return $this;
+    }
+
+    /**
+     * checks to see if controller or action params are present
+     * if so those overwrite the current controller and action
+     *
+     * @param array $match
+     * @return array $match
+     */
+    protected function _alterMatch(array $match)
+    {
+        // special case where you can set controller or action dynamically
+        if (isset($this->_params['CONTROLLER'])) {
+            $match[0] = $this->_params['CONTROLLER'];
+            unset($this->_params['CONTROLLER']);
+        }
+
+        if (isset($this->_params['ACTION'])) {
+            $match[1] = $this->_params['ACTION'];
+            unset($this->_params['ACTION']);
+        }
+
+        return $match;
     }
 
     /**
@@ -143,7 +182,8 @@ class Router
         // loop through all of the routes and check for a match
         $match = false;
         for ($i = 0; $i < $len; ++$i) {
-            if ($this->_matches($route_keys[$i], $base_uri)) {
+            $result = $this->_matches($route_keys[$i], $base_uri);
+            if ($result) {
                 $match = true;
 
                 // stop after the first match!
@@ -152,7 +192,7 @@ class Router
         }
 
         if ($match) {
-            $this->_setMatch($routes[$route_keys[$i]]);
+            $this->_setMatch($routes[$route_keys[$i]], $result);
             return $this->_match;
         }
 
@@ -169,6 +209,10 @@ class Router
      */
     protected function _matches($route_uri, $base_uri)
     {
+        if (isset($route_uri[1]) && $route_uri[0] . $route_uri[1] == 'r:') {
+            return $this->_matchesRegex($route_uri, $base_uri);
+        }
+
         $route_bits = explode('/', $route_uri);
         $url_bits = explode('/', $base_uri);
 
@@ -215,6 +259,20 @@ class Router
 
         $this->_params = $params;
         return true;
+    }
+
+    /**
+     * checks if this route matches a regex route
+     *
+     * @param string $route_uri
+     * @param string $base_uri
+     * @return mixed array on success false on failure
+     */
+    protected function _matchesRegex($route_uri, $base_uri)
+    {
+        $route_uri = substr($route_uri, 2);
+        $match_count = preg_match('/' . $route_uri . '/i', $base_uri, $matches);
+        return $match_count > 0 ? $matches : false;
     }
 
     /**
