@@ -95,6 +95,7 @@ class Util
      */
     public static function extendArray($array1, $array2, $keys_to_skip = array())
     {
+        $skipped = array();
         foreach ($array2 as $key => $value) {
 
             // if the key is an integer that means it is a straight up
@@ -108,6 +109,7 @@ class Util
             // if this is a straight up value or a key that
             // should not be inherited then overwrite it
             if (!is_array($value) || in_array($key, $keys_to_skip)) {
+                $skipped[] = $key;
                 $array1[$key] = $value;
                 continue;
             }
@@ -122,7 +124,32 @@ class Util
             $array1[$key] = self::extendArray($array1[$key], $value);
         }
 
+        // anything in the first array that should not be inherited but wasn't
+        // present in the second array needs to be removed
+        $diff = array_diff($keys_to_skip, $skipped);
+        foreach ($diff as $key_to_unset) {
+            unset($array1[$key_to_unset]);
+        }
+
         return $array1;
+    }
+
+    /**
+     * takes an array of strings and checks if any of them are in another string
+     *
+     * @param array $needles
+     * @param string $haystack
+     * @return (string || false) first delimiter that matches on success
+     *         false on failure
+     */
+    public static function inString(array $needles, $haystack)
+    {
+        foreach ($needles as $needle) {
+            if (strpos($haystack, $needle) !== false) {
+                return $needle;
+            }
+        }
+        return false;
     }
 
     /**
@@ -142,24 +169,6 @@ class Util
         }
 
         return explode($delimiter, $string);
-    }
-
-    /**
-     * takes an array of strings and checks if any of them are in another string
-     *
-     * @param array $needles
-     * @param string $haystack
-     * @return (string || false) first delimiter that matches on success
-     *         false on failure
-     */
-    public static function inString(array $needles, $haystack)
-    {
-        foreach ($needles as $needle) {
-            if (strpos($haystack, $needle) !== false) {
-                return $needle;
-            }
-        }
-        return false;
     }
 
     /**
@@ -207,7 +216,7 @@ class Util
                 break;
             case 'year':
             case 'years':
-                return $time * 60 * 60 * 24 * 365;
+                return round($time * 60 * 60 * 24 * 365.242199);
                 break;
          }
      }
