@@ -338,10 +338,24 @@ class Manager
 
         $installed = $this->_sync($path, $extension_dir, $already_installed, $name);
 
+        // if this extension uses a config then write it out
+        if ($manifest->hasConfig()) {
+            $defaults = $manifest->getConfigDefaults();
+            $config_path = App::getInstance()->getPath('configs') . '/extension.' . $name . '.ini';
+            $text = $this->_configFromArray($defaults);
+            $this->_output('creating config file at ' . $config_path, true);
+            file_put_contents($config_path, $text);
+        }
+
         $data[$name] = array();
         $data[$name]['version'] = $manifest::VERSION;
         $data[$name]['files'] = $this->getTracker($name)->getFiles();
         $data[$name]['dirs'] = $this->getTracker($name)->getDirs();
+
+        if ($manifest->hasConfig()) {
+            $data[$name]['config'] = $this->_stripApp($config_path);
+        }
+
         $data[$name]['moved'] = $this->getTracker($name)->getMoved();
         $data[$name]['dependencies'] = $manifest->getDependencies();
 
@@ -431,6 +445,12 @@ class Manager
             unlink($base_path . $path);
         }
 
+        if (isset($data[$lc_name]['config'])) {
+            $path = $data[$lc_name]['config'];
+            $this->_output('removing file ' . $path, true);
+            unlink($base_path . $path);
+        }
+
         foreach ($data[$lc_name]['dirs'] as $dir) {
 
             // ignore warnings cause that means files were added after this directory
@@ -483,7 +503,7 @@ class Manager
 
             // if this is a directory used by the app then copy the files into
             // that directory
-            $app_dirs = array('configs', 'controllers', 'public_html', 'util', 'views');
+            $app_dirs = array('configs', 'controllers', 'libs', 'public_html', 'util', 'views');
             if ($file->isDir() && in_array($file->getFilename(), $app_dirs)) {
                 $this->_sync($file->getPathname(), App::getInstance()->getPath($file->getFilename()), $installed, $ext_name);
                 continue;
@@ -495,6 +515,11 @@ class Manager
             $new_path = $dir2 . '/' . $new_name;
 
             $this->_createDirectoriesFor($dir2, $new_name, $ext_name);
+
+            if ($file->isDir() && $new_path == App::getInstance()->getPath('libs/Sonic')) {
+                $this->_output('WARNING: extensions cannot modify libs/Sonic, skipping dir: ' . $old_path);
+                continue;
+            }
 
             if ($file->isDir()) {
                 $this->_sync($old_path, $new_path, $installed, $ext_name);
@@ -666,6 +691,33 @@ class Manager
         $json = json_encode($data);
         $path = $this->_getInstallationDataPath();
         file_put_contents($path, $json);
+    }
+
+    /**
+     * returns a dummy config ini file from an array
+     *
+     * @param array $defaults
+     * @return string
+     */
+    protected function _configFromArray($defaults)
+    {
+        $contents = '[global]' . "\n";
+
+        $translate_value = function($value) {
+            if (is_numeric($value) || is_bool($value)) {
+                return (int) $value;
+            }
+
+            return '"' . $value . '"';
+        };
+
+        foreach ($defaults as $key => $value) {
+            $contents .= $key . ' = ' . $translate_value($value) . "\n";
+        }
+
+        $contents .= "\n[production : global]\n\n[development : global]\n";
+
+        return $contents;
     }
 
     /**
