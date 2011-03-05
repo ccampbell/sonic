@@ -703,7 +703,6 @@ class App
                 $extensions = json_decode(file_get_contents($path), true);
                 $this->addSetting(self::EXTENSION_DATA, $extensions);
             }
-
         }
 
         if (!isset($extensions[$name])) {
