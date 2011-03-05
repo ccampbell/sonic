@@ -217,9 +217,10 @@ class App
         $app = self::getInstance();
         $environment = $app->getEnvironment();
 
+        $type = $app->getSetting(self::CONFIG_FILE);
+
         // get the config path
         if ($path === null) {
-            $type = $app->getSetting(self::CONFIG_FILE);
             $path = $app->getPath('configs') . '/app.' . $type;
         }
 
@@ -741,9 +742,9 @@ class App
         $base_path = $this->getPath();
         foreach ($extensions[$name]['files'] as $file) {
 
-            // if the file is not in the extensions directory then skip it
+            // if the file is not in the extensions or libs directory then skip it
             // we don't want to load controllers/views/etc. here
-            if (strpos($file, 'extensions') !== 0) {
+            if (strpos($file, 'extensions') !== 0 && strpos($file, 'libs') !== 0) {
                 continue;
             }
 
@@ -758,6 +759,8 @@ class App
         $loaded = $this->getSetting(self::EXTENSIONS_LOADED) ?: array();
         $loaded[] = $name;
         $this->addSetting(self::EXTENSIONS_LOADED, $loaded);
+
+        return $this;
     }
 
     /**
@@ -770,6 +773,18 @@ class App
     {
         $loaded = $this->getSetting(self::EXTENSIONS_LOADED) ?: array();
         return in_array(strtolower($name), $loaded);
+    }
+
+    /**
+     * gets an extension helper for this extension
+     *
+     * @param string $name
+     * @return \Sonic\Extension\Helper
+     */
+    public function extension($name)
+    {
+        $this->includeFile('Sonic/Extension/Helper.php');
+        return Extension\Helper::forExtension($name);
     }
 
     /**
