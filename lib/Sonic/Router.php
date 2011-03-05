@@ -11,24 +11,9 @@ namespace Sonic;
 class Router
 {
     /**
-     * @var array
-     */
-    protected $_routes;
-
-    /**
-     * @var Request
-     */
-    protected $_request;
-
-    /**
-     * @var array
-     */
-    protected $_match;
-
-    /**
      * @var string
      */
-     protected $_subdomain;
+    protected $_base_uri;
 
      /**
       * @var string
@@ -36,13 +21,33 @@ class Router
      protected $_path;
 
     /**
+     * @var string
+     */
+     protected $_subdomain;
+
+    /**
+     * @var array
+     */
+    protected $_routes;
+
+    /**
+     * @var array
+     */
+    protected $_match;
+
+    /**
+     * @var array
+     */
+    protected $_params = array();
+
+    /**
      * constructor
      *
      * @param Request
      */
-    public function __construct(Request $request, $path = null, $subdomain = null)
+    public function __construct($base_uri, $path = null, $subdomain = null)
     {
-        $this->_request = $request;
+        $this->_base_uri = $base_uri;
         $this->_path = $path;
         $this->_subdomain = $subdomain;
     }
@@ -95,7 +100,7 @@ class Router
         // extra params related to the match
         if (isset($match[2])) {
             $params = $match[2];
-            $this->_request->addParams($params);
+            $this->_params = array_merge($this->_params, $params);
         }
 
         $this->_match = $match;
@@ -115,7 +120,7 @@ class Router
         }
 
         // get the base url
-        $base_uri = $this->_request->getBaseUri();
+        $base_uri = $this->_base_uri == '/' ? $this->_base_uri : rtrim($this->_base_uri, '/');
 
         // optimization for the homepage so we don't have to hit the routes
         if ($base_uri === '/' && !$this->_subdomain) {
@@ -208,7 +213,7 @@ class Router
             }
         }
 
-        $this->_request->addParams($params);
+        $this->_params = $params;
         return true;
     }
 
@@ -232,5 +237,15 @@ class Router
     {
         $match = $this->_getMatch();
         return $match[1];
+    }
+
+    /**
+     * gets params
+     *
+     * @return array
+     */
+    public function getParams()
+    {
+        return $this->_params;
     }
 }

@@ -57,6 +57,11 @@ class Request
     protected $_action;
 
     /**
+     * @var bool
+     */
+    protected $_router_merged = false;
+
+    /**
      * @var string
      */
     protected $_subdomain;
@@ -81,7 +86,7 @@ class Request
             $uri = $bits[0];
         }
 
-        $this->_base_url = $uri == '/' ? $uri : rtrim($uri, '/');
+        $this->_base_url = $uri;
         return $this->_base_url;
     }
 
@@ -119,9 +124,8 @@ class Request
     public function getRouter()
     {
         if ($this->_router === null) {
-            $this->_router = new Router($this, null, $this->_subdomain);
+            $this->_router = new Router($this->getBaseUri(), null, $this->_subdomain);
         }
-
         return $this->_router;
     }
 
@@ -161,6 +165,21 @@ class Request
         }
 
         return $this->_action;
+    }
+
+    /**
+     * merges router params into the regular params
+     *
+     * @return void
+     */
+    protected function _mergeRouterParams()
+    {
+        if ($this->_router_merged) {
+            return;
+        }
+
+        $this->addParams($this->getRouter()->getParams());
+        $this->_router_merged = true;
     }
 
     /**
@@ -209,6 +228,7 @@ class Request
                 }
                 break;
             default:
+                $this->_mergeRouterParams();
                 if (isset($this->_params[$name])) {
                     return $this->_params[$name];
                 }
@@ -233,6 +253,7 @@ class Request
             return $_GET;
         }
 
+        $this->_mergeRouterParams();
         return $this->_params;
     }
 
