@@ -69,13 +69,6 @@ class Config
     protected $_separators = array(':', 'extends', 'inherits from', 'inherits');
 
     /**
-     * separator we are using
-     *
-     * @var string
-     */
-    protected $_separator;
-
-    /**
      * list of inheritance exceptions
      *
      * for example:
@@ -86,14 +79,7 @@ class Config
      *
      * @var array
      */
-    protected $_exception_separators = array('-', 'except', 'but skips', 'but overwrites', 'but not');
-
-    /**
-     * exception we are using
-     *
-     * @var string
-     */
-    protected $_exception_separator;
+    protected $_exception_separators = array('except', 'but skips', 'but overwrites', 'but not');
 
     /**
      * constructor
@@ -161,64 +147,17 @@ class Config
      */
     protected function _addSectionToMap($section)
     {
-        // figur out what separator to use
-        $separator = $this->_getSeparator($section);
-        $bits = explode($separator, $section);
+        $bits = Util::explodeAtMatch($this->_separators, $section);
 
         $env = trim($bits[0]);
         $this->_environments[$env] = $section;
 
         // if this environment inherits from another
         if (isset($bits[1])) {
-            $separator = $this->_getExceptionSeparator($bits[1]);
-            $new_bits = explode($separator, $bits[1]);
+            $new_bits = Util::explodeAtMatch($this->_exception_separators, $bits[1]);
             $this->_parents[$env] = trim($new_bits[0]);
-            $this->_exceptions[$env] = isset($new_bits[1]) ? explode(',', trim($new_bits[1])) : array();
+            $this->_exceptions[$env] = isset($new_bits[1]) ? Util::explodeAtMatch(array(',', ' and '), trim($new_bits[1])) : array();
         }
-    }
-
-    /**
-     * figures out what separator to use for inheritence
-     *
-     * @param string $section
-     * @return string
-     */
-    protected function _getSeparator($section)
-    {
-        if ($this->_separator) {
-            return $this->_separator;
-        }
-
-        foreach ($this->_separators as $separator) {
-            if (strpos($section, $separator) > 0) {
-                $this->_separator = $separator;
-                return $this->_separator;
-            }
-        }
-
-        return $this->_separators[0];
-    }
-
-    /**
-     * figures out what separator to use for keys to skip
-     *
-     * @param string $env
-     * @return string
-     */
-    protected function _getExceptionSeparator($env)
-    {
-        if ($this->_exception_separator) {
-            return $this->_exception_separator;
-        }
-
-        foreach ($this->_exception_separators as $separator) {
-            if (strpos($env, $separator) > 0) {
-                $this->_exception_separator = $separator;
-                return $this->_exception_separator;
-            }
-        }
-
-        return $this->_exception_separators[0];
     }
 
     /**

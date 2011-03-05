@@ -126,6 +126,43 @@ class Util
     }
 
     /**
+     * takes a string and an array of delimiters and explodes at the first
+     * delimiter that is found in the string
+     *
+     * @param array $delimiters
+     * @param string $string
+     * @return array
+     */
+    public static function explodeAtMatch(array $delimiters, $string)
+    {
+        $delimiter = self::inString($delimiters, $string);
+
+        if (!$delimiter) {
+            return array($string);
+        }
+
+        return explode($delimiter, $string);
+    }
+
+    /**
+     * takes an array of strings and checks if any of them are in another string
+     *
+     * @param array $needles
+     * @param string $haystack
+     * @return (string || false) first delimiter that matches on success
+     *         false on failure
+     */
+    public static function inString(array $needles, $haystack)
+    {
+        foreach ($needles as $needle) {
+            if (strpos($haystack, $needle) !== false) {
+                return $needle;
+            }
+        }
+        return false;
+    }
+
+    /**
      * maps english representation of time to seconds
      *
      * @param string
