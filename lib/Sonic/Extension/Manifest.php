@@ -16,6 +16,16 @@ abstract class Manifest
     const VERSION = '';
 
     /**
+     * @var bool
+     */
+    protected $_has_config = false;
+
+    /**
+     * @var array
+     */
+    protected $_config_defaults = array();
+
+    /**
      * @var array
      */
     protected $_dependencies = array();
@@ -33,6 +43,26 @@ abstract class Manifest
     public function getDependencies()
     {
         return array_map('strtolower', $this->_dependencies);
+    }
+
+    /**
+     * should we install a config file?
+     *
+     * @return bool
+     */
+    public function hasConfig()
+    {
+        return $this->_has_config;
+    }
+
+    /**
+     * get default config values
+     *
+     * @return array
+     */
+    public function getConfigDefaults()
+    {
+        return $this->_config_defaults;
     }
 
     /**
