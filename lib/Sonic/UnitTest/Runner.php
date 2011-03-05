@@ -25,6 +25,13 @@ class Runner
     protected $_directory;
 
     /**
+     * single file we are going to process
+     *
+     * @var SplFileInfo
+     */
+    protected $_file;
+
+    /**
      * path to directory to store the coverage report in
      *
      * @var string
@@ -125,7 +132,7 @@ class Runner
             $runner->includeFile(self::BOOTSTRAP);
         }
 
-        $runner->runTests();
+        $runner->runTests($runner->_file);
 
         $runner->showResults();
     }
@@ -143,12 +150,6 @@ class Runner
         }
 
         $dir = array_pop($args);
-        if (!file_exists($dir)) {
-            throw new Exception('invalid test directory specified: ' . $dir);
-        }
-
-        $directory = $this->_convertDirectoryToPath($dir);
-        $this->directory($directory);
 
         $coverage_directory = $this->_getArgValue('--coverage-html', $args);
         if (!$coverage_directory) {
@@ -160,6 +161,21 @@ class Runner
         }
         $path = $this->_convertDirectoryToPath($coverage_directory);
         $this->coverageDirectory($path);
+
+        // single file
+        if (!is_dir($dir) && file_exists($dir)) {
+            $path = $this->_convertDirectoryToPath($dir);
+            $this->_file = new \SplFileInfo($path);
+            $this->directory($this->_file->getPath());
+            return;
+        }
+
+        if (!is_dir($dir)) {
+            throw new Exception('invalid test directory specified: ' . $dir);
+        }
+
+        $directory = $this->_convertDirectoryToPath($dir);
+        $this->directory($directory);
     }
 
     /**
@@ -301,7 +317,7 @@ class Runner
      *
      * @return void
      */
-    public function runTests()
+    public function runTests(\SplFileInfo $file = null)
     {
         $tracker = Tracker::getInstance();
 
@@ -309,6 +325,10 @@ class Runner
 
         $tracker->output($sonic, 'yellow');
         $tracker->output(" Unit Test Framework\n\n", 'yellow');
+
+        if ($file) {
+            return $this->processFile($file);
+        }
 
         $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->directory()));
         foreach ($it as $file) {
