@@ -54,9 +54,10 @@ class Manager
      */
     private function __construct()
     {
-        App::includeFile('Sonic/Extension/Exception.php');
-        App::includeFile('Sonic/Extension/Manifest.php');
-        App::includeFile('Sonic/Extension/Tracker.php');
+        $app = App::getInstance();
+        $app->includeFile('Sonic/Extension/Exception.php');
+        $app->includeFile('Sonic/Extension/Manifest.php');
+        $app->includeFile('Sonic/Extension/Tracker.php');
     }
 
     /**
@@ -288,7 +289,7 @@ class Manager
             throw new Exception('extension is missing manifest class: ' . $manifest_path);
         }
 
-        App::includeFile($manifest_path);
+        App::getInstance()->includeFile($manifest_path);
         $class = "\Sonic\Extension\\" . $name;
         $manifest = new $class;
 

@@ -73,7 +73,7 @@ class App
     /**
      * @var array
      */
-    protected static $_included = array();
+    protected $_included = array();
 
     /**
      * @var string
@@ -145,7 +145,7 @@ class App
     public function autoloader($class_name)
     {
         $path = str_replace('\\', '/', $class_name) . '.php';
-        return self::includeFile($path);
+        return $this->includeFile($path);
     }
 
     /**
@@ -154,15 +154,14 @@ class App
      * @param string
      * @return void
      */
-    public static function includeFile($path)
+    public function includeFile($path)
     {
-        $app = self::getInstance();
-        if (isset(self::$_included[$path])) {
+        if (isset($this->_included[$path])) {
             return false;
         }
 
         include $path;
-        self::$_included[$path] = true;
+        $this->_included[$path] = true;
         return true;
     }
 
@@ -233,7 +232,7 @@ class App
         }
 
         // we need to load the config object before it fetches it from APC
-        self::includeFile('Sonic/Config.php');
+        $app->includeFile('Sonic/Config.php');
 
         // if we are not dev let's try to grab it from APC
         if (!self::isDev() && !$app->getSetting(self::DISABLE_APC) && ($config = apc_fetch($cache_key))) {
@@ -242,7 +241,7 @@ class App
         }
 
         // include the class
-        self::includeFile('Sonic/Util.php');
+        $app->includeFile('Sonic/Util.php');
 
         // if we have gotten here then that means the config exists so we
         // now need to get the environment name and load the config
@@ -700,7 +699,7 @@ class App
      */
     public function setDelegate($delegate)
     {
-        self::includeFile('Sonic/App/Delegate.php');
+        $this->includeFile('Sonic/App/Delegate.php');
         $this->autoloader($delegate);
 
         $delegate = new $delegate;
@@ -753,7 +752,7 @@ class App
                 continue;
             }
 
-            self::includeFile($base_path . '/' . $file);
+            $this->includeFile($base_path . '/' . $file);
         }
 
         $loaded = $this->getSetting(self::EXTENSIONS_LOADED) ?: array();
@@ -792,17 +791,17 @@ class App
         // that logic here
         if ($load) {
             include 'Sonic/Exception.php';
-            self::$_included['Sonic/Exception.php'] = true;
+            $this->_included['Sonic/Exception.php'] = true;
             include 'Sonic/Request.php';
-            self::$_included['Sonic/Request.php'] = true;
+            $this->_included['Sonic/Request.php'] = true;
             include 'Sonic/Router.php';
-            self::$_included['Sonic/Router.php'] = true;
+            $this->_included['Sonic/Router.php'] = true;
             include 'Sonic/Controller.php';
-            self::$_included['Sonic/Controller.php'] = true;
+            $this->_included['Sonic/Controller.php'] = true;
             include 'Sonic/View.php';
-            self::$_included['Sonic/View.php'] = true;
+            $this->_included['Sonic/View.php'] = true;
             include 'Sonic/Layout.php';
-            self::$_included['Sonic/Layout.php'] = true;
+            $this->_included['Sonic/Layout.php'] = true;
         }
 
         if ($this->getSetting(self::AUTOLOAD)) {
