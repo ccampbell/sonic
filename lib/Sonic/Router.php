@@ -179,7 +179,24 @@ class Router
 
             // if the first character of this part of the route is a ':' that means this is a parameter
             // let's store it and continue
-            if (isset($route_bits[$i][0]) && $route_bits[$i][0] === ':') {
+            $first_char = isset($route_bits[$i][0]) ? $route_bits[$i][0] : null;
+
+            // regular old vars
+            if ($first_char == ':' || $first_char == '*') {
+                $param = substr($route_bits[$i], 1);
+                $params[$param] = $url_bits[$i];
+                continue;
+            }
+
+            // numeric values
+            if ($first_char == '#' && is_numeric($url_bits[$i])) {
+                $param = substr($route_bits[$i], 1);
+                $params[$param] = $url_bits[$i];
+                continue;
+            }
+
+            // alpha values
+            if ($first_char == '@' && preg_match('/^[a-zA-Z]+$/', $url_bits[$i]) > 0) {
                 $param = substr($route_bits[$i], 1);
                 $params[$param] = $url_bits[$i];
                 continue;

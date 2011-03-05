@@ -111,7 +111,29 @@ class RouterTest extends TestCase
         $this->isEqual('tests', $router->getController());
         $this->isEqual('random', $router->getAction());
 
-        // test route with var
+        // test routes with :var
+        $request->reset();
+        $_SERVER['REQUEST_URI'] = '/lesson/name-of-lesson';
+        $router = new Router($request, null, 'tests');
+        $this->isEqual('lesson', $router->getController());
+        $this->isEqual('main', $router->getAction());
+
+        $params = $request->getParams();
+        $this->isTrue(array_key_exists('lesson_name', $params));
+        $this->isEqual($params['lesson_name'], 'name-of-lesson');
+
+        // test routes with *var
+        $request->reset();
+        $_SERVER['REQUEST_URI'] = '/artist/bruce-springsteen';
+        $router = new Router($request, null, 'tests');
+        $this->isEqual('artist', $router->getController());
+        $this->isEqual('main', $router->getAction());
+
+        $params = $request->getParams();
+        $this->isTrue(array_key_exists('name', $params));
+        $this->isEqual($params['name'], 'bruce-springsteen');
+
+        // test route with #var
         $request->reset();
         $_SERVER['REQUEST_URI'] = '/profile/25';
         $router = new Router($request, null, 'tests');
@@ -124,5 +146,44 @@ class RouterTest extends TestCase
 
         $this->isTrue(array_key_exists('magic', $params));
         $this->isEqual($params['magic'], true);
+
+        // test failed number
+        $request->reset();
+        $_SERVER['REQUEST_URI'] = '/profile/whatever';
+        $router = new Router($request, null, 'tests');
+        $this->isEqual(null, $router->getController());
+        $this->isEqual(null, $router->getAction());
+
+        // test routes with @var
+        $request->reset();
+        $_SERVER['REQUEST_URI'] = '/word/awesome';
+        $router = new Router($request, null, 'tests');
+        $this->isEqual('word', $router->getController());
+        $this->isEqual('main', $router->getAction());
+
+        $params = $request->getParams();
+        $this->isTrue(array_key_exists('word', $params));
+        $this->isEqual($params['word'], 'awesome');
+
+        // test failed alpha
+        $request->reset();
+        $_SERVER['REQUEST_URI'] = '/word/word123';
+        $router = new Router($request, null, 'tests');
+        $this->isEqual(null, $router->getController());
+        $this->isEqual(null, $router->getAction());
+
+        // test multiple params in same route
+        $request->reset();
+        $_SERVER['REQUEST_URI'] = '/word/awesome/translate/japanese';
+        $router = new Router($request, null, 'tests');
+        $this->isEqual('word', $router->getController());
+        $this->isEqual('translate', $router->getAction());
+
+        $params = $request->getParams();
+        $this->isTrue(array_key_exists('word', $params));
+        $this->isEqual($params['word'], 'awesome');
+
+        $this->isTrue(array_key_exists('language', $params));
+        $this->isEqual($params['language'], 'japanese');
     }
 }
