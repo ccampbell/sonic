@@ -76,28 +76,24 @@ class App
     protected $_base_path;
 
     /**
-     * @var string
-     */
-    protected $_environment;
-
-    /**
      * constants for settings
      */
     const MODE = 0;
-    const AUTOLOAD = 1;
-    const CONFIG_FILE = 2;
-    const DEVS = 3;
-    const DB_DRIVER = 4;
-    const PDO = 5;
-    const MYSQL = 6;
-    const MYSQLI = 7;
-    const DISABLE_MEMCACHE = 8;
-    const DISABLE_APC = 9;
-    const TURBO = 10;
-    const TURBO_PLACEHOLDER = 11;
-    const DEFAULT_SCHEMA = 12;
-    const EXTENSION_DATA = 13;
-    const EXTENSIONS_LOADED = 14;
+    const ENVIRONMENT = 1;
+    const AUTOLOAD = 2;
+    const CONFIG_FILE = 3;
+    const DEVS = 4;
+    const DB_DRIVER = 5;
+    const PDO = 6;
+    const MYSQL = 7;
+    const MYSQLI = 8;
+    const DISABLE_MEMCACHE = 9;
+    const DISABLE_APC = 10;
+    const TURBO = 11;
+    const TURBO_PLACEHOLDER = 12;
+    const DEFAULT_SCHEMA = 13;
+    const EXTENSION_DATA = 14;
+    const EXTENSIONS_LOADED = 15;
 
     /**
      * @var array
@@ -224,7 +220,7 @@ class App
         // cache key
         $cache_key =  'config_' . $path . '_' . $environment;
 
-        // if the config is in the registry return it
+        // if the config is in instance cache return it
         if (isset($app->_configs[$cache_key])) {
             return $app->_configs[$cache_key];
         }
@@ -291,27 +287,16 @@ class App
      */
     public function getEnvironment()
     {
-        if ($this->_environment !== null) {
-            return $this->_environment;
+        if ($env = $this->getSetting(self::ENVIRONMENT)) {
+            return $env;
         }
 
-        if ($environment = getenv('ENVIRONMENT')) {
-            $this->_environment = $environment;
-            return $environment;
+        if ($env = getenv('ENVIRONMENT')) {
+            $this->addSetting(self::ENVIRONMENT, $env);
+            return $env;
         }
 
         throw new Exception('ENVIRONMENT variable is not set! check your apache config');
-    }
-
-    /**
-     * sets environment
-     *
-     * @param string
-     * @return void
-     */
-    public function setEnvironment($env)
-    {
-        $this->_environment = $env;
     }
 
     /**
@@ -414,15 +399,14 @@ class App
     {
         $name = strtolower($name);
 
-        if (isset($this->_controllers[$name])) {
-            return $this->_controllers[$name];
+        // controller has not been instantiated yet
+        if (!isset($this->_controllers[$name])) {
+            include $this->getPath('controllers') . '/' . $name . '.php';
+            $class_name = '\Controllers\\' . $name;
+            $this->_controllers[$name] = new $class_name();
+            $this->_controllers[$name]->name($name);
+            $this->_controllers[$name]->request($this->getRequest());
         }
-
-        include $this->getPath('controllers') . '/' . $name . '.php';
-        $class_name = '\Controllers\\' . $name;
-        $this->_controllers[$name] = new $class_name();
-        $this->_controllers[$name]->name($name);
-        $this->_controllers[$name]->request($this->getRequest());
 
         return $this->_controllers[$name];
     }
@@ -446,9 +430,10 @@ class App
 
         $view = $controller->getView();
         $view->setAction($action);
-
         $view->addVars($args);
 
+        // if we are requesting JSON that means this is being processed from the turbo queue
+        // if we are not in turbo mode then we run the action normally
         $can_run = $json || !$this->getSetting(self::TURBO);
 
         if ($this->_delegate) {
@@ -456,11 +441,13 @@ class App
         }
 
         // if for some reason this action has already run, let's not run it again
+        // @todo not sure this makes total sense
         if ($can_run && !$controller->hasCompleted($action)) {
             $this->_runAction($controller, $action);
         }
 
         // process the layout if we can
+        // this takes care of handling this view
         if ($this->_processLayout($controller, $view, $args)) {
             return;
         }
@@ -594,30 +581,6 @@ class App
     }
 
     /**
-     * determines if we should turn off turbo mode
-     *
-     * @return bool
-     */
-    protected function _robotnikWins()
-    {
-        if ($this->getRequest()->isAjax() || isset($_COOKIE['noturbo']) || isset($_COOKIE['bot'])) {
-            return true;
-        }
-
-        if (isset($_GET['noturbo'])) {
-            setcookie('noturbo', true, time() + 86400);
-            return true;
-        }
-
-        if (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'Googlebot') !== false) {
-            setcookie('bot', true, time() + 86400);
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * handles an exception when loading a page
      *
      * @param Exception $e
@@ -674,6 +637,30 @@ class App
         );
 
         return $this->_runController('main', 'error', $args, $json, $id);
+    }
+
+    /**
+     * determines if we should turn off turbo mode
+     *
+     * @return bool
+     */
+    protected function _robotnikWins()
+    {
+        if ($this->getRequest()->isAjax() || isset($_COOKIE['noturbo']) || isset($_COOKIE['bot'])) {
+            return true;
+        }
+
+        if (isset($_GET['noturbo'])) {
+            setcookie('noturbo', true, time() + 86400);
+            return true;
+        }
+
+        if (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'Googlebot') !== false) {
+            setcookie('bot', true, time() + 86400);
+            return true;
+        }
+
+        return false;
     }
 
     /**

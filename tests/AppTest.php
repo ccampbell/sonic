@@ -61,7 +61,7 @@ class AppTest extends TestCase
         $this->isNotNull($env);
 
         putenv('ENVIRONMENT');
-        $app->setEnvironment(null);
+        $app->addSetting(App::ENVIRONMENT, null);
 
         $this->isException('Sonic\Exception');
         $app->getEnvironment();
@@ -114,18 +114,18 @@ class AppTest extends TestCase
     public function testGetConfig()
     {
         $app = App::getInstance();
-        $app->setEnvironment('dev');
+        $app->addSetting(App::ENVIRONMENT, 'dev');
 
         $config = $app->getConfig();
         $this->isTrue($config instanceof Sonic\Config);
         $this->isEqual($app->getConfig(), $config);
 
         // for production see if we pull from apc
-        $app->setEnvironment('production');
+        $app->addSetting(App::ENVIRONMENT, 'production');
         $config = $app->getConfig();
         $this->isTrue($config instanceof Sonic\Config);
 
-        $app->setEnvironment('dev');
+        $app->addSetting(App::ENVIRONMENT, 'dev');
     }
 
     public function testSetDelegate()
@@ -152,7 +152,6 @@ class AppTest extends TestCase
     public function testStart()
     {
         $app = App::getInstance();
-        $app->outputStarted(true);
 
         // requesting home page
         ob_start();
