@@ -156,7 +156,7 @@ class Config
         if (isset($bits[1])) {
             $new_bits = Util::explodeAtMatch($this->_exception_separators, $bits[1]);
             $this->_parents[$env] = trim($new_bits[0]);
-            $this->_exceptions[$env] = isset($new_bits[1]) ? Util::explodeAtMatch(array(',', ' and '), trim($new_bits[1])) : array();
+            $this->_exceptions[$env] = isset($new_bits[1]) ? Util::explodeAtMatch(array(', ', ',', ' and '), trim($new_bits[1])) : array();
         }
     }
 
