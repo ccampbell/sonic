@@ -135,5 +135,8 @@ class ConfigTest extends TestCase
 
         $analytics = $config->get('use_analytics');
         $this->isEqual($analytics, 0);
+
+        $age = $config->get('age');
+        $this->isEqual($age, null);
     }
 }
