@@ -38,6 +38,11 @@ abstract class Manifest
     /**
      * @var string
      */
+    protected $_delegate;
+
+    /**
+     * @var string
+     */
     protected $_instructions = '';
 
     /**
@@ -78,6 +83,16 @@ abstract class Manifest
     public function getRoutes()
     {
         return $this->_routes;
+    }
+
+    /**
+     * gets delegate class name
+     *
+     * @return string
+     */
+    public function getDelegate()
+    {
+        return $this->_delegate;
     }
 
     /**

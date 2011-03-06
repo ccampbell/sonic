@@ -340,7 +340,7 @@ class Manager
 
         mkdir($extension_dir);
 
-        $installed = $this->_sync($path, $extension_dir, $already_installed, $name);
+        $installed = $this->_sync($path, $extension_dir, $already_installed, $name, true);
 
         // if this extension uses a config then write it out
         if ($manifest->hasConfig()) {
@@ -365,6 +365,11 @@ class Manager
 
         if ($manifest->hasConfig()) {
             $data[$name]['config'] = $this->_stripApp($config_path);
+        }
+
+        if ($manifest->getDelegate()) {
+            $data[$name]['delegate'] = $manifest->getDelegate();
+            $data[$name]['delegate_path'] = $this->getTracker($name)->getDelegate();
         }
 
         $data[$name]['moved'] = $this->getTracker($name)->getMoved();
@@ -501,7 +506,7 @@ class Manager
      * @var bool $installed is this extension already installed?
      * @var string $ext_name name of extension
      */
-    protected function _sync($dir1, $dir2, $installed = false, $ext_name)
+    protected function _sync($dir1, $dir2, $installed = false, $ext_name, $first = false)
     {
         $files = new \RecursiveDirectoryIterator($dir1);
 
@@ -516,10 +521,15 @@ class Manager
 
             ++$file_count;
 
+            // do not sync anything in tests directory
+            if ($first && $file->isDir() && $file->getFilename() == 'tests') {
+                continue;
+            }
+
             // if this is a directory used by the app then copy the files into
             // that directory
             $app_dirs = array('configs', 'controllers', 'libs', 'public_html', 'util', 'views');
-            if ($file->isDir() && in_array($file->getFilename(), $app_dirs)) {
+            if ($first && $file->isDir() && in_array($file->getFilename(), $app_dirs)) {
                 $this->_sync($file->getPathname(), App::getInstance()->getPath($file->getFilename()), $installed, $ext_name);
                 continue;
             }

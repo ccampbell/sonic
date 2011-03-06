@@ -106,7 +106,8 @@ class App
         self::DB_DRIVER => self::PDO,
         self::DISABLE_MEMCACHE => false,
         self::DISABLE_APC => false,
-        self::TURBO => false
+        self::TURBO => false,
+        self::EXTENSIONS_LOADED => array()
     );
 
     /**
@@ -693,8 +694,14 @@ class App
      */
     public function loadExtension($name)
     {
+        // if this is already loaded don't do anything
+        if ($this->extensionLoaded($name)) {
+            return;
+        }
+
         $name = strtolower($name);
 
+        // first grab the extension installation data
         $extensions = $this->getSetting(self::EXTENSION_DATA);
         if (!$extensions) {
             $path = $this->getPath('extensions/installed.json');
@@ -709,8 +716,23 @@ class App
             throw new Exception('trying to load extension "' . $name . '" which is not installed!');
         }
 
+        // get the data related to this extension
+        $data = $extensions[$name];
+
+        // create a delegate object if this extension has one
+        $delegate = null;
+        if (isset($data['delegate_path']) && isset($data['delegate'])) {
+            $this->includeFile('Sonic/Extension/Delegate.php');
+            $this->includeFile($this->getPath($data['delegate_path']));
+            $delegate = new $data['delegate'];
+        }
+
+        if ($delegate) {
+            $delegate->extensionStartedLoading();
+        }
+
         $base_path = $this->getPath();
-        foreach ($extensions[$name]['files'] as $file) {
+        foreach ($data['files'] as $file) {
 
             // if the file is not in the extensions or libs directory then skip it
             // we don't want to load controllers/views/etc. here
@@ -724,11 +746,19 @@ class App
             }
 
             $this->includeFile($base_path . '/' . $file);
+
+            if ($delegate) {
+                $delegate->extensionLoadedFile($file);
+            }
         }
 
-        $loaded = $this->getSetting(self::EXTENSIONS_LOADED) ?: array();
+        $loaded = $this->getSetting(self::EXTENSIONS_LOADED);
         $loaded[] = $name;
         $this->addSetting(self::EXTENSIONS_LOADED, $loaded);
+
+        if ($delegate) {
+            $delegate->extensionFinishedLoading();
+        }
 
         return $this;
     }
@@ -741,7 +771,7 @@ class App
      */
     public function extensionLoaded($name)
     {
-        $loaded = $this->getSetting(self::EXTENSIONS_LOADED) ?: array();
+        $loaded = $this->getSetting(self::EXTENSIONS_LOADED);
         return in_array(strtolower($name), $loaded);
     }
 

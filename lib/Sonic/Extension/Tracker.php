@@ -26,6 +26,11 @@ class Tracker
     protected $_moved = array();
 
     /**
+     * @var string
+     */
+    protected $_delegate;
+
+    /**
      * track a file added
      *
      * @param string
@@ -33,6 +38,10 @@ class Tracker
      */
     public function addedFile($file)
     {
+        if (substr($file, -12) == 'Delegate.php') {
+            $this->_delegate = $file;
+            return;
+        }
         $this->_files[] = $file;
     }
 
@@ -66,6 +75,16 @@ class Tracker
     public function getFiles()
     {
         return $this->_files;
+    }
+
+    /**
+     * get delegate
+     *
+     * @return string
+     */
+    public function getDelegate()
+    {
+        return $this->_delegate;
     }
 
     /**
