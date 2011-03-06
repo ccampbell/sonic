@@ -17,6 +17,11 @@ class Helper
     protected static $_helpers = array();
 
     /**
+     * @var array
+     */
+    protected $_settings = array();
+
+    /**
      * @var string
      */
     protected $_name;
@@ -31,6 +36,34 @@ class Helper
             $this->_raiseException('extension "' . $name . '" is not loaded!');
         }
         $this->_name = $name;
+    }
+
+    /**
+     * adds setting
+     *
+     * @param string $key
+     * @param mixed $value
+     * @return Helper
+     */
+    public function addSetting($key, $value)
+    {
+        $this->_settings[$key] = $value;
+        return $this;
+    }
+
+    /**
+     * gets a setting
+     *
+     * @param string $key
+     * @return mixed
+     */
+    public function getSetting($key)
+    {
+        if (!isset($this->_settings[$name])) {
+            return null;
+        }
+
+        return $this->_settings[$name];
     }
 
     /**
