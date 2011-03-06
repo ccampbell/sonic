@@ -13,6 +13,9 @@ abstract class Delegate
 {
     /**
      * constructor
+     *
+     * @todo include this somewhere else?
+     * @return void
      */
     public function __construct() {
         App::getInstance()->includeFile('Sonic/Extension/Transformation.php');
