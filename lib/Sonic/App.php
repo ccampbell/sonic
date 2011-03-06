@@ -87,13 +87,12 @@ final class App
     const PDO = 6;
     const MYSQL = 7;
     const MYSQLI = 8;
-    const DISABLE_MEMCACHE = 9;
-    const DISABLE_APC = 10;
-    const TURBO = 11;
-    const TURBO_PLACEHOLDER = 12;
-    const DEFAULT_SCHEMA = 13;
-    const EXTENSION_DATA = 14;
-    const EXTENSIONS_LOADED = 15;
+    const DISABLE_APC = 9;
+    const TURBO = 10;
+    const TURBO_PLACEHOLDER = 11;
+    const DEFAULT_SCHEMA = 12;
+    const EXTENSION_DATA = 13;
+    const EXTENSIONS_LOADED = 14;
 
     /**
      * @var array
@@ -104,7 +103,6 @@ final class App
         self::CONFIG_FILE => 'ini',
         self::DEVS => array('dev', 'development'),
         self::DB_DRIVER => self::PDO,
-        self::DISABLE_MEMCACHE => false,
         self::DISABLE_APC => false,
         self::TURBO => false,
         self::EXTENSIONS_LOADED => array()
@@ -273,26 +271,6 @@ final class App
 
         return $config;
     }
-
-    /**
-     * gets memcache
-     *
-     * @return Sonic\Cache\Memcache
-     */
-    public static function getMemcache($pool = 'default')
-    {
-        return Cache\Factory::getMemcache($pool);
-    }
-
-    /**
-     * gets memcached
-     *
-     * @return Sonic\Cache\Memcached
-     */
-    // public static function getMemcached($pool = 'default')
-    // {
-        // return Cache\Factory::getMemcached($pool);
-    // }
 
     /**
      * is this dev mode?
@@ -847,6 +825,10 @@ final class App
             $this->autoload();
         }
 
+        if ($this->_delegate) {
+            $this->_delegate->appFinishedLoading();
+        }
+
         // if we are calling this app from command line then all we want to do
         // is load the core application files
         if ($mode != self::WEB) {
@@ -855,10 +837,6 @@ final class App
 
         if ($this->getSetting(self::TURBO) && $this->_robotnikWins()) {
             $this->addSetting(self::TURBO, false);
-        }
-
-        if ($this->_delegate) {
-            $this->_delegate->appFinishedLoading();
         }
 
         // try to get the controller and action
