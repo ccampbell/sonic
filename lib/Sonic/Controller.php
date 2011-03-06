@@ -77,8 +77,7 @@ class Controller
      */
     public function __call($name, $args)
     {
-        App::getInstance()->includeFile('Sonic/Transformation.php');
-        return Transformation::call($name, $args, __CLASS__, get_class($this));
+        return App::getInstance()->callIfExists($name, $args, __CLASS__, get_class($this));
     }
 
     /**
@@ -89,8 +88,7 @@ class Controller
      */
     public static function __callStatic($name, $args)
     {
-        App::getInstance()->includeFile('Sonic/Transformation.php');
-        return Transformation::callStatic($name, $args, __CLASS__, get_called_class());
+        return App::getInstance()->callIfExists($name, $args, __CLASS__, get_called_class(), true);
     }
 
     /**

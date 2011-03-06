@@ -123,8 +123,7 @@ final class App
      */
     public function __call($name, $args)
     {
-        $this->includeFile('Sonic/Transformation.php');
-        return Transformation::call($name, $args, __CLASS__);
+        return $this->callIfExists($name, $args, __CLASS__, get_class($this));
     }
 
     /**
@@ -135,8 +134,25 @@ final class App
      */
     public static function __callStatic($name, $args)
     {
-        self::getInstance()->includeFile('Sonic/Transformation.php');
-        return Transformation::callStatic($name, $args, __CLASS__);
+        return self::getInstance()->callIfExists($name, $args, __CLASS__, get_called_class(), true);
+    }
+
+    /**
+     * calls method if it exists
+     *
+     * @param string $name
+     * @param array $args
+     * @param string $class
+     * @param instance $class_name
+     */
+    public function callIfExists($name, $args, $class, $class_name, $static = false)
+    {
+        if (count($this->getSetting(self::EXTENSIONS_LOADED)) == 0) {
+            return trigger_error('Call to undefined method ' . $class_name . '::' . $name . '()', E_USER_ERROR);
+        }
+        $this->includeFile('Sonic/Extension/Transformation.php');
+        $method = $static ? 'callStatic' : 'call';
+        return Extension\Transformation::$method($name, $args, $class, $class_name);
     }
 
     /**
