@@ -1,6 +1,6 @@
 <?php
 namespace Sonic\Extension;
-use Sonic\App, Sonic\Controller, Sonic\Transformation;
+use Sonic\App, Sonic\Controller;
 
 /**
  * Extension Delegate Interface
@@ -15,7 +15,7 @@ abstract class Delegate
      * constructor
      */
     public function __construct() {
-        App::getInstance()->includeFile('Sonic/Transformation.php');
+        App::getInstance()->includeFile('Sonic/Extension/Transformation.php');
     }
 
     /**
