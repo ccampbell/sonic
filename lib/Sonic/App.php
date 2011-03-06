@@ -750,16 +750,32 @@ final class App
         }
 
         $base_path = $this->getPath();
+
+        $core = 'extensions/' . $name . '/Core.php';
+        $has_core = isset($data['has_core']) && $data['has_core'];
+        $dev = isset($data['dev']) && $data['dev'];
+
         foreach ($data['files'] as $file) {
 
             // if the file is not in the extensions or libs directory then skip it
             // we don't want to load controllers/views/etc. here
-            if (strpos($file, 'extensions') !== 0 && strpos($file, 'libs') !== 0) {
+            $lib_file = strpos($file, 'libs') === 0;
+            if (strpos($file, 'extensions') !== 0 && !$lib_file) {
                 continue;
             }
 
             // if this is not a PHP file then skip it
             if (substr($file, -4) != '.php') {
+                continue;
+            }
+
+            // skip core in dev mode
+            if ($dev && $file == $core) {
+                continue;
+            }
+
+            // if this is a file that is not in libs and not core then skip it
+            if (!$dev && !$lib_file && $has_core && $file != $core) {
                 continue;
             }
 
