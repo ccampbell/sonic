@@ -1,5 +1,5 @@
 <?php
-namespace Sonic;
+namespace Sonic\Extension;
 
 /**
  * Transformation class
