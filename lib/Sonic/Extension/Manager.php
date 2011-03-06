@@ -343,9 +343,9 @@ class Manager
         $installed = $this->_sync($path, $extension_dir, $already_installed, $name, true);
 
         // if this extension uses a config then write it out
-        if ($manifest->hasConfig()) {
+        $config_path = App::getInstance()->getPath('configs') . '/extension.' . $name . '.ini';
+        if ($manifest->hasConfig() && !file_exists($config_path)) {
             $defaults = $manifest->getConfigDefaults();
-            $config_path = App::getInstance()->getPath('configs') . '/extension.' . $name . '.ini';
             $text = $this->_configFromArray($defaults);
             $this->_output('creating config file at ' . $config_path, true);
             file_put_contents($config_path, $text);
@@ -367,9 +367,10 @@ class Manager
             $data[$name]['config'] = $this->_stripApp($config_path);
         }
 
-        if ($manifest->getDelegate()) {
-            $data[$name]['delegate'] = $manifest->getDelegate();
-            $data[$name]['delegate_path'] = $this->getTracker($name)->getDelegate();
+        $delegate = $this->getTracker($name)->getDelegate();
+        if ($delegate) {
+            $data[$name]['delegate'] = $this->_getDelegateClassName($delegate);
+            $data[$name]['delegate_path'] = $delegate;
         }
 
         $data[$name]['moved'] = $this->getTracker($name)->getMoved();
@@ -461,7 +462,7 @@ class Manager
             unlink($base_path . $path);
         }
 
-        if (isset($data[$lc_name]['config'])) {
+        if (!$reload && isset($data[$lc_name]['config'])) {
             $path = $data[$lc_name]['config'];
             $this->_output('removing file ' . $path, true);
             unlink($base_path . $path);
@@ -666,6 +667,23 @@ class Manager
     protected function _routePath()
     {
         return App::getInstance()->getPath('configs/routes.php');
+    }
+
+    /**
+     * gets class name of delegate from file
+     *
+     * @param string $path
+     * @return string
+     */
+    protected function _getDelegateClassName($delegate)
+    {
+        $path = App::getInstance()->getPath() . DIRECTORY_SEPARATOR . $delegate;
+        App::getInstance()->includeFile('Sonic/Extension/Delegate.php');
+        $classes_before = get_declared_classes();
+        include $path;
+        $classes_after = get_declared_classes();
+        $diff = array_values(array_diff($classes_after, $classes_before));
+        return $diff[0];
     }
 
     /**
