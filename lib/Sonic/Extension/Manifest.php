@@ -31,6 +31,11 @@ abstract class Manifest
     protected $_dependencies = array();
 
     /**
+     * @var array
+     */
+    protected $_routes = array();
+
+    /**
      * @var string
      */
     protected $_instructions = '';
@@ -63,6 +68,16 @@ abstract class Manifest
     public function getConfigDefaults()
     {
         return $this->_config_defaults;
+    }
+
+    /**
+     * gets a list of routes to be installed with this extension
+     *
+     * @return array
+     */
+    public function getRoutes()
+    {
+        return $this->_routes;
     }
 
     /**

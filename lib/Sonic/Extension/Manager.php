@@ -22,6 +22,10 @@ class Manager
     const FORCE = '--force';
     const VERBOSE = '--verbose';
     const DOWNLOAD_URL = 'http://extensions.sonicframework.com/download';
+
+    /**
+     * @todo cache list on disk for a couple hours
+     */
     const LIST_URL = 'http://extensions.sonicframework.com/list';
 
     /**
@@ -347,10 +351,17 @@ class Manager
             file_put_contents($config_path, $text);
         }
 
+        // if the extension has routes than add them
+        $routes = $manifest->getRoutes();
+        if (count($routes)) {
+            $this->_installRoutes($routes, $name);
+        }
+
         $data[$name] = array();
         $data[$name]['version'] = $manifest::VERSION;
         $data[$name]['files'] = $this->getTracker($name)->getFiles();
         $data[$name]['dirs'] = $this->getTracker($name)->getDirs();
+        $data[$name]['routes'] = count($routes);
 
         if ($manifest->hasConfig()) {
             $data[$name]['config'] = $this->_stripApp($config_path);
@@ -470,6 +481,10 @@ class Manager
             exec('rm -r ' . $extension_dir);
         }
 
+        if ($data[$lc_name]['routes']) {
+            $this->_uninstallRoutes($lc_name);
+        }
+
         // if this is not part of an installation
         if (!$reload) {
             unset($data[$lc_name]);
@@ -583,6 +598,64 @@ class Manager
             }
             $prev_bit = $bit . '/';
         }
+    }
+
+    /**
+     * gets line added at the top of the routes
+     *
+     * @param string $name
+     * @return string
+     */
+    protected function _getAddedByLine($name)
+    {
+        return '# ADDED BY ' . strtoupper($name) . ' EXTENSION - DO NOT EDIT!';
+    }
+
+    /**
+     * installs routes for this extension
+     *
+     * @return mixed
+     */
+    protected function _installRoutes(array $routes, $name)
+    {
+        $routes = var_export($routes, true);
+        $routes_path = $this->_routePath();
+        $this->_output('adding routes to ' . $routes_path, true);
+
+        $add = "\n\n";
+        $add .= str_repeat('#', 80) . "\n";
+        $add .= $this->_getAddedByLine($name) . "\n";
+        $add .= str_repeat('#', 80) . "\n";
+        $add .= '$' . $name . '_routes = ' . $routes . ';';
+        $add .= "\n";
+        $add .= '$routes = array_merge($' . $name . '_routes, $routes);' . "\n";
+        $add .= str_repeat('#', 80) . "\n";
+
+        return file_put_contents($routes_path, $add, FILE_APPEND);
+    }
+
+    /**
+     * uninstalls routes for an extension
+     *
+     * @return void
+     */
+    protected function _uninstallRoutes($name)
+    {
+        $routes_path = $this->_routePath();
+        $this->_output('removing routes from ' . $routes_path, true);
+        $contents = file_get_contents($routes_path);
+        $contents = preg_replace('/((\n{2})?(#+\n)' . $this->_getAddedByLine($name) . '(.*?)(;\n#+\n))/s', '', $contents);
+        return file_put_contents($routes_path, $contents);
+    }
+
+    /**
+     * gets path for routes
+     *
+     * @return string
+     */
+    protected function _routePath()
+    {
+        return App::getInstance()->getPath('configs/routes.php');
     }
 
     /**
