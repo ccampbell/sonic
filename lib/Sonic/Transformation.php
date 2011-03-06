@@ -61,13 +61,14 @@ class Transformation
      * @param array $args
      * @param string $class
      */
-    public static function call($name, $args, $class, $class_name)
+    public static function call($name, $args, $class, $class_name = null)
     {
         $t = self::get($class);
         if ($t->hasMethod($name)) {
             return $t->callMethod($name, $args);
         }
 
+        $class_name = $class_name ?: $class;
         trigger_error('Call to undefined method ' . $class_name . '::' . $name . '()', E_USER_ERROR);
     }
 
@@ -78,13 +79,14 @@ class Transformation
      * @param array $args
      * @param string $class
      */
-    public static function callStatic($name, $args, $class, $class_name)
+    public static function callStatic($name, $args, $class, $class_name = null)
     {
         $t = self::get($class);
         if ($t->hasStaticMethod($name)) {
             return $t->callStaticMethod($name, $args);
         }
 
+        $class_name = $class_name ?: $class;
         trigger_error('Call to undefined method ' . $class_name . '::' . $name . '()', E_USER_ERROR);
     }
 
