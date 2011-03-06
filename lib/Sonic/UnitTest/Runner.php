@@ -199,7 +199,10 @@ class Runner
                 return;
                 break;
             default:
-                $current[0]->logError($error, $current[1]);
+                if ($current[0] instanceof TestCase) {
+                    $current[0]->logError($error, $current[1]);
+                }
+                echo $error->getMessage();
                 break;
         }
     }
