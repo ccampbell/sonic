@@ -487,7 +487,7 @@ class Manager
             exec('rm -r ' . $extension_dir);
         }
 
-        if ($data[$lc_name]['routes']) {
+        if (isset($data[$lc_name]['routes']) && $data[$lc_name]['routes']) {
             $this->_uninstallRoutes($lc_name);
         }
 
