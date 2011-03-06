@@ -40,7 +40,7 @@ abstract class Delegate
      */
     protected function _addControllerMethod($name, $function)
     {
-        Controller::getTransformation()->addMethod($name, $function);
+        return Transformation::get('Sonic\Controller')->addMethod($name, $function);
     }
 
     /**
@@ -51,7 +51,7 @@ abstract class Delegate
      */
     protected function _addStaticControllerMethod($name, $function)
     {
-        Controller::getTransformation()->addStaticMethod($name, $function);
+        return Transformation::get('Sonic\Controller')->addStaticMethod($name, $function);
     }
 
     /**
@@ -62,7 +62,7 @@ abstract class Delegate
      */
     protected function _addAppMethod($name, $function)
     {
-        App::getTransformation()->addMethod($name, $function);
+        return Transformation::get('Sonic\App')->addMethod($name, $function);
     }
 
     /**
@@ -73,6 +73,6 @@ abstract class Delegate
      */
     protected function _addStaticAppMethod($name, $function)
     {
-        App::getTransformation()->addStaticMethod($name, $function);
+        return Transformation::get('Sonic\App')->addStaticMethod($name, $function);
     }
 }

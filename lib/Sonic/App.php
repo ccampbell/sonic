@@ -8,7 +8,7 @@ namespace Sonic;
  * @package App
  * @author Craig Campbell
  */
-class App
+final class App
 {
     /**
      * @var string
@@ -116,6 +116,30 @@ class App
      * @return void
      */
     private function __construct() {}
+
+    /**
+     * magic call for methods added at runtime
+     *
+     * @param string $name
+     * @param array $args
+     */
+    public function __call($name, $args)
+    {
+        $this->includeFile('Sonic/Transformation.php');
+        return Transformation::call($name, $args, __CLASS__);
+    }
+
+    /**
+     * magic static call for methods added at run time
+     *
+     * @param string $name
+     * @param array $args
+     */
+    public static function __callStatic($name, $args)
+    {
+        self::getInstance()->includeFile('Sonic/Transformation.php');
+        return Transformation::callStatic($name, $args, __CLASS__);
+    }
 
     /**
      * gets instance of App class

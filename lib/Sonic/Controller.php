@@ -70,6 +70,30 @@ class Controller
     }
 
     /**
+     * magic call for methods added at runtime
+     *
+     * @param string $name
+     * @param array $args
+     */
+    public function __call($name, $args)
+    {
+        App::getInstance()->includeFile('Sonic/Transformation.php');
+        return Transformation::call($name, $args, __CLASS__, get_class($this));
+    }
+
+    /**
+     * magic static call for methods added at run time
+     *
+     * @param string $name
+     * @param array $args
+     */
+    public static function __callStatic($name, $args)
+    {
+        App::getInstance()->includeFile('Sonic/Transformation.php');
+        return Transformation::callStatic($name, $args, __CLASS__, get_called_class());
+    }
+
+    /**
      * gets or sets the name of the controller
      *
      * @param mixed $name
