@@ -21,6 +21,7 @@ class Manager
     const LOCAL = '--local';
     const FORCE = '--force';
     const VERBOSE = '--verbose';
+    const DEV = '--dev';
     const DOWNLOAD_URL = 'http://extensions.sonicframework.com/download';
 
     /**
@@ -50,6 +51,11 @@ class Manager
      * @var bool
      */
     protected $_verbose = false;
+
+    /**
+     * @var bool
+     */
+    protected $_dev = false;
 
     /**
      * constructor
@@ -103,9 +109,10 @@ class Manager
         $local = in_array(self::LOCAL, $args);
         $force = in_array(self::FORCE, $args);
         $manager->_verbose = in_array(self::VERBOSE, $args);
+        $manager->_dev = in_array(self::DEV, $args);
 
         $path = array_pop($args);
-        while (in_array($path, array(self::FORCE, self::LOCAL, self::VERBOSE))) {
+        while (in_array($path, array(self::FORCE, self::LOCAL, self::VERBOSE, self::DEV))) {
             $path = array_pop($args);
         }
 
@@ -361,6 +368,8 @@ class Manager
         $data[$name]['version'] = $manifest::VERSION;
         $data[$name]['files'] = $this->getTracker($name)->getFiles();
         $data[$name]['dirs'] = $this->getTracker($name)->getDirs();
+        $data[$name]['dev'] = $this->_dev;
+        $data[$name]['has_core'] = file_exists($path . '/Core.php');
         $data[$name]['routes'] = count($routes);
 
         if ($manifest->hasConfig()) {
