@@ -309,7 +309,7 @@ class Controller
      * @param string $name
      * @return InputFilter
      */
-    public function filter($name)
+    final public function filter($name)
     {
         if ($this->_input_filter !== null) {
             return $this->_input_filter->filter($name);
