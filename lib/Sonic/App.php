@@ -561,7 +561,7 @@ final class App
         try {
             $this->_runController($controller_name, $action, $args, $json);
         } catch (\Exception $e) {
-            $this->_handleException($e, $controller_name, $action);
+            $this->handleException($e, $controller_name, $action);
             return;
         }
     }
@@ -607,7 +607,7 @@ final class App
      * @param string $action name of action
      * @return void
      */
-    protected function _handleException(\Exception $e, $controller = null, $action = null)
+    public function handleException(\Exception $e, $controller = null, $action = null)
     {
         if ($this->_delegate) {
             $this->_delegate->appCaughtException($e, $controller, $action);
@@ -731,7 +731,7 @@ final class App
         }
 
         if (!isset($extensions[$name])) {
-            return $this->_handleException(new Exception('trying to load extension "' . $name . '" which is not installed!'));
+            throw new Exception('trying to load extension "' . $name . '" which is not installed!');
         }
 
         // get the data related to this extension
@@ -873,12 +873,8 @@ final class App
 
         // try to get the controller and action
         // if an exception is thrown that means the page requested does not exist
-        try {
-            $controller = $this->getRequest()->getControllerName();
-            $action = $this->getRequest()->getAction();
-        } catch (\Exception $e) {
-            return $this->_handleException($e);
-        }
+        $controller = $this->getRequest()->getControllerName();
+        $action = $this->getRequest()->getAction();
 
         if ($this->_delegate) {
             $this->_delegate->appStartedRunning();
