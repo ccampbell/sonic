@@ -59,11 +59,11 @@ class Helper
      */
     public function getSetting($key)
     {
-        if (!isset($this->_settings[$name])) {
+        if (!isset($this->_settings[$key])) {
             return null;
         }
 
-        return $this->_settings[$name];
+        return $this->_settings[$key];
     }
 
     /**
