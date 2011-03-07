@@ -23,7 +23,7 @@ final class App
     /**
      * @var float
      */
-    const VERSION = '1.0.5';
+    const VERSION = '1.1';
 
     /**
      * @var App
