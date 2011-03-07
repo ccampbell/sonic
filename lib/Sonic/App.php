@@ -731,7 +731,7 @@ final class App
         }
 
         if (!isset($extensions[$name])) {
-            throw new Exception('trying to load extension "' . $name . '" which is not installed!');
+            return $this->_handleException(new Exception('trying to load extension "' . $name . '" which is not installed!'));
         }
 
         // get the data related to this extension
