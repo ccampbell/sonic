@@ -18,11 +18,11 @@ class AppTest extends TestCase
     public function testIncludeFile()
     {
         $app = App::getInstance();
-        $success = $app->includeFile('Sonic/Database.php');
+        $success = $app->includeFile('Sonic/Util.php');
         $this->isTrue($success);
 
         // make sure it was already included
-        $success = $app->includeFile('Sonic/Database.php');
+        $success = $app->includeFile('Sonic/Util.php');
         $this->isFalse($success);
     }
 
@@ -161,7 +161,12 @@ class AppTest extends TestCase
         // request a page that doesn't exist
         $_SERVER['REQUEST_URI'] = '/doesnotexist';
         $app->getRequest()->reset();
-        $app->start(App::WEB, false);
+        try {
+            $app->start(App::WEB, false);
+        } catch (\Exception $e) {
+            $this->isTrue($e instanceof \Sonic\Exception);
+            $this->isEqual($e->getCode(), \Sonic\Exception::NOT_FOUND);
+        }
 
         // test an exception thrown in a controller
         $_SERVER['REQUEST_URI'] = '/exception-test';
@@ -186,7 +191,12 @@ class AppTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/blah';
         $app->getRequest()->reset();
         $app->addSetting(App::TURBO, true);
-        $app->start(App::WEB, false);
+        try {
+            $app->start(App::WEB, false);
+        } catch (\Exception $e) {
+            $this->isTrue($e instanceof \Sonic\Exception);
+            $this->isEqual($e->getCode(), \Sonic\Exception::NOT_FOUND);
+        }
         $app->processViewQueue();
         ob_end_clean();
     }
