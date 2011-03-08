@@ -5,7 +5,7 @@
  *
  * @author Craig Campbell
  */
-$lib_path = str_replace('/util/build.php', '/lib/Sonic', realpath(__FILE__));
+$lib_path = str_replace('/util/build', '/lib/Sonic', realpath(__FILE__));
 
 // files to combine
 $combine = array('App.php',

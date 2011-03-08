@@ -8,7 +8,8 @@
 use Sonic\Extension\Manager;
 use Sonic\App;
 
-$lib_path = str_replace(DIRECTORY_SEPARATOR . 'util' . DIRECTORY_SEPARATOR . 'extension.php', '', realpath(__FILE__)) . DIRECTORY_SEPARATOR . 'libs';
+$lib_path = str_replace(DIRECTORY_SEPARATOR . 'util' . DIRECTORY_SEPARATOR . 'extension', '', realpath(__FILE__)) . DIRECTORY_SEPARATOR . 'libs';
+echo $lib_path;
 set_include_path($lib_path);
 include 'Sonic/App.php';
 include 'Sonic/Extension/Manager.php';
