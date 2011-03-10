@@ -221,8 +221,8 @@ cp js/turbo.min.js $INSTALL_PATH/public_html/assets/js/
 
 
 if [ $ALL_FILES == true ] ; then
-    output "copying extension utility to util/extension.php" verbose_only
-    cp util/extension.php $INSTALL_PATH/util/
+    output "copying extension utility to util/extension" verbose_only
+    cp util/extension $INSTALL_PATH/util/
 fi
 
 output "creating main layout"
