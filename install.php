@@ -39,6 +39,18 @@ function output($message, $verbose_only = false)
     echo $message,"\n";
 }
 
+/**
+ * creates a file
+ *
+ * @param string $path
+ * @param string $contents
+ * @return void
+ */
+function createFile($path, $contents)
+{
+    file_put_contents($path, $contents . "\n");
+}
+
 $args = $_SERVER['argv'];
 
 if (in_array('--help', $args)) {
@@ -107,16 +119,16 @@ mkdir($INSTALL_PATH . '/views/main');
 if ($ALL_FILES) {
     output('creating configs/app.ini', true);
     $contents = "[global]\nurls[www] = \"http://www.$LC_APP_NAME.com\"\nurls[static] = \"http://www.$LC_APP_NAME.com/assets\"\ndebug = 0\n\n[production : global]\n\n[development : global]\nurls[www] = \"http://www.$LC_APP_NAME.local\"\nurls[static] = \"http://www.$LC_APP_NAME.local/assets\"\ndebug = 1";
-    file_put_contents($INSTALL_PATH . '/configs/app.ini', $contents);
+    createFile($INSTALL_PATH . '/configs/app.ini', $contents);
 }
 
 output('creating configs/routes.php', true);
 $contents = "<?php\n\$routes = array(\n    '/welcome' => array('main', 'welcome')\n);";
-file_put_contents($INSTALL_PATH . '/configs/routes.php', $contents);
+createFile($INSTALL_PATH . '/configs/routes.php', $contents);
 
 output('creating controllers/main.php');
 $contents = "<?php\nnamespace Controllers;\nuse \Sonic\App;\n\nclass Main extends \Sonic\Controller\n{\n    public function index()\n    {\n        \$this->disableLayout();\n    }\n\n    public function welcome()\n    {\n    }\n\n    public function error()\n    {\n        // show error for exception at the highest level\n        // if the exception is within a subview we should not show it\n        \$this->view->show_error = \$this->request()->getParam('top_level_exception');\n        \$this->view->is_dev = App::isDev();\n\n        \$this->view->exception = \$this->request()->getParam('exception');\n    }\n}";
-file_put_contents($INSTALL_PATH . '/controllers/main.php', $contents);
+createFile($INSTALL_PATH . '/controllers/main.php', $contents);
 
 $lib_created = false;
 if ($SYMLINK) {
@@ -143,7 +155,7 @@ if (!$lib_created) {
 
 output('creating public_html/.htaccess');
 $contents = "# it is recommended to set the environment in your vhost instead of .htaccess\nSetEnv ENVIRONMENT development\nRewriteEngine On\nRewriteRule ^.htaccess$ - [F,L]\nRewriteCond %{REQUEST_FILENAME} !-f\nRewriteCond %{REQUEST_FILENAME} !-d\nRewriteRule \.*\$ /index.php [NC,L]";
-file_put_contents($INSTALL_PATH . '/public_html/.htaccess', $contents);
+createFile($INSTALL_PATH . '/public_html/.htaccess', $contents);
 
 
 output('creating public_html/index.php');
@@ -152,18 +164,18 @@ $contents = "<?php\nset_include_path(str_replace('/public_html', '/libs', \$_SER
 if (!$ALL_FILES) {
     $contents = "<?php\nset_include_path(str_replace('/public_html', '/libs', \$_SERVER['DOCUMENT_ROOT']));\ninclude 'Sonic/Core.php';\nuse \Sonic\App;\n\$app = App::getInstance();\n\ntry {\n    \$app->start();\n} catch (\\Exception \$e) {\n    \$app->handleException(\$e);\n}";
 }
-file_put_contents($INSTALL_PATH . '/public_html/index.php', $contents);
+createFile($INSTALL_PATH . '/public_html/index.php', $contents);
 
 if ($ALL_FILES) {
     output('creating libs/' . $APP_NAME . '/App/Delegate.php', true);
     mkdir($INSTALL_PATH . '/libs/' . $APP_NAME);
     mkdir($INSTALL_PATH . '/libs/' . $APP_NAME . '/App');
     $contents = "<?php\nnamespace $APP_NAME\App;\nuse Sonic\App, Sonic\Controller, Sonic\View, Sonic\Layout;\n\n/**\n * for other methods you can implement see Sonic/App/Delegate.php\n */\nclass Delegate extends \Sonic\App\Delegate\n{\n    /**\n     * called when the application first starts loading before any files are included\n     *\n     * all application settings should be set here\n     *\n     * @param string \$mode startup mode of application\n     * @return void\n     */\n    public function appStartedLoading(\$mode)\n    {\n        // \$this->_app->addSetting(App::AUTOLOAD, true);\n    }\n\n    /**\n     * called when all the core files are done being included for the request\n     *\n     * all extra files and extensions you need to include for every request should happen here\n     *\n     * @return void\n     */\n    public function appFinishedLoading()\n    {\n        \$this->_app->getRequest()->setHeader('X-Powered-By', 'Sonic Framework ' . App::VERSION);\n        // \$this->_app->includeFile('$APP_NAME/Controller.php');\n        // \$this->_app->loadExtension('Curl');\n    }\n}";
-    file_put_contents($INSTALL_PATH . '/libs/' . $APP_NAME . '/App/Delegate.php', $contents);
+    createFile($INSTALL_PATH . '/libs/' . $APP_NAME . '/App/Delegate.php', $contents);
 }
 
 output('creating empty favicon file', true);
-file_put_contents($INSTALL_PATH . '/public_html/favicon.ico', null);
+createFile($INSTALL_PATH . '/public_html/favicon.ico', null);
 
 output('copying turbo.min.js to public_html/assets/js', true);
 mkdir($INSTALL_PATH . '/public_html/assets');
@@ -178,26 +190,26 @@ if ($ALL_FILES) {
 
 output('creating main layout');
 $contents = "<!DOCTYPE html>\n<html>\n<head>\n    <title><?php echo \$this->setTitlePattern('$APP_NAME - \${title}'); ?></title>\n</head>\n<body>\n    <?php echo \$this->topView()->getHtml(); ?>\n</body>\n</html>";
-file_put_contents($INSTALL_PATH . '/views/layouts/main.phtml', $contents);
+createFile($INSTALL_PATH . '/views/layouts/main.phtml', $contents);
 
 output('creating index view');
 $contents = "<h1>Hello World</h1>\n<a href=\"/welcome\">click here to checkout the welcome page!</a>";
-file_put_contents($INSTALL_PATH .'/views/main/index.phtml', $contents);
+createFile($INSTALL_PATH .'/views/main/index.phtml', $contents);
 
 output('creating welcome view');
 $contents = "<?php \$this->title('Welcome!'); ?>\n<h1>Welcome to $APP_NAME</h1>";
-file_put_contents($INSTALL_PATH . '/views/main/welcome.phtml', $contents);
+createFile($INSTALL_PATH . '/views/main/welcome.phtml', $contents);
 
 output('creating error view');
 $contents = "<?php if (\$this->show_error): ?>\n    <h1>This is the error view</h1>\n<?php endif; ?>\n\n<?php if (\$this->is_dev && \$this->show_error): ?>\n    <h3>debug information</h3>\n    <p><?php echo \$this->exception->getMessage(); ?></p>\n    <pre><?php echo \$this->exception->getTraceAsString(); ?></pre>\n<?php endif; ?>";
-file_put_contents($INSTALL_PATH . '/views/main/error.phtml', $contents);
+createFile($INSTALL_PATH . '/views/main/error.phtml', $contents);
 
 exec('cd ' . $INSTALL_PATH);
 exec('pwd', $output);
 $ABSOLUTE_PATH = $output[0];
 output('creating SETUP');
 $contents = "your application has been successfully installed.\n\nnow all you have to do is add this to your vhosts:\n\n<VirtualHost *:80>\n    # SetEnv ENVIRONMENT development\n    ServerName $LC_APP_NAME.local\n    ServerAlias www.$LC_APP_NAME.local\n    DocumentRoot \"$ABSOLUTE_PATH/public_html\"\n    DirectoryIndex index.php\n</VirtualHost>\n\n<Directory \"$ABSOLUTE_PATH/public_html\">\n    Options -Indexes FollowSymLinks\n    AllowOverride FileInfo\n    Order allow,deny\n    Allow from all\n</Directory>\n\nthen add this to your /etc/hosts\n\n127.0.0.1 $LC_APP_NAME.local\n127.0.0.1 www.$LC_APP_NAME.local";
-file_put_contents($INSTALL_PATH . '/SETUP', $contents);
+createFile($INSTALL_PATH . '/SETUP', $contents);
 
 output('done');
 exit(0);
