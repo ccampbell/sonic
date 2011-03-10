@@ -347,7 +347,7 @@ final class App
             return $this->_base_path;
         }
 
-        $this->_base_path = str_replace(DIRECTORY_SEPARATOR . 'public_html', '', $this->getRequest()->getServer('DOCUMENT_ROOT'));
+        $this->_base_path = str_replace('/public_html', '', $this->getRequest()->getServer('DOCUMENT_ROOT'));
         return $this->_base_path;
     }
 
