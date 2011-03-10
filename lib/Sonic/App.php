@@ -343,11 +343,11 @@ final class App
         }
 
         if ($this->getSetting(self::MODE) == self::COMMAND_LINE) {
-            $this->_base_path = str_replace(array('/libs', '/lib'), '', get_include_path());
+            $this->_base_path = str_replace(array(DIRECTORY_SEPARATOR . 'libs', DIRECTORY_SEPARATOR . 'lib'), '', get_include_path());
             return $this->_base_path;
         }
 
-        $this->_base_path = str_replace('/public_html', '', $this->getRequest()->getServer('DOCUMENT_ROOT'));
+        $this->_base_path = str_replace(DIRECTORY_SEPARATOR . 'public_html', '', $this->getRequest()->getServer('DOCUMENT_ROOT'));
         return $this->_base_path;
     }
 
