@@ -65,6 +65,28 @@ abstract class Delegate
     }
 
     /**
+     * adds a view method
+     *
+     * @param string $name
+     * @param Closure $function
+     */
+    protected function _addViewMethod($name, $function)
+    {
+        return Transformation::get('Sonic\View')->addMethod($name, $function);
+    }
+
+    /**
+     * adds a static view method
+     *
+     * @param string $name
+     * @param Closure $function
+     */
+    protected function _addStaticViewMethod($name, $function)
+    {
+        return Transformation::get('Sonic\View')->addStaticMethod($name, $function);
+    }
+
+    /**
      * adds an app method
      *
      * @param string $name

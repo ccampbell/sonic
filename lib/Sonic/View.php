@@ -112,6 +112,28 @@ class View
     }
 
     /**
+     * magic call for methods added at runtime
+     *
+     * @param string $name
+     * @param array $args
+     */
+    public function __call($name, $args)
+    {
+        return App::getInstance()->callIfExists($name, $args, __CLASS__, get_class($this));
+    }
+
+    /**
+     * magic static call for methods added at run time
+     *
+     * @param string $name
+     * @param array $args
+     */
+    public static function __callStatic($name, $args)
+    {
+        return App::getInstance()->callIfExists($name, $args, __CLASS__, get_called_class(), true);
+    }
+
+    /**
      * escapes a view variable
      *
      * @param string
