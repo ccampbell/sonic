@@ -183,6 +183,10 @@ class Util
     {
         $files = new \RecursiveDirectoryIterator($path);
         foreach ($files as $file) {
+            if (in_array($file->getFilename(), array('.', '..'))) {
+                continue;
+            }
+
             if ($file->isLink()) {
                 unlink($file->getPathName());
                 continue;

@@ -89,7 +89,7 @@ if (is_dir($INSTALL_PATH)) {
 }
 
 // create all the directories and files we need
-output('creating new directory at' . $INSTALL_PATH);
+output('creating new directory at ' . $INSTALL_PATH);
 mkdir($INSTALL_PATH);
 
 output('creating config directory', true);
