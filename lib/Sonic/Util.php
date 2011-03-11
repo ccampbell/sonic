@@ -172,6 +172,115 @@ class Util
     }
 
     /**
+     * deletes a directory recursively
+     *
+     * php's native rmdir() function only removes a directory if there is nothing in it
+     *
+     * @param string $path
+     * @return void
+     */
+    public static function removeDir($path)
+    {
+        $files = new \RecursiveDirectoryIterator($path);
+        foreach ($files as $file) {
+            if ($file->isLink()) {
+                unlink($file->getPathName());
+                continue;
+            }
+
+            if ($file->isFile()) {
+                unlink($file->getRealPath());
+                continue;
+            }
+
+            if ($file->isDir()) {
+                self::removeDir($file->getRealPath());
+            }
+        }
+        rmdir($path);
+    }
+
+    /**
+     * copy a file or directory recursively
+     *
+     * php's copy() function only copies a single file
+     *
+     * @param string $src
+     * @param string $dest
+     * @param bool $force should we overwrite the dest if it already exists
+     * @return void
+     */
+    public static function copy($src, $dest, $force = false)
+    {
+        // no file found
+        if (!file_exists($src)) {
+            throw new Exception('src file not found at path: ' . $src);
+        }
+
+        // the src is a single file and not a directory
+        if (is_file($src)) {
+            return self::_copyFile($src, $dest, $force);
+        }
+
+        // if the destination already exists and we are not using force
+        if (is_dir($dest) && !$force) {
+            return;
+        }
+
+        // if the destination directory already exists remove it
+        if (is_dir($dest)) {
+            self::removeDir($dest);
+        }
+
+        mkdir($dest);
+        self::matchPermissions($src, $dest);
+
+        $files = new \RecursiveDirectoryIterator($src);
+        foreach ($files as $file) {
+            self::copy($src . DIRECTORY_SEPARATOR . $file->getFilename(), $dest . DIRECTORY_SEPARATOR . $file->getFilename(), $force);
+        }
+    }
+
+    /**
+     * copies a file from one location to another
+     *
+     * @param string $src
+     * @param string $dest
+     * @param bool $force should we overwrite the file if it already exists
+     * @return void
+     */
+    protected static function _copyFile($src, $dest, $force = false)
+    {
+        if (file_exists($dest) && !$force) {
+            return;
+        }
+
+        if (file_exists($dest)) {
+            unlink($dest);
+        }
+
+        copy($src, $dest);
+        self::matchPermissions($src, $dest);
+    }
+
+    /**
+     * matches permissions of two files
+     *
+     * @param string $src
+     * @param string $dest
+     * @return bool
+     */
+    public static function matchPermissions($src, $dest)
+    {
+        $perms = fileperms($src);
+        if (fileperms($dest) != $perms) {
+            return chmod($dest, $perms);
+        }
+
+        return false;
+    }
+
+    /**
      * maps english representation of time to seconds
      *
      * @param string
