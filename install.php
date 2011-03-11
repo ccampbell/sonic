@@ -3,6 +3,8 @@
 /**
  * installer for sonic
  */
+use \Sonic\Util;
+include 'lib/Sonic/Util.php';
 
 /**
  * outputs an error message and usage instructions
@@ -83,7 +85,7 @@ if (is_dir($INSTALL_PATH)) {
         exit(0);
     }
 
-    exec('rm -r ' . $INSTALL_PATH);
+    Util::removeDir(realpath($INSTALL_PATH));
 }
 
 // create all the directories and files we need
@@ -139,10 +141,10 @@ if ($SYMLINK) {
 
 if (!$lib_created && $ALL_FILES) {
     output('copying sonic library to libs/Sonic');
-    exec('cp -r lib/Sonic ' . $INSTALL_PATH . '/libs/Sonic');
+    Util::copy('lib/Sonic', $INSTALL_PATH . '/libs/Sonic');
 
     if (!$UNIT_TEST_FRAMEWORK) {
-        exec('rm -r ' . $INSTALL_PATH . '/libs/Sonic/UnitTest');
+        Util::removeDir(realpath($INSTALL_PATH . '/libs/Sonic/UnitTest'));
     }
     $lib_created = true;
 }
@@ -204,9 +206,7 @@ output('creating error view');
 $contents = "<?php if (\$this->show_error): ?>\n    <h1>This is the error view</h1>\n<?php endif; ?>\n\n<?php if (\$this->is_dev && \$this->show_error): ?>\n    <h3>debug information</h3>\n    <p><?php echo \$this->exception->getMessage(); ?></p>\n    <pre><?php echo \$this->exception->getTraceAsString(); ?></pre>\n<?php endif; ?>";
 createFile($INSTALL_PATH . '/views/main/error.phtml', $contents);
 
-exec('cd ' . $INSTALL_PATH);
-exec('pwd', $output);
-$ABSOLUTE_PATH = $output[0];
+$ABSOLUTE_PATH = realpath($INSTALL_PATH);
 output('creating SETUP');
 $contents = "your application has been successfully installed.\n\nnow all you have to do is add this to your vhosts:\n\n<VirtualHost *:80>\n    # SetEnv ENVIRONMENT development\n    ServerName $LC_APP_NAME.local\n    ServerAlias www.$LC_APP_NAME.local\n    DocumentRoot \"$ABSOLUTE_PATH/public_html\"\n    DirectoryIndex index.php\n</VirtualHost>\n\n<Directory \"$ABSOLUTE_PATH/public_html\">\n    Options -Indexes FollowSymLinks\n    AllowOverride FileInfo\n    Order allow,deny\n    Allow from all\n</Directory>\n\nthen add this to your /etc/hosts\n\n127.0.0.1 $LC_APP_NAME.local\n127.0.0.1 www.$LC_APP_NAME.local";
 createFile($INSTALL_PATH . '/SETUP', $contents);
