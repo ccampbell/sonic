@@ -372,6 +372,7 @@ class Manager
 
         $data[$name] = array();
         $data[$name]['version'] = $manifest::VERSION;
+        $data[$name]['load_libs'] = $manifest->loadLibs();
         $data[$name]['files'] = $this->getTracker($name)->getFiles();
         $data[$name]['dirs'] = $this->getTracker($name)->getDirs();
         $data[$name]['dev'] = $this->_dev;

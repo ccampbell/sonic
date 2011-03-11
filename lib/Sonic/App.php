@@ -760,6 +760,12 @@ final class App
             // if the file is not in the extensions or libs directory then skip it
             // we don't want to load controllers/views/etc. here
             $lib_file = strpos($file, 'libs') === 0;
+
+            // don't load libs files unless the extension says to explicitly
+            if ($lib_file && !$data['load_libs']) {
+                continue;
+            }
+
             if (strpos($file, 'extensions') !== 0 && !$lib_file) {
                 continue;
             }

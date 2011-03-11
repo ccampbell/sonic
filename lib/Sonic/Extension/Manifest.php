@@ -36,6 +36,13 @@ abstract class Manifest
     protected $_routes = array();
 
     /**
+     * should we load the files in libs when the extension is first loaded in the app
+     *
+     * @var bool
+     */
+    protected $_load_libs = false;
+
+    /**
      * @var string
      */
     protected $_instructions = '';
@@ -95,5 +102,15 @@ abstract class Manifest
             $instructions .= $this->_instructions . "\n";
         }
         return $instructions;
+    }
+
+    /**
+     * should we load the files in the libs directory in the app
+     *
+     * @return bool
+     */
+    public function loadLibs()
+    {
+        return $this->_load_libs;
     }
 }
