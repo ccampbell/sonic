@@ -1,6 +1,6 @@
 <?php
 namespace Sonic\Extension;
-use Sonic\App;
+use Sonic\App, Sonic\Util;
 
 /**
  * Manager
@@ -68,6 +68,7 @@ class Manager
         $app->includeFile('Sonic/Extension/Exception.php');
         $app->includeFile('Sonic/Extension/Manifest.php');
         $app->includeFile('Sonic/Extension/Tracker.php');
+        $app->includeFile('Sonic/Util.php');
     }
 
     /**
@@ -141,7 +142,7 @@ class Manager
         $tmp_path = $manager->_getTmpPath();
         if (is_dir($tmp_path)) {
             $manager->_output('removing ' . $tmp_path, true);
-            exec('rm -r ' . $tmp_path);
+            Util::removeDir($tmp_path);
         }
     }
 
@@ -275,6 +276,11 @@ class Manager
         if ($local) {
             return $this->_localInstall($path, $force);
         }
+
+        if (!class_exists('\ZipArchive')) {
+            throw new Exception('ZipArchive class is required for remote installations');
+        }
+
         return $this->_remoteInstall($path, $force);
     }
 
@@ -417,11 +423,13 @@ class Manager
         $path = $tmp_path . '/' . $name . '.tar.gz';
         file_put_contents($path, $file);
 
-        $this->_output('extracting ' . $name . '.tar.gz', true);
+        $this->_output('extracting ' . $name . '.zip', true);
 
-        $options = $this->_verbose ? 'xzfv' : 'xzf';
-        exec('tar ' . $options . ' ' . $path . ' -C ' . $tmp_path);
-        exec('rm ' . $path);
+        $zip = new \ZipArchive();
+        $zip->open($path);
+        $zip->extractTo($tmp_path);
+        $zip->close();
+        unlink($path);
 
         $this->_localInstall($tmp_path . '/' . $name, $force, true);
     }
@@ -493,7 +501,7 @@ class Manager
         $extension_dir = App::getInstance()->getPath('extensions') . '/' . $name;
         if (is_dir($extension_dir)) {
             $this->_output('removing dir ' . $extension_dir, true);
-            exec('rm -r ' . $extension_dir);
+            Util::removeDir($extension_dir);
         }
 
         if (isset($data[$lc_name]['routes']) && $data[$lc_name]['routes']) {
