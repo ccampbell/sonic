@@ -83,16 +83,12 @@ final class App
     const AUTOLOAD = 2;
     const CONFIG_FILE = 3;
     const DEVS = 4;
-    const DB_DRIVER = 5;
-    const PDO = 6;
-    const MYSQL = 7;
-    const MYSQLI = 8;
-    const DISABLE_APC = 9;
-    const TURBO = 10;
-    const TURBO_PLACEHOLDER = 11;
-    const DEFAULT_SCHEMA = 12;
-    const EXTENSION_DATA = 13;
-    const EXTENSIONS_LOADED = 14;
+    const DISABLE_APC = 5;
+    const TURBO = 6;
+    const TURBO_PLACEHOLDER = 7;
+    const DEFAULT_SCHEMA = 8;
+    const EXTENSION_DATA = 9;
+    const EXTENSIONS_LOADED = 10;
 
     /**
      * @var array
@@ -102,7 +98,6 @@ final class App
         self::AUTOLOAD => false,
         self::CONFIG_FILE => 'ini',
         self::DEVS => array('dev', 'development'),
-        self::DB_DRIVER => self::PDO,
         self::DISABLE_APC => false,
         self::TURBO => false,
         self::EXTENSIONS_LOADED => array()
@@ -332,6 +327,17 @@ final class App
     }
 
     /**
+     * overrides base path
+     *
+     * @param string $dir
+     * @return void
+     */
+    public function setBasePath($path)
+    {
+        $this->_base_path = $path;
+    }
+
+    /**
      * gets base path of the app
      *
      * @return string
@@ -349,6 +355,18 @@ final class App
 
         $this->_base_path = str_replace('/public_html', '', $this->getRequest()->getServer('DOCUMENT_ROOT'));
         return $this->_base_path;
+    }
+
+    /**
+     * overrides a default path
+     *
+     * @param string $dir
+     * @param string $path
+     * @return void
+     */
+    public function setPath($dir, $path)
+    {
+        $this->_paths['path_' . $dir] = $path;
     }
 
     /**
@@ -373,29 +391,6 @@ final class App
 
         $this->_paths[$cache_key] = $base_path;
         return $this->_paths[$cache_key];
-    }
-
-    /**
-     * overrides base path
-     *
-     * @param string $dir
-     * @return void
-     */
-    public function setBasePath($path)
-    {
-        $this->_base_path = $path;
-    }
-
-    /**
-     * overrides a default path
-     *
-     * @param string $dir
-     * @param string $path
-     * @return void
-     */
-    public function setPath($dir, $path)
-    {
-        $this->_paths['path_' . $dir] = $path;
     }
 
     /**
