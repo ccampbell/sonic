@@ -146,7 +146,7 @@ class AppTest extends TestCase
         $new_controller_path = $app->getPath('controllers');
         $this->isEqual($new_controller_path, 'test');
 
-        $app->setPath('controllers', $controllers);
+        $app->setPath('controllers', $new_controller_path);
     }
 
     public function testStart()

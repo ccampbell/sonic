@@ -139,4 +139,14 @@ class ConfigTest extends TestCase
         $age = $config->get('age');
         $this->isEqual($age, null);
     }
+
+    public function testGetArrayFail()
+    {
+        $app = App::getInstance();
+        $path = $app->getPath('configs') . '/smart.ini';
+
+        $config = new Config($path, 'production');
+        $value = $config->get('urls', 'blah');
+        $this->isNull($value);
+    }
 }

@@ -41,7 +41,7 @@ class RouterTest extends TestCase
         $app = App::getInstance();
         $request = $app->getRequest();
 
-        $router = new Router($request, $path);
+        $router = new Router($request);
         $routes = $router->getRoutes();
 
         $this->isArray($routes);
