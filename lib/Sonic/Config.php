@@ -4,7 +4,6 @@ namespace Sonic;
 /**
  * Config
  *
- * @todo don't process the config until get or getAll is called
  * @category Sonic
  * @package Config
  * @author Craig Campbell
@@ -22,18 +21,32 @@ class Config
     const INI = 'ini';
 
     /**
+     * path to config file
+     *
+     * @var string
+     */
+    protected $_path;
+
+    /**
+     * environment name
+     *
+     * @var string
+     */
+    protected $_env;
+
+    /**
+     * config type
+     *
+     * @var string
+     */
+    protected $_type;
+
+    /**
      * key value pair of combined sections
      *
      * @var array
      */
     protected $_combined;
-
-    /**
-     * array of Yoshi_Config_Section objects
-     *
-     * @var array
-     */
-    protected $_sections = array();
 
     /**
      * array of valid environments
@@ -90,41 +103,9 @@ class Config
      */
     public function __construct($path, $environment, $type = self::INI)
     {
-        if (!file_exists($path)) {
-            throw new Exception('configuration file does not exist at ' . $path);
-        }
-
-        // parse the file
-        switch ($type) {
-            case self::PHP:
-                include $path;
-                $parsed_file = $config;
-                break;
-            default:
-                $parsed_file = parse_ini_file($path, true);
-                break;
-        }
-
-        // find all the environments
-        $sections = array_keys($parsed_file);
-
-        // make sure environment exists
-        $map = $this->_getEnvironmentMap($sections);
-        if (!isset($map[$environment])) {
-            throw new Exception('environment: ' . $environment . ' not found in config at : ' . $path);
-        }
-
-        $parents = $this->getParents($sections, $environment);
-        $to_merge = array_reverse($parents);
-        $to_merge[] = $environment;
-
-        $start = array_shift($to_merge);
-        $this->_combined = $parsed_file[$start];
-
-        foreach ($to_merge as $environment) {
-            $full_section = $map[$environment];
-            $this->_combined = Util::extendArray($this->_combined, $parsed_file[$full_section], $this->_exceptions[$environment]);
-        }
+        $this->_path = $path;
+        $this->_env = $environment;
+        $this->_type = $type;
     }
 
     /**
@@ -196,7 +177,7 @@ class Config
      * @param string $environment
      * @return string
      */
-    public function getParent(array $sections, $environment)
+    protected function _getParent(array $sections, $environment)
     {
         $map = $this->_getParentMap($sections);
         if (isset($map[$environment])) {
@@ -212,10 +193,10 @@ class Config
      * @param string $environment
      * @return array
      */
-    public function getParents(array $sections, $environment)
+    protected function _getParents(array $sections, $environment)
     {
         $parents = array();
-        while ($parent = $this->getParent($sections, $environment)) {
+        while ($parent = $this->_getParent($sections, $environment)) {
             $parents[] = $parent;
             $environment = $parent;
         }
@@ -231,11 +212,12 @@ class Config
      */
     public function get($key, $array_key = null)
     {
-        if (!isset($this->_combined[$key])) {
+        $combined = $this->getAll();
+        if (!isset($combined[$key])) {
             return null;
         }
 
-        $value = $this->_combined[$key];
+        $value = $combined[$key];
         if ($array_key !== null) {
             $value = isset($value[$array_key]) ? $value[$array_key] : null;
         }
@@ -251,6 +233,50 @@ class Config
      */
     public function getAll()
     {
+        if ($this->_combined) {
+            return $this->_combined;
+        }
+
+        $path = $this->_path;
+        $env = $this->_env;
+        $type = $this->_type;
+
+        if (!file_exists($path)) {
+            throw new Exception('configuration file does not exist at ' . $path);
+        }
+
+        // parse the file
+        switch ($type) {
+            case self::PHP:
+                include $path;
+                $parsed_file = $config;
+                break;
+            default:
+                $parsed_file = parse_ini_file($path, true);
+                break;
+        }
+
+        // find all the environments
+        $sections = array_keys($parsed_file);
+
+        // make sure environment exists
+        $map = $this->_getEnvironmentMap($sections);
+        if (!isset($map[$env])) {
+            throw new Exception('environment: ' . $env . ' not found in config at : ' . $path);
+        }
+
+        $parents = $this->_getParents($sections, $env);
+        $to_merge = array_reverse($parents);
+        $to_merge[] = $env;
+
+        $start = array_shift($to_merge);
+        $this->_combined = $parsed_file[$start];
+
+        foreach ($to_merge as $env) {
+            $full_section = $map[$env];
+            $this->_combined = Util::extendArray($this->_combined, $parsed_file[$full_section], $this->_exceptions[$env]);
+        }
+
         return $this->_combined;
     }
 }

@@ -25,12 +25,14 @@ class ConfigTest extends TestCase
         $this->isException('Sonic\Exception');
         $app = App::getInstance();
         $config = new Config($app->getPath('configs') . '/app.ini', 'made up environment');
+        $config->get('whatever');
     }
 
     public function testBadPath()
     {
         $this->isException('Sonic\Exception');
         $config = new Config('/bad/path', App::getInstance()->getEnvironment());
+        $config->get('whatever');
     }
 
     public function testGetAll()
