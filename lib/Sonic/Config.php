@@ -4,6 +4,7 @@ namespace Sonic;
 /**
  * Config
  *
+ * @todo don't process the config until get or getAll is called
  * @category Sonic
  * @package Config
  * @author Craig Campbell
@@ -222,6 +223,28 @@ class Config
     }
 
     /**
+     * gets a config value for a key
+     *
+     * @param string $key
+     * @param string $array_key
+     * @return mixed
+     */
+    public function get($key, $array_key = null)
+    {
+        if (!isset($this->_combined[$key])) {
+            return null;
+        }
+
+        $value = $this->_combined[$key];
+        if ($array_key !== null) {
+            $value = isset($value[$array_key]) ? $value[$array_key] : null;
+        }
+
+        return $value;
+    }
+
+
+    /**
      * gets an array of all config values
      *
      * @return array
@@ -229,24 +252,5 @@ class Config
     public function getAll()
     {
         return $this->_combined;
-    }
-
-    /**
-     * gets a config value for a key
-     *
-     * @param string $key
-     * @return mixed
-     */
-    public function get($key, $array_key = null)
-    {
-        if (!isset($this->_combined[$key]))
-            return null;
-
-        $value = $this->_combined[$key];
-        if ($array_key !== null) {
-            $value = $value[$array_key];
-        }
-
-        return $value;
     }
 }
