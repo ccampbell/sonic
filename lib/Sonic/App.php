@@ -609,8 +609,8 @@ final class App
         }
 
         // turn other exceptions into sonic exceptions
-        if (!$e instanceof \Sonic\Exception) {
-            $e = new \Sonic\Exception($e->getMessage(), \Sonic\Exception::INTERNAL_SERVER_ERROR, $e);
+        if (!$e instanceof Exception) {
+            $e = new Exception($e->getMessage(), Exception::INTERNAL_SERVER_ERROR, $e);
         }
 
         // only set the http code if output hasn't started
@@ -690,7 +690,7 @@ final class App
 
         $delegate = new $delegate;
 
-        if (!$delegate instanceof \Sonic\App\Delegate) {
+        if (!$delegate instanceof App\Delegate) {
             throw new \Exception('app delegate of class ' . get_class($delegate) . ' must be instance of \Sonic\App\Delegate');
         }
 
@@ -703,13 +703,13 @@ final class App
      * loads an extension by name
      *
      * @param string $name
-     * @return void
+     * @return App
      */
     public function loadExtension($name)
     {
         // if this is already loaded don't do anything
         if ($this->extensionLoaded($name)) {
-            return;
+            return $this;
         }
 
         $name = strtolower($name);
