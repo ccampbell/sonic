@@ -118,12 +118,11 @@ class Controller
     /**
      * disables the layout
      *
-     * return Controller
+     * @return void
      */
     public function disableLayout()
     {
         $this->_layout_name = null;
-        return $this;
     }
 
     /**
