@@ -151,6 +151,8 @@ class Manager
             $manager->_output('removing ' . $tmp_path, true);
             Util::removeDir($tmp_path);
         }
+
+        $manager->_restoreSvnFromBackup();
     }
 
     /**
@@ -377,8 +379,6 @@ class Manager
             $this->_installRoutes($routes, $name);
         }
 
-        $this->_restoreSvnFromBackup();
-
         $data[$name] = array();
         $data[$name]['version'] = $manifest::VERSION;
         $data[$name]['load_libs'] = $manifest->loadLibs();
@@ -495,11 +495,19 @@ class Manager
             unlink($base_path . $path);
         }
 
-        foreach ($data[$lc_name]['dirs'] as $dir) {
+        // array reverse the directories so the ones created last are removed first
+        $dirs = array_reverse($data[$lc_name]['dirs']);
+        foreach ($dirs as $dir) {
+
+            $this->_output('removing dir ' . $dir, true);
+
+            // if there is an svn file within this directory then back it up
+            if (is_dir($base_path . $dir . DIRECTORY_SEPARATOR . '.svn')) {
+                $this->_backupSvn($base_path . $dir);
+            }
 
             // ignore warnings cause that means files were added after this directory
             // was created by the extension which means we don't want to remove the directory
-            $this->_output('removing dir ' . $dir, true);
             $result = @rmdir($base_path . $dir);
 
             // if we were not able to remove this directory we still want to keep it
@@ -517,7 +525,7 @@ class Manager
 
         $extension_dir = App::getInstance()->getPath('extensions') . '/' . $name;
 
-        if ($reload && is_dir($extension_dir . '/.svn')) {
+        if ($reload && is_dir($extension_dir . DIRECTORY_SEPARATOR . '.svn')) {
             $this->_backupSvn($extension_dir);
         }
 
@@ -864,6 +872,7 @@ class Manager
      * backs up all .svn directories within this directory
      *
      * @param string $path
+     * @return void
      */
     protected function _backupSvn($path)
     {
@@ -872,8 +881,9 @@ class Manager
         $files = new \IteratorIterator($files);
         foreach ($files as $file) {
             if ($file->isDir() && $file->getFilename() == '.svn') {
-                $new_path = $extension_dir . '/tmp_svn_' . uniqid();
-                $this->_output('backing up .svn directory at ' . $file->getRealPath(), true);
+                $new_name = '/tmp_svn_' . uniqid();
+                $new_path = $extension_dir . $new_name;
+                $this->_output('backing up .svn directory at ' . $file->getRealPath() . ' to ' . $new_name, true);
                 $path = $file->getRealPath();
                 rename($path, $new_path);
                 $this->_svn[$new_path] = $path;
@@ -889,8 +899,17 @@ class Manager
     protected function _restoreSvnFromBackup()
     {
         foreach ($this->_svn as $current_path => $new_path) {
-            $this->_output('restoring .svn directory to ' . $new_path, true);
-            rename($current_path, $new_path);
+
+            $this->_output('trying to restore .svn directory to ' . $new_path, true);
+            $success = @rename($current_path, $new_path);
+
+            // if the new path no longer exists then that means it was either moved or removed
+            // in this case we should delete the svn backup cause we no longer need it
+            if (!$success) {
+                $this->_output('directory at ' . str_replace(DIRECTORY_SEPARATOR . '.svn', '', $new_path) . ' no longer exists', true);
+                $this->_output('removing dir ' . $current_path, true);
+                Util::removeDir($current_path);
+            }
         }
     }
 
