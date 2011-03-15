@@ -48,6 +48,13 @@ class Manager
     protected $_started = array();
 
     /**
+     * list of svn directories to restore
+     *
+     * @var array
+     */
+    protected $_svn = array();
+
+    /**
      * @var bool
      */
     protected $_verbose = false;
@@ -370,6 +377,8 @@ class Manager
             $this->_installRoutes($routes, $name);
         }
 
+        $this->_restoreSvnFromBackup();
+
         $data[$name] = array();
         $data[$name]['version'] = $manifest::VERSION;
         $data[$name]['load_libs'] = $manifest->loadLibs();
@@ -491,7 +500,14 @@ class Manager
             // ignore warnings cause that means files were added after this directory
             // was created by the extension which means we don't want to remove the directory
             $this->_output('removing dir ' . $dir, true);
-            @rmdir($base_path . $dir);
+            $result = @rmdir($base_path . $dir);
+
+            // if we were not able to remove this directory we still want to keep it
+            // as a directory that was added by the extension
+            if (!$result) {
+                $this->_output('WARNING: directory ' . $dir . ' could not be removed' . ($reload ? ' during reload' : '') . ' because external files were added to it', true);
+                $this->getTracker($lc_name)->addedDir($dir);
+            }
         }
 
         foreach ($data[$lc_name]['moved'] as $moved) {
@@ -500,6 +516,11 @@ class Manager
         }
 
         $extension_dir = App::getInstance()->getPath('extensions') . '/' . $name;
+
+        if ($reload && is_dir($extension_dir . '/.svn')) {
+            $this->_backupSvn($extension_dir);
+        }
+
         if (is_dir($extension_dir)) {
             $this->_output('removing dir ' . $extension_dir, true);
             Util::removeDir($extension_dir);
@@ -837,6 +858,40 @@ class Manager
         $contents .= "\n[production : global]\n\n[development : global]\n";
 
         return $contents;
+    }
+
+    /**
+     * backs up all .svn directories within this directory
+     *
+     * @param string $path
+     */
+    protected function _backupSvn($path)
+    {
+        $extension_dir = App::getInstance()->getPath('extensions');
+        $files = new \RecursiveDirectoryIterator($path);
+        $files = new \IteratorIterator($files);
+        foreach ($files as $file) {
+            if ($file->isDir() && $file->getFilename() == '.svn') {
+                $new_path = $extension_dir . '/tmp_svn_' . uniqid();
+                $this->_output('backing up .svn directory at ' . $file->getRealPath(), true);
+                $path = $file->getRealPath();
+                rename($path, $new_path);
+                $this->_svn[$new_path] = $path;
+            }
+        }
+    }
+
+    /**
+     * restores svn directories
+     *
+     * @return void
+     */
+    protected function _restoreSvnFromBackup()
+    {
+        foreach ($this->_svn as $current_path => $new_path) {
+            $this->_output('restoring .svn directory to ' . $new_path, true);
+            rename($current_path, $new_path);
+        }
     }
 
     /**
