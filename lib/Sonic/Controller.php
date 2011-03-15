@@ -112,7 +112,7 @@ class Controller
      */
     public function disableView()
     {
-        $this->getView()->disable();
+        $this->_view_name = null;
     }
 
     /**
@@ -236,6 +236,16 @@ class Controller
     public function hasLayout()
     {
         return $this->_layout_name !== null;
+    }
+
+    /**
+     * determines if this controller has a view
+     *
+     * @return bool
+     */
+    public function hasView()
+    {
+        return $this->_view_name !== null;
     }
 
     /**

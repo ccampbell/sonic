@@ -417,7 +417,7 @@ final class App
         if (!isset($this->_controllers[$name])) {
             include $this->getPath('controllers') . '/' . $name . '.php';
             $class_name = '\Controllers\\' . $name;
-            $this->_controllers[$name] = new $class_name();
+            $this->_controllers[$name] = new $class_name;
             $this->_controllers[$name]->name($name);
             $this->_controllers[$name]->request($this->getRequest());
         }
@@ -442,10 +442,6 @@ final class App
         $controller = $this->getController($controller_name);
         $controller->setView($action, false);
 
-        $view = $controller->getView();
-        $view->setAction($action);
-        $view->addVars($args);
-
         // if we are requesting JSON that means this is being processed from the turbo queue
         // if we are not in turbo mode then we run the action normally
         $can_run = $json || !$this->getSetting(self::TURBO);
@@ -454,15 +450,24 @@ final class App
             $this->_delegate->actionWasCalled($controller, $action);
         }
 
-        // if for some reason this action has already run, let's not run it again
-        // @todo not sure this makes total sense
-        if ($can_run && !$controller->hasCompleted($action)) {
+        if ($can_run) {
             $this->_runAction($controller, $action);
+        }
+
+        $view = null;
+        if ($controller->hasView()) {
+            $view = $controller->getView();
+            $view->setAction($action);
+            $view->addVars($args);
         }
 
         // process the layout if we can
         // this takes care of handling this view
         if ($this->_processLayout($controller, $view, $args)) {
+            return;
+        }
+
+        if (!$view) {
             return;
         }
 
@@ -486,7 +491,7 @@ final class App
      * @param array $args
      * @return bool
      */
-    protected function _processLayout(Controller $controller, View $view, $args)
+    protected function _processLayout(Controller $controller, View $view = null, $args)
     {
         // if the layout was already processed ignore this call
         if ($this->_layout_processed) {
@@ -506,7 +511,8 @@ final class App
         // process the layout!
         $this->_layout_processed = true;
         $layout = $controller->getLayout();
-        $layout->topView($view);
+
+        $layout->topView($view ?: new View);
 
         if ($this->_delegate) {
             $this->_delegate->layoutStartedRendering($layout);

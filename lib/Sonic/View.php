@@ -92,8 +92,11 @@ class View
      *
      * @param string $path
      */
-    public function __construct($path)
+    public function __construct($path = null)
     {
+        if (!$path) {
+            return $this->disable();
+        }
         $this->path($path);
     }
 
