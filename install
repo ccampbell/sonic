@@ -185,7 +185,7 @@ mkdir($INSTALL_PATH . '/public_html/assets/js');
 copy('js/turbo.min.js', $INSTALL_PATH . '/public_html/assets/js/turbo.min.js');
 
 if ($ALL_FILES) {
-    output('copying extension utility to util/extension.php', true);
+    output('copying extension utility to util/extension', true);
     copy('util/extension', $INSTALL_PATH . '/util/extension');
     chmod($INSTALL_PATH . '/util/extension', 0755);
 }
