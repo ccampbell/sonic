@@ -920,11 +920,13 @@ class Manager
      */
     public function showUsage()
     {
-        $usage = "./util/extension (install|upgrade|reload|uninstall) NameOfExtension\n";
+        $usage = "usage\n";
+        $usage .= "./util/extension (install|upgrade|reload|uninstall) NameOfExtension\n";
         $usage .= "OR\n";
         $usage .= "./util/extension (install|upgrade|reload) /path/to/extension --local\n";
         $usage .= "OR\n";
         $usage .= "./util/extension list (installed|outdated)\n\n";
+        $usage .= "optional arguments\n";
         $usage .= "--force          forces the extension to install/uninstall\n";
         $usage .= "--local          installs from local directory and not from remote repository\n";
         $usage .= "--dev            if this extension has been compiled to one Core file\n";

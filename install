@@ -15,7 +15,7 @@ include 'lib/Sonic/Util.php';
 function usage_and_exit($message)
 {
     echo $message,"\n";
-    echo "./install /path/to/install/to AppName","\n";
+    echo "./install /path/to/install/to AppName","\n\n";
     echo "optional arguments","\n";
     echo "--verbose             shows verbose output","\n";
     echo "--core-only           install only the core framework","\n";
