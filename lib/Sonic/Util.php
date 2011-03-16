@@ -181,6 +181,10 @@ class Util
      */
     public static function removeDir($path)
     {
+        if (is_link($path)) {
+            return unlink($path);
+        }
+
         $files = new \RecursiveDirectoryIterator($path);
         foreach ($files as $file) {
             if (in_array($file->getFilename(), array('.', '..'))) {
@@ -201,7 +205,7 @@ class Util
                 self::removeDir($file->getRealPath());
             }
         }
-        rmdir($path);
+        return rmdir($path);
     }
 
     /**
@@ -228,7 +232,7 @@ class Util
 
         // if the destination already exists and we are not using force
         if (is_dir($dest) && !$force) {
-            return;
+            return false;
         }
 
         // if the destination directory already exists remove it
@@ -243,6 +247,8 @@ class Util
         foreach ($files as $file) {
             self::copy($src . DIRECTORY_SEPARATOR . $file->getFilename(), $dest . DIRECTORY_SEPARATOR . $file->getFilename(), $force);
         }
+
+        return true;
     }
 
     /**
@@ -256,7 +262,7 @@ class Util
     protected static function _copyFile($src, $dest, $force = false)
     {
         if (file_exists($dest) && !$force) {
-            return;
+            return false;
         }
 
         if (file_exists($dest)) {
@@ -265,6 +271,8 @@ class Util
 
         copy($src, $dest);
         self::matchPermissions($src, $dest);
+
+        return true;
     }
 
     /**

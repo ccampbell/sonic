@@ -134,6 +134,125 @@ class UtilTest extends TestCase
         $this->isTrue($star);
     }
 
+    public function testCopy()
+    {
+        $app = Sonic\App::getInstance();
+        $src = $app->getPath('lib/Sonic');
+        $dest = $app->getPath('tests/app/lib/Sonic');
+
+        // copy sonic lib to lib path
+        $result = Util::copy($src, $dest);
+        $this->isTrue($result);
+
+        // already exists returns false
+        $result = Util::copy($src, $dest);
+        $this->isFalse($result);
+
+        // force returns true
+        $force = true;
+        $result = Util::copy($src, $dest, $force);
+        $this->isTrue($result);
+
+        // check that some files are there
+        $this->isTrue(is_dir($dest));
+        $this->isTrue(file_exists($dest . '/App.php'));
+        $this->isTrue(file_exists($dest . '/Extension/Manager.php'));
+    }
+
+    public function testCopyException()
+    {
+        $app = Sonic\App::getInstance();
+        $this->isException('Sonic\Exception');
+        $src = $app->getPath('lib/ThingThatDoesNotExist');
+        $dest = $app->getPath('tests/app/lib/ThingThatDoesNotExist');
+        Util::copy($src, $dest);
+    }
+
+    public function testCopyFile()
+    {
+        $app = Sonic\App::getInstance();
+        $tests_path = $app->getPath('tests');
+        $src = $tests_path . '/random.txt';
+        file_put_contents($src, 'nice');
+        $dest = $tests_path . '/random2.txt';
+
+        $result = Util::copy($src, $dest);
+        $this->isTrue($result);
+
+        $result = Util::copy($src, $dest);
+        $this->isFalse($result);
+
+        $force = true;
+        $result = Util::copy($src, $dest, $force);
+        $this->isTrue($result);
+
+        $this->isTrue(file_exists($dest));
+        $this->isEqual('nice', file_get_contents($dest));
+
+        unlink($src);
+        unlink($dest);
+    }
+
+    public function testRemoveDir()
+    {
+        $app = Sonic\App::getInstance();
+        $dest = $app->getPath('tests/app/lib/Sonic');
+        $result = Util::removeDir($dest);
+        $this->isTrue($result);
+        $this->isFalse(file_exists($dest));
+        $this->isFalse(is_dir($dest));
+    }
+
+    public function testRemoveSymlinkDir()
+    {
+        $app = Sonic\App::getInstance();
+        $src = $app->getPath('lib/Sonic');
+        $dest = $app->getPath('tests/app/lib/Sonic');
+        symlink($src, $dest);
+
+        $result = Util::removeDir($dest);
+        $this->isTrue($result);
+        $this->isFalse(file_exists($dest));
+        $this->isFalse(is_dir($dest));
+        $this->isTrue(file_exists($src));
+    }
+
+    public function testRemoveDirWithSymlink()
+    {
+        $app = Sonic\App::getInstance();
+        $src = $app->getPath('lib/Sonic');
+        $mkdir = $app->getPath('tests/app/lib/what');
+        mkdir($mkdir);
+        $dest = $mkdir . '/Sonic';
+        symlink($src, $dest);
+
+        $result = Util::removeDir($mkdir);
+        $this->isTrue($result);
+        $this->isFalse(file_exists($mkdir));
+        $this->isFalse(is_dir($mkdir));
+        $this->isTrue(file_exists($src));
+    }
+
+    public function testMatchPermissions()
+    {
+        $app = Sonic\App::getInstance();
+        $tests_dir = $app->getPath('tests');
+
+        $file1 = $tests_dir . '/test.txt';
+        $file2 = $tests_dir . '/test2.txt';
+
+        file_put_contents($file1, 'test');
+        file_put_contents($file2, 'test');
+        chmod($file1, 0664);
+
+        $this->isNotEqual(fileperms($file1), fileperms($file2));
+        Util::matchPermissions($file1, $file2);
+        $this->isEqual(fileperms($file1), fileperms($file2));
+
+        unlink($file1);
+        unlink($file2);
+    }
+
     public function testExplodeAtMatch()
     {
         $delims = array(', ', ',', ' and ');
