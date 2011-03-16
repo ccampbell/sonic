@@ -11,5 +11,5 @@ $routes = array(
     '/something-something' => array('tests', 'something'),
     '/special/:CONTROLLER/:ACTION' => array(),
     '/special/:ACTION' => array('special'),
-    'r:\/action\/(one|two|three)$' => array('action', 'not_found', array(1 => 'ACTION'))
+    'r:/action/(one|two|three|dash-test)$' => array('action', 'not_found', array(1 => 'ACTION'))
 );

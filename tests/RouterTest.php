@@ -190,6 +190,10 @@ class RouterTest extends TestCase
         $router = new Router('/special/guitar/gibson', null, 'tests');
         $this->isEqual('guitar', $router->getController());
         $this->isEqual('gibson', $router->getAction());
+
+        $router = new Router('/special/guitar-test-with-dashes/gibson', null, 'tests');
+        $this->isEqual('guitar_test_with_dashes', $router->getController());
+        $this->isEqual('gibson', $router->getAction());
     }
 
     public function testDynamicRouteFromRegex()
@@ -214,5 +218,8 @@ class RouterTest extends TestCase
         $this->isEqual(null, $router->getController());
         $this->isEqual(null, $router->getAction());
 
+        $router = new Router('/action/dash-test', null, 'tests');
+        $this->isEqual('action', $router->getController());
+        $this->isEqual('dash_test', $router->getAction());
     }
 }

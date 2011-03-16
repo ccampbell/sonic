@@ -134,12 +134,12 @@ class Router
     {
         // special case where you can set controller or action dynamically
         if (isset($this->_params['CONTROLLER'])) {
-            $match[0] = $this->_params['CONTROLLER'];
+            $match[0] = str_replace('-', '_', $this->_params['CONTROLLER']);
             unset($this->_params['CONTROLLER']);
         }
 
         if (isset($this->_params['ACTION'])) {
-            $match[1] = $this->_params['ACTION'];
+            $match[1] = str_replace('-', '_', $this->_params['ACTION']);
             unset($this->_params['ACTION']);
         }
 
@@ -271,6 +271,9 @@ class Router
     protected function _matchesRegex($route_uri, $base_uri)
     {
         $route_uri = substr($route_uri, 2);
+
+        // allow / or \/
+        $route_uri = str_replace(array('/', '\\\\'), array('\/', '\\'), $route_uri);
         $match_count = preg_match('/' . $route_uri . '/i', $base_uri, $matches);
         return $match_count > 0 ? $matches : false;
     }
