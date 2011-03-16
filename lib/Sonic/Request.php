@@ -208,6 +208,26 @@ class Request
     }
 
     /**
+     * gets all params of a certain type
+     *
+     * @param string $type
+     * @return array
+     */
+    public function getParams($type = self::PARAM)
+    {
+        if ($type === self::POST) {
+            return $_POST;
+        }
+
+        if ($type === self::GET) {
+            return $_GET;
+        }
+
+        $this->_mergeRouterParams();
+        return $this->_params;
+    }
+
+    /**
      * gets a param from the request
      *
      * @param string $name parameter name
@@ -238,27 +258,7 @@ class Request
     }
 
     /**
-     * gets all params of a certain type
-     *
-     * @param string $type
-     * @return array
-     */
-    public function getParams($type = self::PARAM)
-    {
-        if ($type === self::POST) {
-            return $_POST;
-        }
-
-        if ($type === self::GET) {
-            return $_GET;
-        }
-
-        $this->_mergeRouterParams();
-        return $this->_params;
-    }
-
-    /**
-     * gets posted value or all of post
+     * gets $_POST value or all of $_POST
      *
      * @param string
      * @return mixed
@@ -269,6 +269,20 @@ class Request
             return $this->getParams(self::POST);
         }
         return $this->getParam($name, self::POST);
+    }
+
+    /**
+     * gets $_GET value or all of $_GET
+     *
+     * @param string
+     * @return mixed
+     */
+    public function getGet($name = null)
+    {
+        if ($name === null) {
+            return $this->getParams(self::GET);
+        }
+        return $this->getParam($name, self::GET);
     }
 
     /**
