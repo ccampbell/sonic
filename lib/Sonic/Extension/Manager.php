@@ -338,7 +338,7 @@ class Manager
 
             $this->_output('processing dependency: ' . $dependency, true);
             $local = $from_remote ? false : true;
-            $dependency = $from_remote ? $dependency : $base_path . '/' . $dependency;
+            $dependency = $from_remote ? $dependency : $base_path . DIRECTORY_SEPARATOR . $dependency;
             $this->install($dependency, $local, $force);
         }
 
@@ -358,14 +358,14 @@ class Manager
             unset($data[$name]);
         }
 
-        $extension_dir = App::getInstance()->getPath('extensions') . '/' . $name;
+        $extension_dir = App::getInstance()->getPath('extensions') . DIRECTORY_SEPARATOR . $name;
 
         mkdir($extension_dir);
 
         $installed = $this->_sync($path, $extension_dir, $already_installed, $name, true);
 
         // if this extension uses a config then write it out
-        $config_path = App::getInstance()->getPath('configs') . '/extension.' . $name . '.ini';
+        $config_path = App::getInstance()->getPath('configs') . DIRECTORY_SEPARATOR . 'extension.' . $name . '.ini';
         if ($manifest->hasConfig() && !file_exists($config_path)) {
             $defaults = $manifest->getConfigDefaults();
             $text = $this->_configFromArray($defaults);
@@ -430,7 +430,7 @@ class Manager
             throw new Exception('ERROR: extension not found!');
         }
 
-        $path = $tmp_path . '/' . $name . '.tar.gz';
+        $path = $tmp_path . DIRECTORY_SEPARATOR . $name . '.tar.gz';
         file_put_contents($path, $file);
 
         $this->_output('extracting ' . $name . '.zip', true);
@@ -441,7 +441,7 @@ class Manager
         $zip->close();
         unlink($path);
 
-        $this->_localInstall($tmp_path . '/' . $name, $force, true);
+        $this->_localInstall($tmp_path . DIRECTORY_SEPARATOR . $name, $force, true);
     }
 
     /**
@@ -483,7 +483,7 @@ class Manager
         }
 
         // force uninstall
-        $base_path = App::getInstance()->getPath() . '/';
+        $base_path = App::getInstance()->getPath() . DIRECTORY_SEPARATOR;
         foreach ($data[$lc_name]['files'] as $path) {
             $this->_output('removing file ' . $path, true);
             unlink($base_path . $path);
@@ -523,7 +523,7 @@ class Manager
             rename($base_path . $moved . '.backup', $base_path . $moved);
         }
 
-        $extension_dir = App::getInstance()->getPath('extensions') . '/' . $name;
+        $extension_dir = App::getInstance()->getPath('extensions') . DIRECTORY_SEPARATOR . $name;
 
         if ($reload && is_dir($extension_dir . DIRECTORY_SEPARATOR . '.svn')) {
             $this->_backupSvn($extension_dir);
@@ -582,10 +582,10 @@ class Manager
                 continue;
             }
 
-            $old_path = $file->getPath() . '/' . $name;
+            $old_path = $file->getPath() . DIRECTORY_SEPARATOR . $name;
 
             $new_name = str_replace($dir1 . DIRECTORY_SEPARATOR, '', $old_path);
-            $new_path = $dir2 . '/' . $new_name;
+            $new_path = $dir2 . DIRECTORY_SEPARATOR . $new_name;
 
             $this->_createDirectoriesFor($dir2, $new_name, $ext_name);
 
@@ -643,7 +643,7 @@ class Manager
             $this->getTracker($ext_name)->addedDir($this->_stripApp($dir));
         }
 
-        $dir = $dir . '/';
+        $dir = $dir . DIRECTORY_SEPARATOR;
         $path_bits = explode(DIRECTORY_SEPARATOR, $path);
         $file = array_pop($path_bits);
         $prev_bit = '';
@@ -654,7 +654,7 @@ class Manager
                 $this->_output('creating directory ' . $dir_path, true);
                 $this->getTracker($ext_name)->addedDir($this->_stripApp($dir_path));
             }
-            $prev_bit = $bit . '/';
+            $prev_bit = $bit . DIRECTORY_SEPARATOR;
         }
     }
 
