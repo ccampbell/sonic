@@ -386,7 +386,7 @@ final class App
         $base_path = $this->getBasePath();
 
         if ($dir !== null) {
-            $base_path .= '/' . $dir;
+            $base_path .= DIRECTORY_SEPARATOR . $dir;
         }
 
         $this->_paths[$cache_key] = $base_path;
