@@ -183,11 +183,17 @@ final class App
      */
     public function includeFile($path)
     {
+        // replace / with directory separator for windows
+        $path = str_replace('/', DIRECTORY_SEPARATOR, $path);
+
         if (isset($this->_included[$path])) {
             return false;
         }
 
-        include $path;
+        // absolute path
+        $start = $path[0] == DIRECTORY_SEPARATOR ? '' : $this->getPath('libs');
+
+        include $start . DIRECTORY_SEPARATOR . $path;
         $this->_included[$path] = true;
         return true;
     }
@@ -348,13 +354,7 @@ final class App
             return $this->_base_path;
         }
 
-        if ($this->getSetting(self::MODE) == self::COMMAND_LINE) {
-            $this->_base_path = str_replace(array(DIRECTORY_SEPARATOR . 'libs', DIRECTORY_SEPARATOR . 'lib'), '', get_include_path());
-            return $this->_base_path;
-        }
-
-        $this->_base_path = str_replace('/public_html', '', $this->getRequest()->getServer('DOCUMENT_ROOT'));
-        return $this->_base_path;
+        throw new \Exception('base path must be set before App::start() is called');
     }
 
     /**
@@ -831,65 +831,59 @@ final class App
      * pushes over the first domino
      *
      * @param string $mode
-     * @param bool $load used for unit tests to prevent fatal errors
      * @return void
      */
-    public function start($mode = self::WEB, $load = true)
+    public function start($mode = self::WEB)
     {
-        if ($this->_delegate) {
-            $this->_delegate->appStartedLoading($mode);
-        }
+        $lib = $this->getPath('libs') . DIRECTORY_SEPARATOR . 'Sonic' . DIRECTORY_SEPARATOR;
+        try {
+            if ($this->_delegate) {
+                $this->_delegate->appStartedLoading($mode);
+            }
 
-        $this->addSetting(self::MODE, $mode);
+            $this->addSetting(self::MODE, $mode);
 
-        // this could use App::includeFile() but it is faster to duplicate
-        // that logic here
-        if ($load) {
-            include 'Sonic/Exception.php';
-            $this->_included['Sonic/Exception.php'] = true;
-            include 'Sonic/Request.php';
-            $this->_included['Sonic/Request.php'] = true;
-            include 'Sonic/Router.php';
-            $this->_included['Sonic/Router.php'] = true;
-            include 'Sonic/Controller.php';
-            $this->_included['Sonic/Controller.php'] = true;
-            include 'Sonic/View.php';
-            $this->_included['Sonic/View.php'] = true;
-            include 'Sonic/Layout.php';
-            $this->_included['Sonic/Layout.php'] = true;
-        }
+            require_once $lib . 'Exception.php';
+            require_once $lib . 'Request.php';
+            require_once $lib . 'Router.php';
+            require_once $lib . 'Controller.php';
+            require_once $lib . 'View.php';
+            require_once $lib . 'Layout.php';
 
-        if ($this->getSetting(self::AUTOLOAD)) {
-            $this->autoload();
-        }
+            if ($this->getSetting(self::AUTOLOAD)) {
+                $this->autoload();
+            }
 
-        if ($this->_delegate) {
-            $this->_delegate->appFinishedLoading();
-        }
+            if ($this->_delegate) {
+                $this->_delegate->appFinishedLoading();
+            }
 
-        // if we are calling this app from command line then all we want to do
-        // is load the core application files
-        if ($mode != self::WEB) {
-            return;
-        }
+            // if we are calling this app from command line then all we want to do
+            // is load the core application files
+            if ($mode != self::WEB) {
+                return;
+            }
 
-        if ($this->getSetting(self::TURBO) && $this->_robotnikWins()) {
-            $this->addSetting(self::TURBO, false);
-        }
+            if ($this->getSetting(self::TURBO) && $this->_robotnikWins()) {
+                $this->addSetting(self::TURBO, false);
+            }
 
-        // try to get the controller and action
-        // if an exception is thrown that means the page requested does not exist
-        $controller = $this->getRequest()->getControllerName();
-        $action = $this->getRequest()->getAction();
+            // try to get the controller and action
+            // if an exception is thrown that means the page requested does not exist
+            $controller = $this->getRequest()->getControllerName();
+            $action = $this->getRequest()->getAction();
 
-        if ($this->_delegate) {
-            $this->_delegate->appStartedRunning();
-        }
+            if ($this->_delegate) {
+                $this->_delegate->appStartedRunning();
+            }
 
-        $this->runController($controller, $action);
+            $this->runController($controller, $action);
 
-        if ($this->_delegate) {
-            $this->_delegate->appFinishedRunning();
+            if ($this->_delegate) {
+                $this->_delegate->appFinishedRunning();
+            }
+        } catch (\Exception $e) {
+            $this->handleException($e);
         }
     }
 }

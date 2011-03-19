@@ -204,6 +204,9 @@ class Manager
     protected function _getInstalled()
     {
         $path = App::getInstance()->getPath('extensions/installed.json');
+        if (!file_exists($path)) {
+            return array();
+        }
         return json_decode(file_get_contents($path), true);
     }
 
