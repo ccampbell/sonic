@@ -137,8 +137,8 @@ class UtilTest extends TestCase
     public function testCopy()
     {
         $app = Sonic\App::getInstance();
-        $src = $app->getPath('lib/Sonic');
-        $dest = $app->getPath('tests/app/lib/Sonic');
+        $src = $app->getPath('../../lib/Sonic');
+        $dest = $app->getPath('libs/SonicCopy');
 
         // copy sonic lib to lib path
         $result = Util::copy($src, $dest);
@@ -171,10 +171,9 @@ class UtilTest extends TestCase
     public function testCopyFile()
     {
         $app = Sonic\App::getInstance();
-        $tests_path = $app->getPath('tests');
-        $src = $tests_path . '/random.txt';
+        $src = $app->getPath('/random.txt');
         file_put_contents($src, 'nice');
-        $dest = $tests_path . '/random2.txt';
+        $dest = $app->getPath('/random2.txt');
 
         $result = Util::copy($src, $dest);
         $this->isTrue($result);
@@ -196,7 +195,7 @@ class UtilTest extends TestCase
     public function testRemoveDir()
     {
         $app = Sonic\App::getInstance();
-        $dest = $app->getPath('tests/app/lib/Sonic');
+        $dest = $app->getPath('libs/SonicCopy');
         $result = Util::removeDir($dest);
         $this->isTrue($result);
         $this->isFalse(file_exists($dest));
@@ -206,8 +205,8 @@ class UtilTest extends TestCase
     public function testRemoveSymlinkDir()
     {
         $app = Sonic\App::getInstance();
-        $src = $app->getPath('lib/Sonic');
-        $dest = $app->getPath('tests/app/lib/Sonic');
+        $src = $app->getPath('../../lib/Sonic');
+        $dest = $app->getPath('libs/SonicTest');
         symlink($src, $dest);
 
         $result = Util::removeDir($dest);
@@ -220,8 +219,8 @@ class UtilTest extends TestCase
     public function testRemoveDirWithSymlink()
     {
         $app = Sonic\App::getInstance();
-        $src = $app->getPath('lib/Sonic');
-        $mkdir = $app->getPath('tests/app/lib/what');
+        $src = $app->getPath('../../lib/Sonic');
+        $mkdir = $app->getPath('libs/what');
         mkdir($mkdir);
         $dest = $mkdir . '/Sonic';
         symlink($src, $dest);
@@ -236,10 +235,9 @@ class UtilTest extends TestCase
     public function testMatchPermissions()
     {
         $app = Sonic\App::getInstance();
-        $tests_dir = $app->getPath('tests');
 
-        $file1 = $tests_dir . '/test.txt';
-        $file2 = $tests_dir . '/test2.txt';
+        $file1 = $app->getPath('/test.txt');
+        $file2 = $app->getPath('/test2.txt');
 
         file_put_contents($file1, 'test');
         file_put_contents($file2, 'test');

@@ -6,7 +6,7 @@
  * @author Craig Campbell
  */
 use Sonic\UnitTest\Runner;
-$lib_path = str_replace('run_tests.php', '', realpath(__FILE__)) . '/../lib';
+$lib_path = str_replace(DIRECTORY_SEPARATOR . 'util', '', __DIR__) . DIRECTORY_SEPARATOR . 'lib';
 include $lib_path . '/Sonic/UnitTest/Runner.php';
 
 try {

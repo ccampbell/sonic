@@ -80,7 +80,7 @@ class AppTest extends TestCase
         $path = $app->getBasePath();
         $this->isNotNull($path);
 
-        $base_path = str_replace('/tests/AppTest.php', '', realpath(__FILE__));
+        $base_path = str_replace('/AppTest.php', '/app', realpath(__FILE__));
         $this->isEqual($path, $base_path);
 
         $base_path_again = $app->getBasePath();
@@ -103,7 +103,6 @@ class AppTest extends TestCase
     public function testGetController()
     {
         $app = App::getInstance();
-        $app->setBasePath($app->getPath('tests') . '/app');
         $controller = $app->getController('main');
         $this->isTrue($controller instanceof Sonic\Controller);
 
@@ -131,11 +130,11 @@ class AppTest extends TestCase
     public function testSetDelegate()
     {
         $app = App::getInstance();
-        $app->setDelegate('Tests\app\lib\Delegate');
+        $app->setDelegate('Test\App\Delegate');
 
         // bad delegate file
         $this->isException('Exception');
-        $app->setDelegate('Tests\app\lib\DelegateBad');
+        $app->setDelegate('Test\App\DelegateBad');
     }
 
     public function testSetPath()

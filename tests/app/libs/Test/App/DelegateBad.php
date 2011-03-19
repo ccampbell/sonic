@@ -1,5 +1,5 @@
 <?php
-namespace Tests\app\lib;
+namespace Test\App;
 
 class DelegateBad
 {

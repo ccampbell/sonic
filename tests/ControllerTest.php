@@ -35,10 +35,8 @@ class ControllerTest extends TestCase
     public function testRequest()
     {
         $controller = new Controllers\Main();
-        $request = new Request();
-        $controller->request($request);
-        $controller_request = $controller->request();
-        $this->isExact($request, $controller_request);
+        $request = $controller->request();
+        $this->isTrue($request instanceof Sonic\Request);
     }
 
     public function testCompletedActions()

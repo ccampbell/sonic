@@ -7,7 +7,6 @@ class RouterTest extends TestCase
     public function testConstruct()
     {
         $app = App::getInstance();
-        $app->setBasePath($app->getPath('tests') . '/app');
         $request = $app->getInstance()->getRequest();
 
         $router = new Router($request);
