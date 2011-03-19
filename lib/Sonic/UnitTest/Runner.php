@@ -68,6 +68,13 @@ class Runner
     const BOOTSTRAP = '_bootstrap.php';
 
     /**
+     * name of shutdown file
+     *
+     * @var string
+     */
+    const SHUTDOWN = '_shutdown.php';
+
+    /**
      * constructor
      *
      * @return void
@@ -135,6 +142,10 @@ class Runner
         $runner->runTests($runner->_file);
 
         $runner->showResults();
+
+        if ($runner->hasFile(self::SHUTDOWN)) {
+            $runner->includeFile(self::SHUTDOWN);
+        }
     }
 
     /**
