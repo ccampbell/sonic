@@ -89,6 +89,7 @@ final class App
     const DEFAULT_SCHEMA = 8;
     const EXTENSION_DATA = 9;
     const EXTENSIONS_LOADED = 10;
+    const URI_PREFIX = 11;
 
     /**
      * @var array

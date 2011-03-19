@@ -1,6 +1,5 @@
 <?php
 namespace Sonic;
-use \Sonic\Exception;
 
 /**
  * Request object - you know, for handling $_GET, $_POST, and other params
@@ -84,6 +83,11 @@ class Request
         if ($uri === null || $uri == '/index.php') {
             $bits = explode('?', $this->getServer('REQUEST_URI'));
             $uri = $bits[0];
+        }
+
+        $prefix = App::getInstance()->getSetting(App::URI_PREFIX);
+        if ($prefix) {
+            $uri = str_replace($prefix, '', $uri);
         }
 
         $this->_base_url = $uri;
