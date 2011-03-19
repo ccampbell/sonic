@@ -36,11 +36,6 @@ class Controller
     protected $_layout_name = Layout::MAIN;
 
     /**
-     * @var Request
-     */
-    protected $_request;
-
-    /**
      * @var array
      */
     protected $_actions_completed = array();
@@ -171,17 +166,13 @@ class Controller
     }
 
     /**
-     * gets or sets the request object
+     * gets the request object
      *
-     * @param mixed $request (Request || null)
      * @return Request
      */
-    public function request(Request $request = null)
+    public function request()
     {
-        if ($request !== null) {
-            $this->_request = $request;
-        }
-        return $this->_request;
+        return App::getInstance()->getRequest();
     }
 
     /**

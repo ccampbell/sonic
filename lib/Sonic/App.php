@@ -419,7 +419,6 @@ final class App
             $class_name = '\Controllers\\' . $name;
             $this->_controllers[$name] = new $class_name;
             $this->_controllers[$name]->name($name);
-            $this->_controllers[$name]->request($this->getRequest());
         }
 
         return $this->_controllers[$name];
