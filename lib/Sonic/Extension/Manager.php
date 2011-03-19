@@ -430,7 +430,7 @@ class Manager
             throw new Exception('ERROR: extension not found!');
         }
 
-        $path = $tmp_path . DIRECTORY_SEPARATOR . $name . '.tar.gz';
+        $path = $tmp_path . DIRECTORY_SEPARATOR . $name . '.zip';
         file_put_contents($path, $file);
 
         $this->_output('extracting ' . $name . '.zip', true);
