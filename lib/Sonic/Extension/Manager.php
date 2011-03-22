@@ -236,7 +236,8 @@ class Manager
      */
     protected function _getAll()
     {
-        $cache_path = App::getInstance()->getPath('extensions/list.json');
+        $extension_path = App::getInstance()->getPath('extensions');
+        $cache_path = $extension_path . DIRECTORY_SEPARATOR . 'list.json';
 
         // try to pull from cache on disk
         if (file_exists($cache_path) && (time() - filemtime($cache_path)) < self::ONE_HOUR * 5) {
@@ -246,6 +247,11 @@ class Manager
 
         $this->_output('getting extension list...');
         $json = file_get_contents(self::LIST_URL);
+
+        if (!is_dir($extension_path)) {
+            mkdir($extension_path);
+        }
+
         file_put_contents($cache_path, $json);
         return json_decode($json, true);
     }
@@ -398,7 +404,7 @@ class Manager
         $data[$name]['files'] = $this->getTracker($name)->getFiles();
         $data[$name]['dirs'] = $this->getTracker($name)->getDirs();
         $data[$name]['dev'] = $this->_dev;
-        $data[$name]['has_core'] = file_exists($path . '/Core.php');
+        $data[$name]['has_core'] = file_exists($path . DIRECTORY_SEPARATOR . 'Core.php');
         $data[$name]['routes'] = count($routes);
 
         if ($manifest->hasConfig()) {
