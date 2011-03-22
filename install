@@ -160,7 +160,7 @@ $contents = "# it is recommended to set the environment in your vhost instead of
 createFile($INSTALL_PATH . '/public_html/.htaccess', $contents);
 
 output('creating public_html/index.php');
-$contents = "<?php\n\$base_path = str_replace(DIRECTORY_SEPARATOR . 'public_html', '', __DIR__);\ninclude \$base_path . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'Sonic' . DIRECTORY_SEPARATOR . 'Core.php';\n\$app = Sonic\App::getInstance();\n\$app->setBasePath(\$base_path);\n\n// if you would like to use an app delegate uncomment this line\n// \$app->setDelegate('$APP_NAME\App\Delegate');\n\n\$app->start();";
+$contents = "<?php\n// make sure to set the timezone if it is not already set in your php.ini\n// date_default_timezone_set('UTC');\n\n\$base_path = str_replace(DIRECTORY_SEPARATOR . 'public_html', '', __DIR__);\nrequire \$base_path . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'Sonic' . DIRECTORY_SEPARATOR . 'Core.php';\n\$app = Sonic\App::getInstance();\n\$app->setBasePath(\$base_path);\n\n// if you would like to use an app delegate uncomment this line\n// \$app->setDelegate('$APP_NAME\App\Delegate');\n\n\$app->start();";
 
 if (!$ALL_FILES) {
     $contents = "<?php\nset_include_path(str_replace('/public_html', '/libs', \$_SERVER['DOCUMENT_ROOT']));\ninclude 'Sonic/Core.php';\nuse \Sonic\App;\n\$app = App::getInstance();\n\ntry {\n    \$app->start();\n} catch (\\Exception \$e) {\n    \$app->handleException(\$e);\n}";
