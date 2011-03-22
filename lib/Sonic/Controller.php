@@ -243,12 +243,11 @@ class Controller
      * marks an action as complete once it runs
      *
      * @param string $action name of action
-     * @return Controller
+     * @return void
      */
     public function actionComplete($action)
     {
         $this->_actions_completed[$action] = true;
-        return $this;
     }
 
     /**
