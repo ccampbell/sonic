@@ -191,11 +191,11 @@ final class App
             return false;
         }
 
-        // absolute path
-        $start = $path[0] == DIRECTORY_SEPARATOR ? '' : $this->getPath('libs');
-
-        include $start . DIRECTORY_SEPARATOR . $path;
+        // if the path starts with / or C: then it is an absolute path
+        // otherwise pull it from the libs directory
+        include $path[0] == '/' || $path[1] == ':' ? $path : $this->getPath('libs') . DIRECTORY_SEPARATOR . $path;
         $this->_included[$path] = true;
+
         return true;
     }
 
