@@ -11,6 +11,7 @@ use Sonic\App, Sonic\Util;
  */
 class Manager
 {
+    const ONE_HOUR = 3600;
     const INSTALL = 'install';
     const UNINSTALL = 'uninstall';
     const UPGRADE = 'upgrade';
@@ -235,8 +236,17 @@ class Manager
      */
     protected function _getAll()
     {
+        $cache_path = App::getInstance()->getPath('extensions/list.json');
+
+        // try to pull from cache on disk
+        if (file_exists($cache_path) && (time() - filemtime($cache_path)) < self::ONE_HOUR * 5) {
+            $json = file_get_contents($cache_path);
+            return json_decode($json, true);
+        }
+
         $this->_output('getting extension list...');
         $json = file_get_contents(self::LIST_URL);
+        file_put_contents($cache_path, $json);
         return json_decode($json, true);
     }
 
@@ -420,6 +430,14 @@ class Manager
      */
     protected function _remoteInstall($name, $force = false)
     {
+        $outdated = $this->_getOutdated();
+        $installed = $this->_getInstalled();
+
+        if (isset($installed[$name]) && !isset($outdated[$name])) {
+            $this->_output($name . ' extension is already up to date');
+            return;
+        }
+
         $download_url = self::DOWNLOAD_URL . '/' . $name;
         $this->_output('downloading ' . $name . ' extension from ' . $download_url);
         $tmp_path = $this->_getTmpPath();
