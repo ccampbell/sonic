@@ -85,6 +85,9 @@ foreach ($combine as $file) {
         $contents = preg_replace('/\s+/', ' ', $contents);
         $contents = str_replace(' } ', '}', $contents);
         $contents = str_replace(' { ', '{', $contents);
+        $contents = str_replace(' ? ', '?', $contents);
+        $contents = str_replace(' : ', ':', $contents);
+        $contents = str_replace('array( ', 'array(', $contents);
         $contents = str_replace('; ', ';', $contents);
         $contents = str_replace(' final class', 'final class', $contents);
         $contents = str_replace(' class', 'class', $contents);
