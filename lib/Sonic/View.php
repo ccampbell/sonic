@@ -507,6 +507,29 @@ class View
     }
 
     /**
+     * begins to capture data to output buffer
+     *
+     * @return void
+     */
+    protected function captureStart()
+    {
+        ob_start();
+    }
+
+    /**
+     * finishes capturing data
+     *
+     * @return string
+     */
+    protected function captureEnd()
+    {
+        $content = ob_get_contents();
+        ob_end_clean();
+
+        return $content;
+    }
+
+    /**
      * return the class as the action name
      *
      * @return string
