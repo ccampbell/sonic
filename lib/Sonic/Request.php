@@ -121,6 +121,18 @@ class Request
     }
 
     /**
+     * gets the subdomain
+     *
+     * returns null
+     *
+     * @return mixed
+     */
+    public function getSubdomain()
+    {
+        return $this->_subdomain;
+    }
+
+    /**
      * gets the router object
      *
      * @return Router
