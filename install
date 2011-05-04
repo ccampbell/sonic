@@ -206,9 +206,9 @@ $contents = "<?php if (\$this->show_error): ?>\n    <h1>This is the error view</
 createFile($INSTALL_PATH . '/views/main/error.phtml', $contents);
 
 $ABSOLUTE_PATH = realpath($INSTALL_PATH);
-output('creating SETUP');
+output('creating README');
 $contents = "your application has been successfully installed.\n\nnow all you have to do is add this to your vhosts:\n\n<VirtualHost *:80>\n    # SetEnv ENVIRONMENT development\n    ServerName $LC_APP_NAME.local\n    ServerAlias www.$LC_APP_NAME.local\n    DocumentRoot \"$ABSOLUTE_PATH/public_html\"\n    DirectoryIndex index.php\n</VirtualHost>\n\n<Directory \"$ABSOLUTE_PATH/public_html\">\n    Options -Indexes FollowSymLinks\n    AllowOverride FileInfo\n    Order allow,deny\n    Allow from all\n</Directory>\n\nthen add this to your /etc/hosts\n\n127.0.0.1 $LC_APP_NAME.local\n127.0.0.1 www.$LC_APP_NAME.local";
-createFile($INSTALL_PATH . '/SETUP', $contents);
+createFile($INSTALL_PATH . '/README', $contents);
 
 output('done');
 exit(0);
