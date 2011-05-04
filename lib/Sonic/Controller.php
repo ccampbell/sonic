@@ -255,7 +255,7 @@ class Controller
      *
      * @return array
      */
-    public function getActionsCompleted()
+    public function getCompletedActions()
     {
         return array_keys($this->_actions_completed);
     }

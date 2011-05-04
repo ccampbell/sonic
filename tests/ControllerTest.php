@@ -42,12 +42,12 @@ class ControllerTest extends TestCase
     public function testCompletedActions()
     {
         $controller = new Controllers\Main();
-        $completed = $controller->getActionsCompleted();
+        $completed = $controller->getCompletedActions();
         $this->isArray($completed);
         $this->isEqual(count($completed), 0);
 
         $controller->actionComplete('index');
-        $completed = $controller->getActionsCompleted();
+        $completed = $controller->getCompletedActions();
         $this->isArray($completed);
         $this->isEqual(count($completed), 1);
         $this->isEqual($completed[0], 'index');
