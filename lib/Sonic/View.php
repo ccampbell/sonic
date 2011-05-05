@@ -313,11 +313,15 @@ class View
      */
     protected function _isAbsolute($path)
     {
-        // if there isn't enough characters to begin with http://
+        // the smallest protocal relative path to a file would be "//a.bc/d"
+        // so if there aren't that many characters we can assume it is not
+        // an absolute path
         if (!isset($path[7])) {
             return false;
         }
-        return $path[0] . $path[1] . $path[2] . $path[3] . $path[4] == 'http:';
+
+        $start = $path[0] . $path[1] . $path[2] . $path[3];
+        return $start . $path[4] == 'http:' || $start . $path[4] . $path[5] == 'https:' || $path[0] . $path[1] == '//';
     }
 
     /**
