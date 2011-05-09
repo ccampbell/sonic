@@ -78,7 +78,7 @@ foreach ($combine as $file) {
     $contents = str_replace(' . ', '.', $contents);
     $contents = str_replace('=> ', '=>', $contents);
     $contents = preg_replace('!/\*.*?\*/!s', '', $contents);
-    $contents = preg_replace('/\/\/(.*)/', '', $contents);
+    $contents = preg_replace('/(?<!\'|\")\/\/(.*)/', '', $contents);
     $contents = preg_replace('/\n\s*\n/', "\n", $contents);
 
     if ($minimize) {
