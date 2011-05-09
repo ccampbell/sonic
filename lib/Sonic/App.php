@@ -266,7 +266,8 @@ final class App
             return $app->_configs[$cache_key];
         }
 
-        // we need to load the config object before it fetches it from APC
+        // we need to load the util and config object before it fetches it from APC
+        $app->includeFile('Sonic/Util.php');
         $app->includeFile('Sonic/Config.php');
 
         // if we are not dev let's try to grab it from APC
@@ -274,9 +275,6 @@ final class App
             $app->_configs[$cache_key] = $config;
             return $config;
         }
-
-        // include the class
-        $app->includeFile('Sonic/Util.php');
 
         // if we have gotten here then that means the config exists so we
         // now need to get the environment name and load the config
