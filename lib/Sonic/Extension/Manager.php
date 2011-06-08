@@ -401,7 +401,7 @@ class Manager
         $data[$name] = array();
         $data[$name]['version'] = $manifest::VERSION;
         $data[$name]['load_libs'] = $manifest->loadLibs();
-        $data[$name]['files'] = $this->getTracker($name)->getFiles();
+        $data[$name]['files'] = $this->_resolveClassDependencies($this->getTracker($name)->getFiles());
         $data[$name]['dirs'] = $this->getTracker($name)->getDirs();
         $data[$name]['dev'] = $this->_dev;
         $data[$name]['has_core'] = file_exists($path . DIRECTORY_SEPARATOR . 'Core.php');
@@ -938,6 +938,20 @@ class Manager
                 Util::removeDir($current_path);
             }
         }
+    }
+
+    /**
+     * takes an array of files to be installed by this extension and reorders them
+     * so that they are loaded in the correct order by the application
+     *
+     * @param array $files
+     * @return array
+     */
+    protected function _resolveClassDependencies(array $files)
+    {
+        // for now just make sure they are in alphabetical order
+        natsort($files);
+        return array_values($files);
     }
 
     /**
