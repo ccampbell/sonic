@@ -403,6 +403,7 @@ class Manager
         $data[$name]['load_libs'] = $manifest->loadLibs();
         $data[$name]['files'] = $this->_resolveClassDependencies($this->getTracker($name)->getFiles());
         $data[$name]['dirs'] = $this->getTracker($name)->getDirs();
+        $data[$name]['keep_on_upgrade'] = $manifest->keepOnUpgrade();
         $data[$name]['dev'] = $this->_dev;
         $data[$name]['has_core'] = file_exists($path . DIRECTORY_SEPARATOR . 'Core.php');
         $data[$name]['routes'] = count($routes);
@@ -510,8 +511,13 @@ class Manager
         }
 
         // force uninstall
+        $files_to_keep = isset($data[$lc_name]['keep_on_upgrade']) && $reload ? $data[$lc_name]['keep_on_upgrade'] : array();
+
         $base_path = App::getInstance()->getPath() . DIRECTORY_SEPARATOR;
         foreach ($data[$lc_name]['files'] as $path) {
+            if (in_array($path, $files_to_keep)) {
+                continue;
+            }
             $this->_output('removing file ' . $path, true);
             unlink($base_path . $path);
         }
@@ -630,6 +636,16 @@ class Manager
                 $this->_output('WARNING: file already exists at path: ' . $new_path . '! it has been backed up for you');
                 copy($new_path, $new_path . '.backup');
                 $this->getTracker($ext_name)->moved($this->_stripApp($new_path));
+            }
+
+            // if the extension was already installed and a file exists here
+            // then we should skip it completely
+            // files that are still here are ones that were included in the
+            // keep_on_upgrade array in your manifest class
+            if ($installed && file_exists($new_path)) {
+                $this->getTracker($ext_name)->addedFile($this->_stripApp($new_path));
+                $this->_output('file already exists at path: ' . $new_path . ', skipping', true);
+                continue;
             }
 
             $this->_output('copying ' . $old_path . ' => ' . $new_path, true);
