@@ -180,7 +180,7 @@ final class App
      * includes a file at the given path
      *
      * @param string
-     * @return void
+     * @return bool
      */
     public function includeFile($path)
     {

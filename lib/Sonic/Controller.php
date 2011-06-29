@@ -282,6 +282,17 @@ class Controller
     }
 
     /**
+     * helper method to include a file in libs from a controller
+     *
+     * @param string $path
+     * @return bool
+     */
+    protected function _include($path)
+    {
+        return App::getInstance()->includeFile($path);
+    }
+
+    /**
      * redirects to another page
      *
      * @param string uri
