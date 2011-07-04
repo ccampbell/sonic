@@ -23,6 +23,11 @@ class Request
     /**
      * @var string
      */
+    const FILE = 'FILE';
+
+    /**
+     * @var string
+     */
     const PARAM = 'PARAM';
 
     /**
@@ -263,6 +268,10 @@ class Request
                     return $_GET[$name];
                 }
                 break;
+            case self::FILE:
+                if (isset($_FILES[$name])) {
+                    return $_FILES[$name];
+                }
             default:
                 $this->_mergeRouterParams();
                 if (isset($this->_params[$name])) {
