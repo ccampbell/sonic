@@ -445,11 +445,11 @@ final class App
         $can_run = $json || !$this->getSetting(self::TURBO);
 
         if ($this->_delegate) {
-            $this->_delegate->actionWasCalled($controller, $action);
+            $this->_delegate->actionWasCalled($controller, $action, $args);
         }
 
         if ($can_run) {
-            $this->_runAction($controller, $action);
+            $this->_runAction($controller, $action, $args);
         }
 
         $view = null;
@@ -532,17 +532,17 @@ final class App
      * @param string $action
      * @return void
      */
-    protected function _runAction(Controller $controller, $action)
+    protected function _runAction(Controller $controller, $action, array $args = array())
     {
         if ($this->_delegate) {
-            $this->_delegate->actionStartedRunning($controller, $action);
+            $this->_delegate->actionStartedRunning($controller, $action, $args);
         }
 
         $controller->$action();
         $controller->actionComplete($action);
 
         if ($this->_delegate) {
-            $this->_delegate->actionFinishedRunning($controller, $action);
+            $this->_delegate->actionFinishedRunning($controller, $action, $args);
         }
     }
 

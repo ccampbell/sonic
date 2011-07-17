@@ -70,7 +70,7 @@ abstract class Delegate
      * @param string $action name of action
      * @return void
      */
-    public function actionWasCalled(Controller $controller, $action) {}
+    public function actionWasCalled(Controller $controller, $action, array $args = array()) {}
 
     /**
      * called when an action has started running
@@ -79,7 +79,7 @@ abstract class Delegate
      * @param string $action name of action
      * @return void
      */
-    public function actionStartedRunning(Controller $controller, $action) {}
+    public function actionStartedRunning(Controller $controller, $action, array $args = array()) {}
 
     /**
      * called when an action has finished running
@@ -88,7 +88,7 @@ abstract class Delegate
      * @param string $action name of action
      * @return void
      */
-    public function actionFinishedRunning(Controller $controller, $action) {}
+    public function actionFinishedRunning(Controller $controller, $action, array $args = array()) {}
 
     /**
      * called when the layout starts rendering
