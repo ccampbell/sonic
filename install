@@ -53,6 +53,42 @@ function createFile($path, $contents)
     file_put_contents($path, $contents . "\n");
 }
 
+/**
+ * creates a directory
+ *
+ * @param string $path
+ * @param bool $merge is this part of an installation to merge into an existing directory?
+ * @param bool $ignore_during_merge do not attempt to override existing directory during merge
+ * @return void
+ */
+function createDirectory($path, $merge = false, $ignore_during_merge = false)
+{
+    // if this is a merge and the directory already exists and this
+    // directory can be ignored then do nothing
+    if ($merge && is_dir($path) && $ignore_during_merge) {
+        return;
+    }
+
+    // default to create this directory
+    $create = true;
+
+    // if this is a merge and the directory already exists prompt the user
+    // to overwrite the existing directory
+    if ($merge && is_dir($path)) {
+        output('there is already a directory at: ' . $path);
+        output('would you like to overwrite it? (yes or no)');
+        $yes = array('yes', 'y');
+        $create = in_array(strtolower(trim(fgets(STDIN))), $yes);
+        if ($create) {
+            Util::removeDir($path);
+        }
+    }
+
+    if ($create) {
+        mkdir($path);
+    }
+}
+
 $args = $_SERVER['argv'];
 
 if (in_array('--help', $args)) {
@@ -75,48 +111,60 @@ $ALL_FILES = !in_array('--core-only', $args);
 $UNIT_TEST_FRAMEWORK = in_array('--test-framework', $args);
 $SYMLINK = in_array('--symlink', $args);
 
+$merge = $overwrite = false;
 if (is_dir($INSTALL_PATH)) {
     output('there is already a directory at: ' . $INSTALL_PATH);
-    output('are you sure you want to overwrite this directory? (yes or no)');
-    $overwrite = strtolower(trim(fgets(STDIN))) == 'yes' ? true : false;
+    output('would you like to merge into it? (yes or no)');
+    $yes = array('yes', 'y');
+    $merge = in_array(strtolower(trim(fgets(STDIN))), $yes);
+
+    if (!$merge) {
+        output('would you like to overwrite it? (yes or no)');
+        $overwrite = in_array(strtolower(trim(fgets(STDIN))), $yes);
+    }
 
     // nothing to do exit
-    if (!$overwrite) {
+    if (!$merge && !$overwrite) {
         exit(0);
     }
 
-    Util::removeDir(realpath($INSTALL_PATH));
+    if ($overwrite) {
+        Util::removeDir(realpath($INSTALL_PATH));
+    }
 }
 
 // create all the directories and files we need
-output('creating new directory at ' . $INSTALL_PATH);
-mkdir($INSTALL_PATH);
+// if this isn't a merge then create the new directory
+if (!$merge) {
+    output('creating new directory at ' . $INSTALL_PATH);
+    mkdir($INSTALL_PATH);
+}
 
 output('creating config directory', true);
-mkdir($INSTALL_PATH . '/configs');
+createDirectory($INSTALL_PATH . '/configs', $merge);
 
 output('creating controllers directory', true);
-mkdir($INSTALL_PATH . '/controllers');
+createDirectory($INSTALL_PATH . '/controllers', $merge);
 
 output('creating libs directory', true);
-mkdir($INSTALL_PATH . '/libs');
+createDirectory($INSTALL_PATH . '/libs', $merge);
 
 output('creating public_html directory', true);
-mkdir($INSTALL_PATH . '/public_html');
+createDirectory($INSTALL_PATH . '/public_html', $merge);
 
 if ($ALL_FILES) {
     output('creating util directory', true);
-    mkdir($INSTALL_PATH . '/util');
+    createDirectory($INSTALL_PATH . '/util', $merge);
 }
 
 output('creating views directory', true);
-mkdir($INSTALL_PATH . '/views');
+createDirectory($INSTALL_PATH . '/views', $merge);
 
 output('creating layouts directory', true);
-mkdir($INSTALL_PATH . '/views/layouts');
+createDirectory($INSTALL_PATH . '/views/layouts', $merge, true);
 
 output('creating main views directory', true);
-mkdir($INSTALL_PATH . '/views/main');
+createDirectory($INSTALL_PATH . '/views/main', $merge, true);
 
 if ($ALL_FILES) {
     output('creating configs/app.ini', true);
@@ -143,7 +191,7 @@ if (!$lib_created && $ALL_FILES) {
     output('copying sonic library to libs/Sonic');
     Util::copy('lib/Sonic', $INSTALL_PATH . '/libs/Sonic');
 
-    if (!$UNIT_TEST_FRAMEWORK) {
+    if (!$UNIT_TEST_FRAMEWORK && is_dir($INSTALL_PATH . '/libs/Sonic/UnitTest')) {
         Util::removeDir(realpath($INSTALL_PATH . '/libs/Sonic/UnitTest'));
     }
     $lib_created = true;
@@ -151,7 +199,7 @@ if (!$lib_created && $ALL_FILES) {
 
 if (!$lib_created) {
     output('copying sonic core to libs/Sonic/Core.php');
-    mkdir($INSTALL_PATH . '/libs/Sonic');
+    createDirectory($INSTALL_PATH . '/libs/Sonic', $merge);
     copy('lib/Sonic/Core.php', $INSTALL_PATH . '/libs/Sonic/Core.php');
 }
 
@@ -169,8 +217,8 @@ createFile($INSTALL_PATH . '/public_html/index.php', $contents);
 
 if ($ALL_FILES) {
     output('creating libs/' . $APP_NAME . '/App/Delegate.php', true);
-    mkdir($INSTALL_PATH . '/libs/' . $APP_NAME);
-    mkdir($INSTALL_PATH . '/libs/' . $APP_NAME . '/App');
+    createDirectory($INSTALL_PATH . '/libs/' . $APP_NAME, $merge, true);
+    createDirectory($INSTALL_PATH . '/libs/' . $APP_NAME . '/App', $merge, true);
     $contents = "<?php\nnamespace $APP_NAME\App;\nuse Sonic\App, Sonic\Controller, Sonic\View, Sonic\Layout;\n\n/**\n * for other methods you can implement see Sonic/App/Delegate.php\n */\nclass Delegate extends \Sonic\App\Delegate\n{\n    /**\n     * called when the application first starts loading before any files are included\n     *\n     * all application settings should be set here\n     *\n     * @param string \$mode startup mode of application\n     * @return void\n     */\n    public function appStartedLoading(\$mode)\n    {\n        // \$this->_app->addSetting(App::AUTOLOAD, true);\n    }\n\n    /**\n     * called when all the core files are done being included for the request\n     *\n     * all extra files and extensions you need to include for every request should happen here\n     *\n     * @return void\n     */\n    public function appFinishedLoading()\n    {\n        \$this->_app->getRequest()->setHeader('X-Powered-By', 'Sonic Framework ' . App::VERSION);\n        // \$this->_app->includeFile('$APP_NAME/Controller.php');\n        // \$this->_app->loadExtension('Curl');\n    }\n}";
     createFile($INSTALL_PATH . '/libs/' . $APP_NAME . '/App/Delegate.php', $contents);
 }
@@ -179,8 +227,8 @@ output('creating empty favicon file', true);
 createFile($INSTALL_PATH . '/public_html/favicon.ico', null);
 
 output('copying turbo.min.js to public_html/assets/js', true);
-mkdir($INSTALL_PATH . '/public_html/assets');
-mkdir($INSTALL_PATH . '/public_html/assets/js');
+createDirectory($INSTALL_PATH . '/public_html/assets', $merge, true);
+createDirectory($INSTALL_PATH . '/public_html/assets/js', $merge, true);
 copy('js/turbo.min.js', $INSTALL_PATH . '/public_html/assets/js/turbo.min.js');
 
 if ($ALL_FILES) {
