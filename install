@@ -21,6 +21,7 @@ function usage_and_exit($message)
     echo "--core-only           install only the core framework","\n";
     echo "--test-framework      include the unit test framework in this installation","\n";
     echo "--symlink             use a symlink to this library","\n";
+    echo "--with-jquery         copies the latest jquery into the project","\n";
     echo "--help                show this menu","\n";
     exit(1);
 }
@@ -76,8 +77,8 @@ function createDirectory($path, $merge = false, $ignore_during_merge = false)
     // to overwrite the existing directory
     if ($merge && is_dir($path)) {
         output('there is already a directory at: ' . $path);
-        output('would you like to overwrite it? (yes or no)');
-        $yes = array('yes', 'y');
+        output('would you like to overwrite it? (y or n)');
+        $yes = array('Y', 'y');
         $create = in_array(strtolower(trim(fgets(STDIN))), $yes);
         if ($create) {
             Util::removeDir($path);
@@ -110,16 +111,17 @@ $VERBOSE = in_array('--verbose', $args);
 $ALL_FILES = !in_array('--core-only', $args);
 $UNIT_TEST_FRAMEWORK = in_array('--test-framework', $args);
 $SYMLINK = in_array('--symlink', $args);
+$WITH_JQUERY = in_array('--with-jquery', $args);
 
 $merge = $overwrite = false;
 if (is_dir($INSTALL_PATH)) {
     output('there is already a directory at: ' . $INSTALL_PATH);
-    output('would you like to merge into it? (yes or no)');
-    $yes = array('yes', 'y');
+    output('would you like to merge into it? (y or n)');
+    $yes = array('Y', 'y');
     $merge = in_array(strtolower(trim(fgets(STDIN))), $yes);
 
     if (!$merge) {
-        output('would you like to overwrite it? (yes or no)');
+        output('would you like to overwrite it? (y or n)');
         $overwrite = in_array(strtolower(trim(fgets(STDIN))), $yes);
     }
 
@@ -237,8 +239,27 @@ if ($ALL_FILES) {
     chmod($INSTALL_PATH . '/util/extension', 0755);
 }
 
+if ($WITH_JQUERY) {
+    output('figuring out latest version of jquery...');
+    $html = file_get_contents('http://jquery.com');
+    $dom = new DOMDocument();
+    $dom->loadHtml($html);
+    $input = $dom->getElementById('jq-production');
+    $jquery_url = $input->getAttribute('value');
+
+    $bits = explode('/', $jquery_url);
+    $jquery_file_name = array_pop($bits);
+
+    output('downloading ' . $jquery_file_name);
+    $jquery = file_get_contents($jquery_url);
+
+    output('copying ' . $jquery_file_name . ' to public_html/assets/js', true);
+    createFile($INSTALL_PATH . '/public_html/assets/js/' . $jquery_file_name, $jquery);
+}
+
 output('creating main layout');
-$contents = "<!DOCTYPE html>\n<html>\n<head>\n    <title><?php echo \$this->setTitlePattern('$APP_NAME - \${title}'); ?></title>\n</head>\n<body>\n    <?php echo \$this->topView()->getHtml(); ?>\n</body>\n</html>";
+$jquery = $WITH_JQUERY ? "    <script src=\"/assets/js/{$jquery_file_name}\"></script>\n": '';
+$contents = "<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"utf-8\">\n    <title><?php echo \$this->setTitlePattern('$APP_NAME - \${title}'); ?></title>\n</head>\n<body>\n    <?php echo \$this->topView()->getHtml(); ?>\n{$jquery}</body>\n</html>";
 createFile($INSTALL_PATH . '/views/layouts/main.phtml', $contents);
 
 output('creating index view');
