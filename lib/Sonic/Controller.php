@@ -278,7 +278,7 @@ class Controller
      */
     final public function getViewPath()
     {
-        return App::getInstance()->getPath('views') . '/' . $this->_name . '/' . $this->_view_name . '.phtml';
+        return App::getInstance()->getPath('views') . '/' . str_replace('\\', DIRECTORY_SEPARATOR, $this->_name) . '/' . $this->_view_name . '.phtml';
     }
 
     /**
