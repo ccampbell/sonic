@@ -414,7 +414,7 @@ final class App
 
         // controller has not been instantiated yet
         if (!isset($this->_controllers[$name])) {
-            include $this->getPath('controllers') . '/' . $name . '.php';
+            require $this->getPath('controllers') . '/' . str_replace('\\', DIRECTORY_SEPARATOR, $name) . '.php';
             $class_name = '\Controllers\\' . $name;
             $this->_controllers[$name] = new $class_name;
             $this->_controllers[$name]->name($name);
