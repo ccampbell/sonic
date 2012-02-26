@@ -71,12 +71,15 @@ Follow instructions in ``/path/to/install/to/SETUP`` file
 
     ```php
     <?php
-    set_include_path(str_replace('/public_html', '/libs', $_SERVER['DOCUMENT_ROOT']));
-    include 'Sonic/Core.php';
-    use \Sonic\App;
-    $app = App::getInstance();
+    // make sure to set the timezone if it is not already set in your php.ini
+    // date_default_timezone_set('UTC');
 
-    // if you would like to use an App Delegate uncomment this line
+    $base_path = str_replace(DIRECTORY_SEPARATOR . 'public_html', '', __DIR__);
+    require $base_path . DIRECTORY_SEPARATOR . 'libs' . DIRECTORY_SEPARATOR . 'Sonic' . DIRECTORY_SEPARATOR . 'Core.php';
+    $app = Sonic\App::getInstance();
+    $app->setBasePath($base_path);
+
+    // if you would like to use an app delegate uncomment this line
     // $app->setDelegate('{MyApp}\App\Delegate');
 
     $app->start();
