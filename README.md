@@ -29,58 +29,58 @@ Follow instructions in ``/path/to/install/to/SETUP`` file
 3.  Within that directory add the sonic library from step 1 and some other
     directories and files that the app will need.
 
-You want your application structure to look like this:
+    You want your application structure to look like this:
 
-```text
-[] = directory
-* = file
+    ```
+    [] = directory
+    • = file
 
-[] application_name
-    [] configs
-        * app.ini
-        * routes.php
-    [] controllers
-        * main.php
-    [] libs
-        [] Sonic (downloaded in step 1)
-        [] MyApp
-    [] public_html
-        * .htaccess
-        [] assets
-            [] css
-            [] img
-            [] js
-        * index.php
-    [] views
-        [] main
-            * index.phtml
-            * error.phtml
-```
+    [] application_name
+        [] configs
+            • app.ini
+            • routes.php
+        [] controllers
+            • main.php
+        [] libs
+            [] Sonic (downloaded in step 1)
+            [] MyApp
+        [] public_html
+            • .htaccess
+            [] assets
+                [] css
+                [] img
+                [] js
+            • index.php
+        [] views
+            [] main
+                • index.phtml
+                • error.phtml
+    ```
 
 4.  In ``/public_html/.htaccess`` add the following:
 
-```apache
-SetEnv ENVIRONMENT development
-RewriteEngine On
-RewriteRule ^.htaccess$ - [F,L]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule \.*$ /index.php
-```
+    ```apache
+    SetEnv ENVIRONMENT development
+    RewriteEngine On
+    RewriteRule ^.htaccess$ - [F,L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule \.*$ /index.php
+    ```
 5.  In ``/public_html/index.php`` add the following:
 
-```php
-<?php
-set_include_path(str_replace('/public_html', '/libs', $_SERVER['DOCUMENT_ROOT']));
-include 'Sonic/Core.php';
-use \Sonic\App;
-$app = App::getInstance();
+    ```php
+    <?php
+    set_include_path(str_replace('/public_html', '/libs', $_SERVER['DOCUMENT_ROOT']));
+    include 'Sonic/Core.php';
+    use \Sonic\App;
+    $app = App::getInstance();
 
-// if you would like to use an App Delegate uncomment this line
-// $app->setDelegate('{MyApp}\App\Delegate');
+    // if you would like to use an App Delegate uncomment this line
+    // $app->setDelegate('{MyApp}\App\Delegate');
 
-$app->start();
-```
+    $app->start();
+    ```
 6.  Setup an apache vhost to point to your /public_html directory with
     DirectoryIndex set to index.php and add the server name to your /etc/hosts.
 7.  That's all there is to it, but your app won't work until you add some
