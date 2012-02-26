@@ -335,7 +335,7 @@ class Manager
         }
 
         App::getInstance()->includeFile($manifest_path);
-        $class = "\Sonic\Extension\\" . $name;
+        $class = "\Sonic\Extension\\" . str_replace('-', '_', $name);
         $manifest = new $class;
 
         if (!$manifest instanceof Manifest) {
