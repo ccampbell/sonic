@@ -29,8 +29,9 @@ Follow instructions in ``/path/to/install/to/SETUP`` file
 3.  Within that directory add the sonic library from step 1 and some other
     directories and files that the app will need.
 
-    You want your application structure to look like this:
-```
+You want your application structure to look like this:
+
+```text
 [] = directory
 * = file
 
@@ -55,7 +56,9 @@ Follow instructions in ``/path/to/install/to/SETUP`` file
             * index.phtml
             * error.phtml
 ```
+
 4.  In ``/public_html/.htaccess`` add the following:
+
 ```apache
 SetEnv ENVIRONMENT development
 RewriteEngine On
@@ -65,6 +68,7 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule \.*$ /index.php
 ```
 5.  In ``/public_html/index.php`` add the following:
+
 ```php
 <?php
 set_include_path(str_replace('/public_html', '/libs', $_SERVER['DOCUMENT_ROOT']));
