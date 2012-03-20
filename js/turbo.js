@@ -19,12 +19,11 @@ window.SonicTurbo = (function(doc)
      * @param JSON
      * @return void
      */
-    function _addCss(css)
-    {
-        for (i = 0; i < css.length; ++i) {
+    function _addCss(css) {
+        for (var i = 0; i < css.length; ++i) {
             _addCssFile(css[i]);
         }
-    };
+    }
 
     /**
      * adds a single css file to the document
@@ -32,26 +31,24 @@ window.SonicTurbo = (function(doc)
      * @param string
      * @return void
      */
-    function _addCssFile(filename)
-    {
+    function _addCssFile(filename) {
         var stylesheet = doc.createElement("link");
         stylesheet.setAttribute("rel", "stylesheet");
         stylesheet.setAttribute("type", "text/css");
         stylesheet.setAttribute("href", filename);
         doc.getElementsByTagName("head")[0].appendChild(stylesheet);
-    };
+    }
 
     /**
      * loads the next javascript file from the queue
      *
      * @return void
      */
-    function _processQueue()
-    {
+    function _processQueue() {
         if (_js_queue.length) {
             _addJsFile(_js_queue[0]);
         }
-    };
+    }
 
     /**
      * adds a single js fileto the document
@@ -59,13 +56,13 @@ window.SonicTurbo = (function(doc)
      * @param string
      * @return void
      */
-    function _addJsFile(filename)
-    {
-        var body = doc.getElementsByTagName("body")[0];
-        var script = doc.createElement("script");
+    function _addJsFile(filename) {
+        var body = doc.getElementsByTagName("body")[0],
+            script = doc.createElement("script"),
+            done = false;
+
         script.src = filename;
 
-        var done = false;
         script.onload = script.onreadystatechange = function() {
             if (!done && (!this.readyState || this.readyState === "loaded" || this.readyState === "complete")) {
                 done = true;
@@ -83,7 +80,7 @@ window.SonicTurbo = (function(doc)
         };
 
         body.appendChild(script);
-    };
+    }
 
     return {
         /**
@@ -112,7 +109,7 @@ window.SonicTurbo = (function(doc)
             doc.title = data.title;
             doc.getElementById(data.id).innerHTML = data.content;
 
-            for (i in data.js) {
+            for (var i in data.js) {
                 _js_queue.push(data.js[i]);
             }
 
