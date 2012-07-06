@@ -1,4 +1,3 @@
-
 /**
  * class for handling injecting JSON views rendered into the DOM
  *
@@ -15,7 +14,6 @@ window.SonicTurbo = (function(doc)
     var _js_queue = [];
     var loadedjs = [];
     var loadedcss = [];
-
     /**
      * adds an array of css files to the document
      *
@@ -30,16 +28,13 @@ window.SonicTurbo = (function(doc)
 		}
         }
     }
-
     /**
      * adds a single css file to the document
      *
      * @param string
      * @return void
      */
-    function _addCssFile(filename, fragment) {
-	
-	
+    function _addCssFile(filename, fragment) {	
 		var stylesheet = doc.createElement("link");
 		stylesheet.setAttribute("rel", "stylesheet");
 		stylesheet.setAttribute("type", "text/css");
@@ -48,16 +43,12 @@ window.SonicTurbo = (function(doc)
 	
 	stylesheet.onload = function(){
 		fragment.setAttribute("style", "visibility:visible;");
-	}
-	
-        
-    }
-    
+	}     
+    }  
 	/**
 	 * Checks loaded JS/CSS files
 	 *
-	 */
-    
+	 */  
 	function inArray(array, filename){
 		
 		for(var i=0;i<array.length;i++) {
@@ -67,9 +58,6 @@ window.SonicTurbo = (function(doc)
 		}
 		return true;	
 	}
-    
-    
-
     /**
      * loads the next javascript file from the queue
      *
@@ -83,7 +71,6 @@ window.SonicTurbo = (function(doc)
 		}
         }
     }
-
     /**
      * adds a single js fileto the document
      *
@@ -93,10 +80,8 @@ window.SonicTurbo = (function(doc)
     function _addJsFile(filename) {
         var body = doc.getElementsByTagName("body")[0],
             script = doc.createElement("script"),
-            done = false;
-	    
+            done = false;	    
         script.src = filename;
-
         script.onload = script.onreadystatechange = function() {
             if (!done && (!this.readyState || this.readyState === "loaded" || this.readyState === "complete")) {
                 done = true;
@@ -112,10 +97,8 @@ window.SonicTurbo = (function(doc)
                 }
             }
         };
-
         body.appendChild(script);
     }
-
     return {
         /**
          * initialize method eats the noturbo cookie that was set if you do not have JS
@@ -125,10 +108,7 @@ window.SonicTurbo = (function(doc)
         init : function()
         {
             //doc.cookie = 'noturbo=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
-        },
-	
-	
-	
+        },	
         /**
          * public function to render a view
          *
@@ -147,14 +127,9 @@ window.SonicTurbo = (function(doc)
 	    fragment.innerHTML = data.content;
             _addCss(data.css, fragment);
             doc.title = data.title;
-	    
-	    
-            
-
             for (var i in data.js) {		
 			 _js_queue.push(data.js[i]);
             }
-
             _processQueue();
         }
     };
@@ -166,5 +141,3 @@ if (window.addEventListener) {
 else {
     window.attachEvent('onload', SonicTurbo.init);
 }
-
-
