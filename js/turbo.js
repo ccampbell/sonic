@@ -107,7 +107,7 @@ window.SonicTurbo = (function(doc)
          */
         init : function()
         {
-            //doc.cookie = 'noturbo=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
+            doc.cookie = 'noturbo=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
         },	
         /**
          * public function to render a view
