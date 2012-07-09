@@ -50,7 +50,7 @@ window.SonicTurbo = (function(doc)
 		}
 		
 	}
-	stylesheet.onerror = stylesheet.onload;        
+	stylesheet.onerror = stylesheet.onload;  //Fire onload event anyway, even if a CSS file fails to load
     }
 	/**
 	 * Checks loaded JS/CSS files
