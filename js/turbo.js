@@ -11,10 +11,12 @@ window.SonicTurbo = (function(doc)
      *
      * @var array
      */
-    var _js_queue = [];
-    var loadedjs = []; //array of loaded JS files
-    var loadedcss = []; //array of loaded CSS files
-    var cssCounter = 0; //Set CSS counter to 0
+	var _js_queue = [];
+	var loadedjs = []; //Array of JS files
+	var loadedcss = []; //Array of CSS files
+	var cssCounter = 0;  //CSS file counter
+	var hide; // boolean for determining whether to hide fragment and wait for CSS files.
+    
     /**
      * adds an array of css files to the document
      *
@@ -23,9 +25,10 @@ window.SonicTurbo = (function(doc)
      */
     function _addCss(css, fragment) {
         for (var i = 0; i < css.length; ++i) {
-    	if(inArray(loadedcss, css[i])){
+		if(inArray(loadedcss, css[i])){
 			_addCssFile(css[i], fragment);
-			loadedcss.push(css[i]); // flag css file as 'loaded'
+			loadedcss.push(css[i]); // flag css file as 'loading'
+			hide = true;
 		}
         }
     }
@@ -35,29 +38,28 @@ window.SonicTurbo = (function(doc)
      * @param string
      * @return void
      */
-     function _addCssFile(filename, fragment) {	
+    function _addCssFile(filename, fragment) {
+		
 		var stylesheet = doc.createElement("link");
 		stylesheet.setAttribute("rel", "stylesheet");
 		stylesheet.setAttribute("type", "text/css");
 		stylesheet.setAttribute("href", filename);
-		cssCounter++; //increment CSS counter
+		cssCounter++;
 		doc.getElementsByTagName("head")[0].appendChild(stylesheet);
 	
 	stylesheet.onload = function(){
 		cssCounter--; //decrement CSS counter
 		if(cssCounter == 0){
-			fragment.setAttribute("style", "visibility:visible;");	//Set fragment to visible once all CSS files have successfully loaded		
-		}
-		
+			fragment.setAttribute("style", "visibility:visible;");	//Show fragment once all CSS files loaded	
+		}		
 	}
-	stylesheet.onerror = stylesheet.onload;  //Fire onload event anyway, even if a CSS file fails to load
-    }
+	stylesheet.onerror = stylesheet.onload;  //Handle stylesheet load failure 
+    }   
 	/**
 	 * Checks loaded JS/CSS files
 	 *
-	 */  
-	function inArray(array, filename){
-		
+	 */   
+	function inArray(array, filename){		
 		for(var i=0;i<array.length;i++) {
 			if(array[i] == filename) {
 				return false;
@@ -87,8 +89,10 @@ window.SonicTurbo = (function(doc)
     function _addJsFile(filename) {
         var body = doc.getElementsByTagName("body")[0],
             script = doc.createElement("script"),
-            done = false;	    
+            done = false;
+	    
         script.src = filename;
+
         script.onload = script.onreadystatechange = function() {
             if (!done && (!this.readyState || this.readyState === "loaded" || this.readyState === "complete")) {
                 done = true;
@@ -114,8 +118,8 @@ window.SonicTurbo = (function(doc)
          */
         init : function()
         {
-            doc.cookie = 'noturbo=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
-        },	
+            //doc.cookie = 'noturbo=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
+        },
         /**
          * public function to render a view
          *
@@ -124,15 +128,20 @@ window.SonicTurbo = (function(doc)
          */
         render: function(data)
         {
-		 var fragment = doc.getElementById(data.id);
-		     fragment.setAttribute("style", "visibility:hidden;");
-		
+		    hide = false;
+		var fragment = doc.getElementById(data.id);
             // called via $this->_redirect() in a controller
             if (data.redirect) {
                 window.location = data.redirect;
             }
+	     _addCss(data.css, fragment);
+	     
+	    
+	     if(hide){
+		fragment.setAttribute("style", "visibility:hidden;");
+	     }
 	    fragment.innerHTML = data.content;
-            _addCss(data.css, fragment);
+           
             doc.title = data.title;
             for (var i in data.js) {		
 			 _js_queue.push(data.js[i]);
@@ -141,7 +150,6 @@ window.SonicTurbo = (function(doc)
         }
     };
 })(document);
-
 if (window.addEventListener) {
     window.addEventListener('load', SonicTurbo.init, false);
 }
