@@ -12,8 +12,9 @@ window.SonicTurbo = (function(doc)
      * @var array
      */
     var _js_queue = [];
-    var loadedjs = [];
-    var loadedcss = [];
+    var loadedjs = []; //array of loaded JS files
+    var loadedcss = []; //array of loaded CSS files
+    var cssCounter = 0; //Set CSS counter to 0
     /**
      * adds an array of css files to the document
      *
@@ -34,17 +35,23 @@ window.SonicTurbo = (function(doc)
      * @param string
      * @return void
      */
-    function _addCssFile(filename, fragment) {	
+     function _addCssFile(filename, fragment) {	
 		var stylesheet = doc.createElement("link");
 		stylesheet.setAttribute("rel", "stylesheet");
 		stylesheet.setAttribute("type", "text/css");
 		stylesheet.setAttribute("href", filename);
+		cssCounter++; //increment CSS counter
 		doc.getElementsByTagName("head")[0].appendChild(stylesheet);
 	
 	stylesheet.onload = function(){
-		fragment.setAttribute("style", "visibility:visible;");
-	}     
-    }  
+		cssCounter--; //decrement CSS counter
+		if(cssCounter == 0){
+			fragment.setAttribute("style", "visibility:visible;");	//Set fragment to visible once all CSS files have successfully loaded		
+		}
+		
+	}
+	stylesheet.onerror = stylesheet.onload;        
+    }
 	/**
 	 * Checks loaded JS/CSS files
 	 *
