@@ -11,12 +11,12 @@ window.SonicTurbo = (function(doc)
      *
      * @var array
      */
-	var _js_queue = [];
-	var loadedjs = []; //Array of JS files
-	var loadedcss = []; //Array of CSS files
-	var cssCounter = 0;  //CSS file counter
-	var hide; // boolean for determining whether to hide fragment and wait for CSS files.
-    
+	var _js_queue = []; 
+	var hide;
+	var loadedCss = [];
+	var loadedjs = [];
+	var instanceCount = -1;
+	var instance = [];
     /**
      * adds an array of css files to the document
      *
@@ -25,13 +25,15 @@ window.SonicTurbo = (function(doc)
      */
     function _addCss(css, fragment) {
         for (var i = 0; i < css.length; ++i) {
-		if(inArray(loadedcss, css[i])){
+		if(inArray(loadedCss, css[i])){
 			_addCssFile(css[i], fragment);
-			loadedcss.push(css[i]); // flag css file as 'loading'
-			hide = true;
+			loadedCss.push(css[i]);
+			instance[instanceCount]['css'].push(css[i]);
+			hide = true;			
 		}
         }
     }
+
     /**
      * adds a single css file to the document
      *
@@ -39,27 +41,34 @@ window.SonicTurbo = (function(doc)
      * @return void
      */
     function _addCssFile(filename, fragment) {
-		
+	
 		var stylesheet = doc.createElement("link");
 		stylesheet.setAttribute("rel", "stylesheet");
 		stylesheet.setAttribute("type", "text/css");
-		stylesheet.setAttribute("href", filename);
-		cssCounter++;
+		stylesheet.setAttribute("href", filename);		
 		doc.getElementsByTagName("head")[0].appendChild(stylesheet);
+		
+		var index = instanceCount;
+		instance[index]['csscount']++;
 	
 	stylesheet.onload = function(){
-		cssCounter--; //decrement CSS counter
-		if(cssCounter == 0){
-			fragment.setAttribute("style", "visibility:visible;");	//Show fragment once all CSS files loaded	
+		instance[index]['csscount']--;		
+		if(instance[index]['csscount'] == 0){
+			console.log('show_' + index);
+			instance[index]['fragment'].setAttribute("style", "visibility:visible;");
+			
 		}		
 	}
-	stylesheet.onerror = stylesheet.onload;  //Handle stylesheet load failure 
-    }   
+	stylesheet.onerror = stylesheet.onload;        
+    }
+    
 	/**
 	 * Checks loaded JS/CSS files
 	 *
-	 */   
-	function inArray(array, filename){		
+	 */
+    
+	function inArray(array, filename){
+		
 		for(var i=0;i<array.length;i++) {
 			if(array[i] == filename) {
 				return false;
@@ -108,8 +117,10 @@ window.SonicTurbo = (function(doc)
                 }
             }
         };
+
         body.appendChild(script);
     }
+
     return {
         /**
          * initialize method eats the noturbo cookie that was set if you do not have JS
@@ -118,8 +129,9 @@ window.SonicTurbo = (function(doc)
          */
         init : function()
         {
-            doc.cookie = 'noturbo=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
+            //doc.cookie = 'noturbo=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
         },
+
         /**
          * public function to render a view
          *
@@ -128,8 +140,14 @@ window.SonicTurbo = (function(doc)
          */
         render: function(data)
         {
-		    hide = false;
 		var fragment = doc.getElementById(data.id);
+		    instanceCount++;
+		    instance.push({
+					css: new Array(),
+					fragment: fragment,
+					csscount: 0
+				});		   
+		    hide = false;	
             // called via $this->_redirect() in a controller
             if (data.redirect) {
                 window.location = data.redirect;
@@ -140,16 +158,25 @@ window.SonicTurbo = (function(doc)
 	     if(hide){
 		fragment.setAttribute("style", "visibility:hidden;");
 	     }
+	    fragment.setAttribute("class", "sonic_fragment opacity_transition");
 	    fragment.innerHTML = data.content;
            
-            doc.title = data.title;
+		if(data.title){
+			doc.title = data.title;
+		}
+		else {
+			doc.title = 'Home - TellyCards';
+		}
+	    
             for (var i in data.js) {		
 			 _js_queue.push(data.js[i]);
             }
+
             _processQueue();
         }
     };
 })(document);
+
 if (window.addEventListener) {
     window.addEventListener('load', SonicTurbo.init, false);
 }
