@@ -11,17 +11,26 @@ window.SonicTurbo = (function(doc)
      *
      * @var array
      */
-    var _js_queue = [];
-
+	var _js_queue = []; 
+	var hide;
+	var loadedCss = [];
+	var loadedjs = [];
+	var instanceCount = -1;
+	var instance = [];
     /**
      * adds an array of css files to the document
      *
      * @param JSON
      * @return void
      */
-    function _addCss(css) {
+    function _addCss(css, fragment) {
         for (var i = 0; i < css.length; ++i) {
-            _addCssFile(css[i]);
+		if(inArray(loadedCss, css[i])){
+			_addCssFile(css[i], fragment);
+			loadedCss.push(css[i]);
+			instance[instanceCount]['css'].push(css[i]);
+			hide = true;			
+		}
         }
     }
 
@@ -31,14 +40,42 @@ window.SonicTurbo = (function(doc)
      * @param string
      * @return void
      */
-    function _addCssFile(filename) {
-        var stylesheet = doc.createElement("link");
-        stylesheet.setAttribute("rel", "stylesheet");
-        stylesheet.setAttribute("type", "text/css");
-        stylesheet.setAttribute("href", filename);
-        doc.getElementsByTagName("head")[0].appendChild(stylesheet);
+    function _addCssFile(filename, fragment) {
+	
+		var stylesheet = doc.createElement("link");
+		stylesheet.setAttribute("rel", "stylesheet");
+		stylesheet.setAttribute("type", "text/css");
+		stylesheet.setAttribute("href", filename);		
+		doc.getElementsByTagName("head")[0].appendChild(stylesheet);
+		
+		var index = instanceCount;
+		instance[index]['csscount']++;
+	
+	stylesheet.onload = function(){
+		instance[index]['csscount']--;		
+		if(instance[index]['csscount'] == 0){
+			console.log('show_' + index);
+			instance[index]['fragment'].setAttribute("style", "visibility:visible;");
+			
+		}		
+	}
+	stylesheet.onerror = stylesheet.onload;        
     }
-
+    
+	/**
+	 * Checks loaded JS/CSS files
+	 *
+	 */
+    
+	function inArray(array, filename){
+		
+		for(var i=0;i<array.length;i++) {
+			if(array[i] == filename) {
+				return false;
+			}	
+		}
+		return true;	
+	}
     /**
      * loads the next javascript file from the queue
      *
@@ -46,10 +83,12 @@ window.SonicTurbo = (function(doc)
      */
     function _processQueue() {
         if (_js_queue.length) {
-            _addJsFile(_js_queue[0]);
+		if(inArray(loadedjs, _js_queue[0])){
+			_addJsFile(_js_queue[0]);
+			loadedjs.push(_js_queue[0]); // flag js file as 'loaded'
+		}
         }
     }
-
     /**
      * adds a single js fileto the document
      *
@@ -60,7 +99,7 @@ window.SonicTurbo = (function(doc)
         var body = doc.getElementsByTagName("body")[0],
             script = doc.createElement("script"),
             done = false;
-
+	    
         script.src = filename;
 
         script.onload = script.onreadystatechange = function() {
@@ -90,7 +129,7 @@ window.SonicTurbo = (function(doc)
          */
         init : function()
         {
-            doc.cookie = 'noturbo=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
+            //doc.cookie = 'noturbo=; expires=Thu, 01-Jan-70 00:00:01 GMT;';
         },
 
         /**
@@ -101,16 +140,29 @@ window.SonicTurbo = (function(doc)
          */
         render: function(data)
         {
+		var fragment = doc.getElementById(data.id);
+		    instanceCount++;
+		    instance.push({
+					css: new Array(),
+					fragment: fragment,
+					csscount: 0
+				});		   
+		    hide = false;	
             // called via $this->_redirect() in a controller
             if (data.redirect) {
                 window.location = data.redirect;
             }
-            _addCss(data.css);
-            doc.title = data.title;
-            doc.getElementById(data.id).innerHTML = data.content;
-
-            for (var i in data.js) {
-                _js_queue.push(data.js[i]);
+	     _addCss(data.css, fragment);
+	     
+	    
+	     if(hide){
+		fragment.setAttribute("style", "visibility:hidden;");
+	     }
+	    fragment.setAttribute("class", "sonic_fragment opacity_transition");
+	    fragment.innerHTML = data.content;
+           
+            for (var i in data.js) {		
+			 _js_queue.push(data.js[i]);
             }
 
             _processQueue();
