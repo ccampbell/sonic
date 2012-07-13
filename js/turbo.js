@@ -161,13 +161,6 @@ window.SonicTurbo = (function(doc)
 	    fragment.setAttribute("class", "sonic_fragment opacity_transition");
 	    fragment.innerHTML = data.content;
            
-		if(data.title){
-			doc.title = data.title;
-		}
-		else {
-			doc.title = 'Home - TellyCards';
-		}
-	    
             for (var i in data.js) {		
 			 _js_queue.push(data.js[i]);
             }
